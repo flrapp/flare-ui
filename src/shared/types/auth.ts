@@ -1,9 +1,4 @@
-export const GlobalRole = {
-  Admin: 'Admin',
-  User: 'User',
-} as const;
-
-export type GlobalRole = typeof GlobalRole[keyof typeof GlobalRole];
+import { GlobalRole } from './entities';
 
 export interface User {
   userId: string;

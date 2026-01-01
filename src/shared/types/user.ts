@@ -1,2 +1,3 @@
-export type { User, GlobalRole } from './auth';
-export { GlobalRole as Role } from './auth';
+export type { User } from './auth';
+export type { GlobalRole } from './entities';
+export { GlobalRole as Role } from './entities';
