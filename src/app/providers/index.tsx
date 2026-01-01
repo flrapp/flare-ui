@@ -1,5 +1,7 @@
 import { QueryProvider } from './QueryProvider';
 import { RouterProvider } from './RouterProvider';
+import { ThemeProvider } from './ThemeProvider';
+import { Toaster } from '@/shared/ui/sonner';
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -7,8 +9,11 @@ interface AppProvidersProps {
 
 export function AppProviders({ children }: AppProvidersProps) {
   return (
-    <QueryProvider>
-      <RouterProvider>{children}</RouterProvider>
-    </QueryProvider>
+    <ThemeProvider>
+      <QueryProvider>
+        <RouterProvider>{children}</RouterProvider>
+        <Toaster />
+      </QueryProvider>
+    </ThemeProvider>
   );
 }
