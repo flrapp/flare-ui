@@ -73,13 +73,13 @@ export function ProjectsPage() {
 
       <div className="flex gap-2 mb-4">
         <Button
-          variant={!showArchived ? 'default' : 'outline'}
+          variant={!showArchived ? 'outline' : 'default'}
           onClick={() => setShowArchived(false)}
         >
           Active ({activeCount})
         </Button>
         <Button
-          variant={showArchived ? 'default' : 'outline'}
+          variant={showArchived ? 'outline' : 'default'}
           onClick={() => setShowArchived(true)}
         >
           Archived ({archivedCount})
@@ -107,14 +107,13 @@ export function ProjectsPage() {
           }
         />
       ) : (
-        <div className="border rounded-lg">
+        <div>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Alias</TableHead>
                 <TableHead>Description</TableHead>
-                <TableHead>Created By</TableHead>
                 <TableHead>Created At</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
@@ -139,7 +138,6 @@ export function ProjectsPage() {
                       </span>
                     )}
                   </TableCell>
-                  <TableCell>{project.createdBy}</TableCell>
                   <TableCell>
                     {new Date(project.createdAt).toLocaleDateString()}
                   </TableCell>

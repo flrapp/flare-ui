@@ -24,3 +24,20 @@ export interface UpdateScopeDto {
   name: string; // 2-255 chars
   description?: string | null; // max 1000 chars
 }
+
+// Feature Flag DTOs
+export interface CreateFeatureFlagDto {
+  name: string; // 2-255 chars
+  description?: string | null; // max 1000 chars
+  // Note: defaultValue removed from DTO, backend handles initialization
+}
+
+export interface UpdateFeatureFlagDto {
+  name: string; // 2-255 chars
+  description?: string | null; // max 1000 chars
+}
+
+export interface UpdateFeatureFlagValueDto {
+  scopeId: string;
+  isEnabled: boolean;
+}
