@@ -6,6 +6,7 @@ import { ProjectDetailPage } from '@/pages/project-detail/ProjectDetailPage';
 import { ScopesPage } from '@/pages/scopes/ScopesPage';
 import { FlagsPage } from '@/pages/flags/FlagsPage';
 import { UsersPage } from '@/pages/users/UsersPage';
+import { GlobalUsersPage } from '@/pages/global-users/GlobalUsersPage';
 
 export function AppRoutes() {
   return (
@@ -49,6 +50,14 @@ export function AppRoutes() {
         element={
           <ProtectedRoute>
             <UsersPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <ProtectedRoute>
+            <GlobalUsersPage />
           </ProtectedRoute>
         }
       />

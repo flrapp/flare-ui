@@ -5,6 +5,7 @@ export interface User {
   username: string;
   fullName: string;
   globalRole: GlobalRole;
+  mustChangePassword: boolean;
 }
 
 export interface LoginDto {
@@ -17,6 +18,7 @@ export interface AuthResultDto {
   username: string;
   fullName: string;
   globalRole: GlobalRole;
+  mustChangePassword: boolean;
 }
 
 export interface ProblemDetails {

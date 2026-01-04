@@ -41,3 +41,48 @@ export interface UpdateFeatureFlagValueDto {
   scopeId: string;
   isEnabled: boolean;
 }
+
+// User Management DTOs
+export interface CreateUserDto {
+  username: string; // 3-100 chars, alphanumeric + underscore
+  fullName: string; // 1-255 chars
+  temporaryPassword: string; // min 8 chars
+}
+
+export interface UpdateUserDto {
+  fullName: string; // 1-255 chars
+  globalRole?: number; // GlobalRole enum
+}
+
+export interface UserResponseDto {
+  userId: string;
+  username: string;
+  fullName: string;
+  globalRole: number;
+  createdAt: string;
+  lastLoginAt: string | null;
+}
+
+export interface ChangePasswordDto {
+  currentPassword: string;
+  newPassword: string;
+}
+
+// Project User DTOs
+export interface AvailableUserDto {
+  userId: string;
+  username: string;
+  fullName: string;
+  isAlreadyMember: boolean;
+}
+
+export interface InviteUserDto {
+  userId: string;
+  projectPermissions?: number[]; // ProjectPermission[]
+  scopePermissions?: Record<string, number[]>; // scopeId -> ScopePermission[]
+}
+
+export interface UpdateUserPermissionsDto {
+  projectPermissions?: number[]; // ProjectPermission[]
+  scopePermissions?: Record<string, number[]>; // scopeId -> ScopePermission[]
+}

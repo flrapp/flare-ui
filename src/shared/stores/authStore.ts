@@ -13,6 +13,7 @@ interface AuthState {
   clearUser: () => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  clearMustChangePassword: () => void;
   login: (credentials: LoginDto) => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
@@ -37,6 +38,11 @@ export const useAuthStore = create<AuthState>((set) => {
 
     setError: (error) => set({ error }),
 
+    clearMustChangePassword: () =>
+      set((state) => ({
+        user: state.user ? { ...state.user, mustChangePassword: false } : null,
+      })),
+
     login: async (credentials: LoginDto) => {
       try {
         set({ isLoading: true, error: null });
@@ -46,6 +52,7 @@ export const useAuthStore = create<AuthState>((set) => {
           username: result.username,
           fullName: result.fullName,
           globalRole: result.globalRole,
+          mustChangePassword: result.mustChangePassword,
         };
         set({ user, isAuthenticated: true, isLoading: false, error: null });
       } catch (error: any) {
@@ -74,6 +81,7 @@ export const useAuthStore = create<AuthState>((set) => {
           username: result.username,
           fullName: result.fullName,
           globalRole: result.globalRole,
+          mustChangePassword: result.mustChangePassword,
         };
         set({ user, isAuthenticated: true, isLoading: false, error: null });
       } catch (error: any) {

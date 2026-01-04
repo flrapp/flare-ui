@@ -2,13 +2,14 @@ import { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/shared/stores/authStore';
 import { MainLayout } from '@/app/layouts/MainLayout';
+import { ChangePasswordDialog } from '@/features/auth';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, checkAuth } = useAuthStore();
+  const { isAuthenticated, isLoading, user, checkAuth } = useAuthStore();
 
   useEffect(() => {
     if (!isAuthenticated && !isLoading) {
@@ -29,6 +30,14 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (user?.mustChangePassword) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <ChangePasswordDialog />
+      </div>
+    );
   }
 
   return <MainLayout>{children}</MainLayout>;

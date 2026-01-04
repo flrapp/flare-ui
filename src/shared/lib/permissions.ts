@@ -40,3 +40,53 @@ export function canPerformScopeAction(
 ): boolean {
   return hasScopePermission(permissions, scopeId, permission);
 }
+
+// Permission label helpers
+export function getProjectPermissionLabel(permission: ProjectPermission): string {
+  switch (permission) {
+    case ProjectPermission.ManageUsers:
+      return 'Manage Users';
+    case ProjectPermission.ManageFeatureFlags:
+      return 'Manage Feature Flags';
+    case ProjectPermission.ManageScopes:
+      return 'Manage Scopes';
+    case ProjectPermission.ViewApiKey:
+      return 'View API Key';
+    case ProjectPermission.RegenerateApiKey:
+      return 'Regenerate API Key';
+    case ProjectPermission.ManageProjectSettings:
+      return 'Manage Project Settings';
+    case ProjectPermission.DeleteProject:
+      return 'Delete Project';
+    default:
+      return 'Unknown Permission';
+  }
+}
+
+export function getScopePermissionLabel(permission: ScopePermission): string {
+  switch (permission) {
+    case ScopePermission.ReadFeatureFlags:
+      return 'Read Feature Flags';
+    case ScopePermission.UpdateFeatureFlags:
+      return 'Update Feature Flags';
+    default:
+      return 'Unknown Permission';
+  }
+}
+
+// Get all available permissions
+export function getAllProjectPermissions(): ProjectPermission[] {
+  return [
+    ProjectPermission.ManageUsers,
+    ProjectPermission.ManageFeatureFlags,
+    ProjectPermission.ManageScopes,
+    ProjectPermission.ViewApiKey,
+    ProjectPermission.RegenerateApiKey,
+    ProjectPermission.ManageProjectSettings,
+    ProjectPermission.DeleteProject,
+  ];
+}
+
+export function getAllScopePermissions(): ScopePermission[] {
+  return [ScopePermission.ReadFeatureFlags, ScopePermission.UpdateFeatureFlags];
+}
