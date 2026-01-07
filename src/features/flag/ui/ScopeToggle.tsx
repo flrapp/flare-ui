@@ -12,6 +12,7 @@ interface ScopeToggleProps {
   currentValue: boolean;
   isEnabled: boolean;
   lastUpdated?: string;
+  onToggle: () => void;
 }
 
 export function ScopeToggle({

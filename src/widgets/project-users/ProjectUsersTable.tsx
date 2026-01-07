@@ -6,7 +6,6 @@ import { Input } from '@/shared/ui/input';
 import { Pencil, Trash2, Search } from 'lucide-react';
 import { PermissionBadges } from '@/shared/ui/PermissionBadges';
 import { EditUserPermissionsDialog, RemoveUserDialog } from '@/features/project-user';
-import { GlobalRole } from '@/shared/types/entities';
 import type { ProjectUser } from '@/shared/types/entities';
 
 interface ProjectUsersTableProps {
@@ -23,14 +22,6 @@ export function ProjectUsersTable({ projectId, users, canManageUsers }: ProjectU
       user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.fullName.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const getRoleLabel = (role: number) => {
-    return role === GlobalRole.Admin ? 'Admin' : 'User';
-  };
-
-  const getRoleBadgeVariant = (role: number) => {
-    return role === GlobalRole.Admin ? 'destructive' : 'secondary';
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString(undefined, {
@@ -69,7 +60,6 @@ export function ProjectUsersTable({ projectId, users, canManageUsers }: ProjectU
             <TableRow>
               <TableHead>Username</TableHead>
               <TableHead>Full Name</TableHead>
-              <TableHead>Global Role</TableHead>
               <TableHead>Joined</TableHead>
               <TableHead>Permissions</TableHead>
               {canManageUsers && <TableHead className="text-right">Actions</TableHead>}
@@ -91,11 +81,6 @@ export function ProjectUsersTable({ projectId, users, canManageUsers }: ProjectU
                       <code className="text-sm bg-muted px-2 py-1 rounded">{user.username}</code>
                     </TableCell>
                     <TableCell>{user.fullName}</TableCell>
-                    <TableCell>
-                      <Badge variant={getRoleBadgeVariant(user.projectPermissions[0] || 0)}>
-                        {getRoleLabel(user.projectPermissions[0] || 0)}
-                      </Badge>
-                    </TableCell>
                     <TableCell>{formatDate(user.joinedAt)}</TableCell>
                     <TableCell>
                       <div className="space-y-1">

@@ -1,7 +1,6 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '@/shared/stores/authStore';
 import { Button } from '@/shared/ui/button';
-import { Badge } from '@/shared/ui/badge';
 import { GlobalRole } from '@/shared/types/entities';
 import { Users } from 'lucide-react';
 
@@ -18,10 +17,6 @@ export function AppHeader() {
     return role === GlobalRole.Admin ? 'Admin' : 'User';
   };
 
-  const getRoleBadgeVariant = (role: number) => {
-    return role === GlobalRole.Admin ? 'destructive' : 'secondary';
-  };
-
   const isAdmin = user?.globalRole === GlobalRole.Admin;
 
   return (
@@ -30,7 +25,7 @@ export function AppHeader() {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-6">
             <Link to="/projects">
-              <h1 className="text-xl font-bold text-gray-900 hover:text-gray-700">Flare UI</h1>
+              <h1 className="text-xl font-bold text-gray-900 hover:text-gray-700">Flare</h1>
             </Link>
             {isAdmin && (
               <Link to="/admin/users">
@@ -45,7 +40,7 @@ export function AppHeader() {
             {user && (
               <div className="flex items-center gap-2 text-sm text-gray-700">
                 <span className="font-medium">{user.fullName}</span>
-                <Badge variant={getRoleBadgeVariant(user.globalRole)}>{getRoleLabel(user.globalRole)}</Badge>
+                <div>{getRoleLabel(user.globalRole)}</div>
               </div>
             )}
             <Button variant="outline" onClick={handleLogout}>

@@ -37,6 +37,10 @@ const updateFeatureFlagSchema = z.object({
     .max(1000, 'Description must not exceed 1000 characters')
     .optional()
     .nullable(),
+  key: z
+      .string()
+      .min(2, 'Key must be at least 2 character')
+      .max(255, 'Key must not exceed 255 characters'),
 });
 
 type UpdateFeatureFlagFormData = z.infer<typeof updateFeatureFlagSchema>;
@@ -65,14 +69,15 @@ export function EditFeatureFlagDialog({
     defaultValues: {
       name: flag.name,
       description: flag.description || '',
+      key: flag.key
     },
   });
 
-  // Reset form when flag changes
   useEffect(() => {
     form.reset({
       name: flag.name,
       description: flag.description || '',
+      key: flag.key
     });
   }, [flag, form]);
 
@@ -83,6 +88,7 @@ export function EditFeatureFlagDialog({
         data: {
           name: data.name,
           description: data.description || null,
+          key: data.key,
         },
       });
       toast.success('Feature flag updated successfully');
@@ -108,13 +114,6 @@ export function EditFeatureFlagDialog({
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-2 rounded-md bg-muted p-3">
-              <div className="text-sm">
-                <span className="text-muted-foreground">Alias:</span>{' '}
-                <span className="font-mono font-medium">{flag.key}</span>
-              </div>
-            </div>
-
             <FormField
               control={form.control}
               name="name"
@@ -130,6 +129,22 @@ export function EditFeatureFlagDialog({
                   <FormMessage />
                 </FormItem>
               )}
+            />
+            <FormField
+                control={form.control}
+                name="key"
+                render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Alias</FormLabel>
+                      <FormControl>
+                        <Input
+                            placeholder="newDashboard" {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>A key to access this flag (2-225 characters)</FormDescription>
+                      <FormMessage/>
+                    </FormItem>
+                )}
             />
             <FormField
               control={form.control}

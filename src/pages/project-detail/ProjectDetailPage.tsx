@@ -146,53 +146,12 @@ export function ProjectDetailPage() {
 
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Created By</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-lg">{project.createdBy}</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {new Date(project.createdAt).toLocaleDateString()}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium">Last Updated</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-lg">
               {new Date(project.updatedAt).toLocaleDateString()}
             </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-3 mb-6">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Members</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{project.memberCount}</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Scopes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{project.scopeCount}</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Feature Flags</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{project.featureFlagCount}</p>
           </CardContent>
         </Card>
       </div>

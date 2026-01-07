@@ -22,7 +22,7 @@ export function GlobalUsersTable({ users }: GlobalUsersTableProps) {
   );
 
   const getRoleBadgeVariant = (role: number) => {
-    return role === GlobalRole.Admin ? 'destructive' : 'secondary';
+    return role === GlobalRole.Admin ? 'outline' : 'secondary';
   };
 
   const getRoleLabel = (role: number) => {

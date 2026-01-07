@@ -32,7 +32,7 @@ export function ProjectsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-100">
         <LoadingSpinner text="Loading projects..." />
       </div>
     );
@@ -73,13 +73,13 @@ export function ProjectsPage() {
 
       <div className="flex gap-2 mb-4">
         <Button
-          variant={!showArchived ? 'outline' : 'default'}
+          variant={!showArchived ? 'default' : 'outline'}
           onClick={() => setShowArchived(false)}
         >
           Active ({activeCount})
         </Button>
         <Button
-          variant={showArchived ? 'outline' : 'default'}
+          variant={showArchived ? 'default' : 'outline'}
           onClick={() => setShowArchived(true)}
         >
           Archived ({archivedCount})

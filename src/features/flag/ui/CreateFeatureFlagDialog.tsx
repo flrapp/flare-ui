@@ -36,6 +36,10 @@ const createFeatureFlagSchema = z.object({
     .max(1000, 'Description must not exceed 1000 characters')
     .optional()
     .nullable(),
+  key: z
+      .string()
+      .min(2, 'Key must be at least 2 character')
+      .max(255, 'Key must not exceed 255 characters'),
 });
 
 type CreateFeatureFlagFormData = z.infer<typeof createFeatureFlagSchema>;
@@ -74,6 +78,7 @@ export function CreateFeatureFlagDialog({
         data: {
           name: data.name,
           description: data.description || null,
+          key: data.key
         },
       });
       toast.success('Feature flag created successfully');
@@ -110,12 +115,29 @@ export function CreateFeatureFlagDialog({
                     <Input placeholder="New Dashboard" {...field} />
                   </FormControl>
                   <FormDescription>
-                    A descriptive name for this flag (2-255 characters). An alias will be
-                    auto-generated.
+                    A descriptive name for this flag (2-255 characters).
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
+            />
+            <FormField
+                control={form.control}
+                name="key"
+                render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Alias</FormLabel>
+                      <FormControl>
+                        <Input
+                            placeholder="newDashboard"
+                            {...field}
+                            value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormDescription>A key to access this flag (2-225 characters)</FormDescription>
+                      <FormMessage/>
+                    </FormItem>
+                )}
             />
             <FormField
               control={form.control}

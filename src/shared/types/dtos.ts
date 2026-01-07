@@ -29,12 +29,13 @@ export interface UpdateScopeDto {
 export interface CreateFeatureFlagDto {
   name: string; // 2-255 chars
   description?: string | null; // max 1000 chars
-  // Note: defaultValue removed from DTO, backend handles initialization
+  key: string;
 }
 
 export interface UpdateFeatureFlagDto {
   name: string; // 2-255 chars
   description?: string | null; // max 1000 chars
+  key: string;
 }
 
 export interface UpdateFeatureFlagValueDto {

@@ -47,9 +47,9 @@ export function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Flare UI</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Flare</CardTitle>
           <CardDescription className="text-center">
-            Sign in to your account to manage feature flags
+            Sign in to your account
           </CardDescription>
         </CardHeader>
         <CardContent>

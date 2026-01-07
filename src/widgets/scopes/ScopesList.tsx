@@ -11,7 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/shared/ui/table';
-import { Badge } from '@/shared/ui/badge';
 import { LoadingSpinner } from '@/shared/ui/LoadingSpinner';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { EmptyState } from '@/shared/ui/EmptyState';
@@ -63,13 +62,6 @@ export function ScopesList({ projectId, canManage }: ScopesListProps) {
     );
   }
 
-  const getScopeBadgeVariant = (alias: string) => {
-    const lower = alias.toLowerCase();
-    if (lower.includes('prod')) return 'destructive';
-    if (lower.includes('stag')) return 'default';
-    if (lower.includes('dev')) return 'secondary';
-    return 'outline';
-  };
 
   return (
     <div className="space-y-4">
@@ -99,11 +91,7 @@ export function ScopesList({ projectId, canManage }: ScopesListProps) {
             {scopes.map((scope) => (
               <TableRow key={scope.id}>
                 <TableCell className="font-medium">{scope.name}</TableCell>
-                <TableCell>
-                  <Badge variant={getScopeBadgeVariant(scope.alias)}>
-                    {scope.alias}
-                  </Badge>
-                </TableCell>
+                <TableCell className="font-medium text-muted-foreground">{scope.alias}</TableCell>
                 <TableCell className="max-w-md truncate">
                   {scope.description || (
                     <span className="text-muted-foreground italic">No description</span>

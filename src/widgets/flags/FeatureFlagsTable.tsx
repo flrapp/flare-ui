@@ -55,7 +55,7 @@ export function FeatureFlagsTable({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[200px]">
+      <div className="flex items-center justify-center min-h-50">
         <LoadingSpinner text="Loading feature flags..." />
       </div>
     );
@@ -118,11 +118,11 @@ export function FeatureFlagsTable({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="sticky left-0 bg-background z-10 min-w-[250px]">
+                <TableHead className="sticky left-0 bg-background z-10 min-w-62.5">
                   Feature Flag
                 </TableHead>
                 {scopes.map((scope) => (
-                  <TableHead key={scope.id} className="text-center min-w-[120px]">
+                  <TableHead key={scope.id} className="text-center min-w-30">
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -139,7 +139,7 @@ export function FeatureFlagsTable({
                   </TableHead>
                 ))}
                 {canManageFlags && (
-                  <TableHead className="text-right sticky right-0 bg-background z-10 min-w-[100px]">
+                  <TableHead className="text-right sticky right-0 bg-background z-10 min-w-25">
                     Actions
                   </TableHead>
                 )}
@@ -187,6 +187,11 @@ export function FeatureFlagsTable({
                             currentValue={value.isEnabled}
                             isEnabled={canUpdate}
                             lastUpdated={value.updatedAt}
+                            onToggle={ () =>{
+                              refetchFlags();
+                              refetchScopes();
+                              }
+                            }
                           />
                         ) : (
                           <div></div>
