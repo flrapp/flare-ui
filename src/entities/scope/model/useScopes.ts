@@ -21,14 +21,6 @@ export function useScopes(projectId: string | undefined) {
   });
 }
 
-export function useScope(scopeId: string | undefined) {
-  return useQuery({
-    queryKey: scopeKeys.detail(scopeId!),
-    queryFn: () => scopeApi.getScopeById(scopeId!),
-    enabled: !!scopeId,
-  });
-}
-
 // Mutation hooks
 export function useCreateScope() {
   const queryClient = useQueryClient();

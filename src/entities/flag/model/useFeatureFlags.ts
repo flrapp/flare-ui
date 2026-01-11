@@ -24,14 +24,6 @@ export function useFeatureFlags(projectId: string | undefined) {
   });
 }
 
-export function useFeatureFlag(flagId: string | undefined) {
-  return useQuery({
-    queryKey: flagKeys.detail(flagId!),
-    queryFn: () => flagApi.getFeatureFlagById(flagId!),
-    enabled: !!flagId,
-  });
-}
-
 // Mutation hooks
 export function useCreateFeatureFlag() {
   const queryClient = useQueryClient();

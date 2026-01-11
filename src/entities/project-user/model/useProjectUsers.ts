@@ -34,14 +34,6 @@ export function useProjectUsers(projectId: string | undefined) {
   });
 }
 
-export function useProjectUser(projectId: string | undefined, userId: string | undefined) {
-  return useQuery({
-    queryKey: projectUserKeys.detail(projectId!, userId!),
-    queryFn: () => projectUserApi.getProjectUser(projectId!, userId!),
-    enabled: !!projectId && !!userId,
-  });
-}
-
 // Mutation hooks
 export function useInviteUser() {
   const queryClient = useQueryClient();

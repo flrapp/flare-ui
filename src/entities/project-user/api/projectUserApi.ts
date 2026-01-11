@@ -23,11 +23,6 @@ export async function getProjectUsers(projectId: string): Promise<ProjectUser[]>
   return response.data;
 }
 
-export async function getProjectUser(projectId: string, userId: string): Promise<ProjectUser> {
-  const response = await apiClient.get<ProjectUser>(`${BASE_PATH}/${projectId}/users/${userId}`);
-  return response.data;
-}
-
 export async function removeUser(projectId: string, userId: string): Promise<void> {
   await apiClient.delete(`${BASE_PATH}/${projectId}/users/${userId}`);
 }

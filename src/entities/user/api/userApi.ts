@@ -12,11 +12,6 @@ export async function getUsers(): Promise<UserResponseDto[]> {
   return response.data;
 }
 
-export async function getUserById(userId: string): Promise<UserResponseDto> {
-  const response = await apiClient.get<UserResponseDto>(`${BASE_PATH}/${userId}`);
-  return response.data;
-}
-
 export async function createUser(data: CreateUserDto): Promise<UserResponseDto> {
   const response = await apiClient.post<UserResponseDto>(BASE_PATH, data);
   return response.data;

@@ -12,11 +12,6 @@ export async function getFeatureFlags(projectId: string): Promise<FeatureFlag[]>
   return response.data;
 }
 
-export async function getFeatureFlagById(flagId: string): Promise<FeatureFlag> {
-  const response = await apiClient.get<FeatureFlag>(`/v1/feature-flags/${flagId}`);
-  return response.data;
-}
-
 export async function createFeatureFlag(
   projectId: string,
   data: CreateFeatureFlagDto

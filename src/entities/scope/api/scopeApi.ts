@@ -6,11 +6,6 @@ export async function getScopes(projectId: string): Promise<Scope[]> {
   return response.data;
 }
 
-export async function getScopeById(scopeId: string): Promise<Scope> {
-  const response = await apiClient.get<Scope>(`/v1/scopes/${scopeId}`);
-  return response.data;
-}
-
 export async function createScope(
   projectId: string,
   data: CreateScopeDto

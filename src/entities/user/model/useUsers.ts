@@ -22,14 +22,6 @@ export function useUsers() {
   });
 }
 
-export function useUser(userId: string | undefined) {
-  return useQuery({
-    queryKey: userKeys.detail(userId!),
-    queryFn: () => userApi.getUserById(userId!),
-    enabled: !!userId,
-  });
-}
-
 // Mutation hooks
 export function useCreateUser() {
   const queryClient = useQueryClient();

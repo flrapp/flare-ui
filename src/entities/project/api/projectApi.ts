@@ -20,11 +20,6 @@ export async function getProjectById(id: string): Promise<ProjectDetail> {
   return response.data;
 }
 
-export async function getProjectByAlias(alias: string): Promise<Project> {
-  const response = await apiClient.get<Project>(`${BASE_PATH}/by-alias/${alias}`);
-  return response.data;
-}
-
 export async function createProject(data: CreateProjectDto): Promise<ProjectDetail> {
   const response = await apiClient.post<ProjectDetail>(BASE_PATH, data);
   return response.data;

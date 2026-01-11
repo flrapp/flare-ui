@@ -8,7 +8,6 @@ export const projectKeys = {
   lists: () => [...projectKeys.all, 'list'] as const,
   details: () => [...projectKeys.all, 'detail'] as const,
   detail: (id: string) => [...projectKeys.details(), id] as const,
-  byAlias: (alias: string) => [...projectKeys.all, 'alias', alias] as const,
   permissions: (projectId: string) => [...projectKeys.detail(projectId), 'permissions'] as const,
 };
 
@@ -25,14 +24,6 @@ export function useProject(id: string | undefined) {
     queryKey: projectKeys.detail(id!),
     queryFn: () => projectApi.getProjectById(id!),
     enabled: !!id,
-  });
-}
-
-export function useProjectByAlias(alias: string | undefined) {
-  return useQuery({
-    queryKey: projectKeys.byAlias(alias!),
-    queryFn: () => projectApi.getProjectByAlias(alias!),
-    enabled: !!alias,
   });
 }
 

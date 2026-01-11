@@ -22,6 +22,7 @@ export function ScopeToggle({
   currentValue,
   isEnabled,
   lastUpdated,
+  onToggle,
 }: ScopeToggleProps) {
   const updateValue = useUpdateFeatureFlagValue();
 
@@ -37,6 +38,7 @@ export function ScopeToggle({
         },
       });
       toast.info(`Feature flag ${checked ? 'enabled' : 'disabled'} for ${scopeName}`);
+      onToggle();
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
       toast.error('flag value', 'update', problemDetails?.detail || problemDetails?.title);
