@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { toast } from 'sonner';
+import { toast } from '@/shared/lib/toast';
 import {
   Dialog,
   DialogContent,
@@ -62,12 +62,12 @@ export function CreateProjectDialog({ children }: CreateProjectDialogProps) {
         name: data.name,
         description: data.description || null,
       });
-      toast.success('Project created successfully');
+      toast.success('project', 'created');
       setOpen(false);
       form.reset();
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error(problemDetails?.detail || problemDetails?.title || 'Failed to create project');
+      toast.error('project', 'create', problemDetails?.detail || problemDetails?.title);
     }
   };
 

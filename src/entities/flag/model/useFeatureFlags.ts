@@ -97,6 +97,20 @@ export function useDeleteFeatureFlag() {
   });
 }
 
+/**
+ * Updates feature flag value with optimistic UI updates.
+ *
+ * Optimistic update flow:
+ * 1. Cancel ongoing queries to prevent race conditions
+ * 2. Snapshot current cache state (both detail and list) for rollback
+ * 3. Optimistically update both caches with new value
+ * 4. On error: Rollback both caches to snapshot
+ * 5. On settled: Refetch to ensure consistency
+ *
+ * This pattern ensures instant UI feedback while maintaining data integrity.
+ *
+ * @see https://tanstack.com/query/latest/docs/framework/react/guides/optimistic-updates
+ */
 export function useUpdateFeatureFlagValue() {
   const queryClient = useQueryClient();
 

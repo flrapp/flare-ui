@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { toast } from 'sonner';
+import { toast } from '@/shared/lib/toast';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -81,7 +81,7 @@ export function CreateUserDialog({ children }: CreateUserDialogProps) {
           message: 'This username is already taken',
         });
       } else {
-        toast.error(problemDetails?.detail || problemDetails?.title || 'Failed to create user');
+        toast.error('user', 'create', problemDetails?.detail || problemDetails?.title);
       }
     }
   };
@@ -91,7 +91,7 @@ export function CreateUserDialog({ children }: CreateUserDialogProps) {
       await navigator.clipboard.writeText(createdPassword);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-      toast.success('Password copied to clipboard');
+      toast.info('Password copied to clipboard');
     }
   };
 

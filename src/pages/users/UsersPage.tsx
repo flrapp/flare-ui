@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/shared/ui/button';
 import { Plus, ChevronLeft } from 'lucide-react';
-import { LoadingSpinner } from '@/shared/ui/LoadingSpinner';
+import { TableSkeleton } from '@/shared/ui/TableSkeleton';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { InviteUserDialog } from '@/features/project-user';
@@ -22,8 +22,8 @@ export function UsersPage() {
 
   if (isLoadingProject || isLoadingUsers) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <LoadingSpinner text="Loading team members..." />
+      <div className="p-8">
+        <TableSkeleton rows={5} columns={4} />
       </div>
     );
   }

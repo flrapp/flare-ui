@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/shared/lib/toast';
 import {
   Dialog,
   DialogContent,
@@ -51,7 +51,7 @@ export function EditUserPermissionsDialog({ projectId, user, children }: EditUse
   const handleUpdate = async () => {
     // Validate: cannot remove ManageUsers from yourself
     if (isSelf && !permissions.projectPermissions.includes(ProjectPermission.ManageUsers)) {
-      toast.error('You cannot remove the "Manage Users" permission from yourself');
+      toast.info('You cannot remove the "Manage Users" permission from yourself');
       return;
     }
 
@@ -59,7 +59,7 @@ export function EditUserPermissionsDialog({ projectId, user, children }: EditUse
       permissions.projectPermissions.length + Object.values(permissions.scopePermissions).flat().length;
 
     if (totalPermissions === 0) {
-      toast.error('Please assign at least one permission');
+      toast.info('Please assign at least one permission');
       return;
     }
 
@@ -72,11 +72,11 @@ export function EditUserPermissionsDialog({ projectId, user, children }: EditUse
           scopePermissions: permissions.scopePermissions,
         },
       });
-      toast.success('Permissions updated successfully');
+      toast.success('permissions', 'updated');
       setOpen(false);
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error(problemDetails?.detail || problemDetails?.title || 'Failed to update permissions');
+      toast.error('permissions', 'update', problemDetails?.detail || problemDetails?.title);
     }
   };
 

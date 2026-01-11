@@ -3,7 +3,7 @@ import { useProject } from '@/entities/project/model/useProjects';
 import { usePermissions } from '@/shared/hooks/usePermissions';
 import { ProjectPermission } from '@/shared/types/entities';
 import { ScopesList } from '@/widgets/scopes/ScopesList';
-import { LoadingSpinner } from '@/shared/ui/LoadingSpinner';
+import { PageLoader } from '@/shared/ui/PageLoader';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { ChevronLeft } from 'lucide-react';
 
@@ -13,11 +13,7 @@ export function ScopesPage() {
   const { canPerformProjectAction, isLoading: permissionsLoading } = usePermissions(projectId);
 
   if (isLoading || permissionsLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <LoadingSpinner text="Loading..." />
-      </div>
-    );
+    return <PageLoader message="Loading scopes..." />;
   }
 
   if (error || !project || !projectId) {

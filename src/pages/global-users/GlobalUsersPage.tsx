@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/shared/ui/button';
 import { Plus } from 'lucide-react';
-import { LoadingSpinner } from '@/shared/ui/LoadingSpinner';
+import { TableSkeleton } from '@/shared/ui/TableSkeleton';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { CreateUserDialog } from '@/features/user';
@@ -25,8 +25,8 @@ export function GlobalUsersPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <LoadingSpinner text="Loading users..." />
+      <div className="p-8">
+        <TableSkeleton rows={5} columns={4} />
       </div>
     );
   }

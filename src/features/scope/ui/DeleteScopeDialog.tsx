@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/shared/lib/toast';
 import {
   Dialog,
   DialogContent,
@@ -32,11 +32,11 @@ export function DeleteScopeDialog({ scope, children }: DeleteScopeDialogProps) {
 
     try {
       await deleteScope.mutateAsync(scope.id);
-      toast.success('Scope deleted successfully');
+      toast.success('scope', 'deleted');
       setOpen(false);
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error(problemDetails?.detail || problemDetails?.title || 'Failed to delete scope');
+      toast.error('scope', 'delete', problemDetails?.detail || problemDetails?.title);
     }
   };
 

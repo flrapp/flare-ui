@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { toast } from 'sonner';
+import { toast } from '@/shared/lib/toast';
 import {
   Dialog,
   DialogContent,
@@ -75,11 +75,11 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
           description: data.description || null,
         },
       });
-      toast.success('Project updated successfully');
+      toast.success('project', 'updated');
       setOpen(false);
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error(problemDetails?.detail || problemDetails?.title || 'Failed to update project');
+      toast.error('project', 'update', problemDetails?.detail || problemDetails?.title);
     }
   };
 

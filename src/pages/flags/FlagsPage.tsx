@@ -7,7 +7,7 @@ import { FeatureFlagsTable } from '@/widgets/flags/FeatureFlagsTable';
 import { CreateFeatureFlagDialog } from '@/features/flag/ui/CreateFeatureFlagDialog';
 import { EditFeatureFlagDialog } from '@/features/flag/ui/EditFeatureFlagDialog';
 import { DeleteFeatureFlagDialog } from '@/features/flag/ui/DeleteFeatureFlagDialog';
-import { LoadingSpinner } from '@/shared/ui/LoadingSpinner';
+import { PageLoader } from '@/shared/ui/PageLoader';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { ChevronLeft } from 'lucide-react';
 import type { FeatureFlag } from '@/shared/types';
@@ -23,11 +23,7 @@ export function FlagsPage() {
   const [deletingFlag, setDeletingFlag] = useState<FeatureFlag | null>(null);
 
   if (isLoading || permissionsLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <LoadingSpinner text="Loading..." />
-      </div>
-    );
+    return <PageLoader message="Loading feature flags..." />;
   }
 
   if (error || !project || !projectId) {

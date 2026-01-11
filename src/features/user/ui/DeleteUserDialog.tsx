@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/shared/lib/toast';
 import {
   Dialog,
   DialogContent,
@@ -36,12 +36,12 @@ export function DeleteUserDialog({ user, children }: DeleteUserDialogProps) {
 
     try {
       await deleteUser.mutateAsync(user.userId);
-      toast.success('User deleted successfully');
+      toast.success('user', 'deleted');
       setOpen(false);
       setConfirmUsername('');
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error(problemDetails?.detail || problemDetails?.title || 'Failed to delete user');
+      toast.error('user', 'delete', problemDetails?.detail || problemDetails?.title);
     }
   };
 

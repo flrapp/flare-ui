@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/shared/lib/toast';
 import {
   Dialog,
   DialogContent,
@@ -42,14 +42,12 @@ export function DeleteFeatureFlagDialog({
 
     try {
       await deleteFlag.mutateAsync(flag.id);
-      toast.success('Feature flag deleted successfully');
+      toast.success('feature flag', 'deleted');
       setOpen(false);
       setConfirmName('');
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error(
-        problemDetails?.detail || problemDetails?.title || 'Failed to delete feature flag'
-      );
+      toast.error('feature flag', 'delete', problemDetails?.detail || problemDetails?.title);
     }
   };
 

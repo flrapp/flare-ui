@@ -10,9 +10,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/shared/ui/table';
-import { LoadingSpinner } from '@/shared/ui/LoadingSpinner';
+import { TableSkeleton } from '@/shared/ui/TableSkeleton';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { EmptyState } from '@/shared/ui/EmptyState';
+import { FeatureErrorBoundary } from '@/shared/ui/FeatureErrorBoundary';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/ui/tooltip';
 import { Plus, Flag, Pencil, Trash2 } from 'lucide-react';
 import { canPerformScopeAction } from '@/shared/lib/permissions';
@@ -54,11 +55,7 @@ export function FeatureFlagsTable({
   const error = flagsError || scopesError;
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-50">
-        <LoadingSpinner text="Loading feature flags..." />
-      </div>
-    );
+    return <TableSkeleton rows={5} columns={4} />;
   }
 
   if (error) {
@@ -113,9 +110,21 @@ export function FeatureFlagsTable({
         </div>
       )}
 
-      <div className="border rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
+      <FeatureErrorBoundary
+        fallback={
+          <ErrorMessage
+            title="Failed to render feature flags table"
+            message="There was an error rendering the feature flags table. Please try refreshing the page."
+            retry={() => {
+              refetchFlags();
+              refetchScopes();
+            }}
+          />
+        }
+      >
+        <div className="border rounded-lg overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="sticky left-0 bg-background z-10 min-w-62.5">
@@ -221,6 +230,7 @@ export function FeatureFlagsTable({
           </Table>
         </div>
       </div>
+      </FeatureErrorBoundary>
     </div>
   );
 }

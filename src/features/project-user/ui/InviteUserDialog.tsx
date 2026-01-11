@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/shared/lib/toast';
 import {
   Dialog,
   DialogContent,
@@ -49,7 +49,7 @@ export function InviteUserDialog({ projectId, children }: InviteUserDialogProps)
 
   const handleInvite = async () => {
     if (!selectedUserId) {
-      toast.error('Please select a user to invite');
+      toast.info('Please select a user to invite');
       return;
     }
 
@@ -57,7 +57,7 @@ export function InviteUserDialog({ projectId, children }: InviteUserDialogProps)
       permissions.projectPermissions.length + Object.values(permissions.scopePermissions).flat().length;
 
     if (totalPermissions === 0) {
-      toast.error('Please assign at least one permission');
+      toast.info('Please assign at least one permission');
       return;
     }
 
@@ -71,11 +71,11 @@ export function InviteUserDialog({ projectId, children }: InviteUserDialogProps)
             Object.keys(permissions.scopePermissions).length > 0 ? permissions.scopePermissions : undefined,
         },
       });
-      toast.success('User invited successfully');
+      toast.success('user', 'invited');
       setOpen(false);
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error(problemDetails?.detail || problemDetails?.title || 'Failed to invite user');
+      toast.error('user', 'invite', problemDetails?.detail || problemDetails?.title);
     }
   };
 

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { toast } from 'sonner';
+import { toast } from '@/shared/lib/toast';
 import {
   Dialog,
   DialogContent,
@@ -66,12 +66,12 @@ export function CreateScopeDialog({ projectId, children }: CreateScopeDialogProp
           description: data.description || null,
         },
       });
-      toast.success('Scope created successfully');
+      toast.success('scope', 'created');
       setOpen(false);
       form.reset();
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error(problemDetails?.detail || problemDetails?.title || 'Failed to create scope');
+      toast.error('scope', 'create', problemDetails?.detail || problemDetails?.title);
     }
   };
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/shared/lib/toast';
 import {
   Dialog,
   DialogContent,
@@ -40,12 +40,12 @@ export function RemoveUserDialog({ projectId, user, children }: RemoveUserDialog
         projectId,
         userId: user.userId,
       });
-      toast.success('User removed from project successfully');
+      toast.success('user', 'removed from project');
       setOpen(false);
       setConfirmUsername('');
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error(problemDetails?.detail || problemDetails?.title || 'Failed to remove user');
+      toast.error('user', 'remove', problemDetails?.detail || problemDetails?.title);
     }
   };
 

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { toast } from 'sonner';
+import { toast } from '@/shared/lib/toast';
 import {
   Dialog,
   DialogContent,
@@ -64,11 +64,11 @@ export function EditUserDialog({ user, children }: EditUserDialogProps) {
           globalRole: data.globalRole,
         },
       });
-      toast.success('User updated successfully');
+      toast.success('user', 'updated');
       setOpen(false);
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error(problemDetails?.detail || problemDetails?.title || 'Failed to update user');
+      toast.error('user', 'update', problemDetails?.detail || problemDetails?.title);
     }
   };
 

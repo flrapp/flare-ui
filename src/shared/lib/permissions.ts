@@ -1,6 +1,24 @@
 import type { MyPermissions, User } from '@/shared/types';
 import { ProjectPermission, ScopePermission, GlobalRole } from '@/shared/types/entities';
 
+/**
+ * Permission System
+ *
+ * Two-level permission system:
+ * 1. Project-level permissions (ManageUsers, ManageFeatureFlags, etc.)
+ * 2. Scope-level permissions (ReadFeatureFlags, UpdateFeatureFlags)
+ *
+ * Admin Bypass:
+ * - Admins bypass ALL project-level permission checks
+ * - Admins DO NOT bypass scope-level permission checks
+ * - Reason: Scope permissions control environment access (prod, stage, dev)
+ *
+ * Usage:
+ * - Use canPerformProjectAction() for project operations
+ * - Use canPerformScopeAction() for scope operations
+ * - In React components, use usePermissions() hook
+ */
+
 export function hasProjectPermission(
   permissions: MyPermissions | null,
   permission: ProjectPermission

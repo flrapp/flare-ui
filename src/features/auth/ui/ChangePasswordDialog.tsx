@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { toast } from 'sonner';
+import { toast } from '@/shared/lib/toast';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
 import { Input } from '@/shared/ui/input';
@@ -49,10 +49,10 @@ export function ChangePasswordDialog() {
         newPassword: data.newPassword,
       });
       clearMustChangePassword();
-      toast.success('Password changed successfully');
+      toast.success('password', 'changed');
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error(problemDetails?.detail || problemDetails?.title || 'Failed to change password');
+      toast.error('password', 'change', problemDetails?.detail || problemDetails?.title);
     } finally {
       setIsSubmitting(false);
     }

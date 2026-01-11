@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/shared/lib/toast';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
 import {
@@ -37,23 +37,21 @@ export function ApiKeySection({ project, canView, canRegenerate }: ApiKeySection
     if (!project.apiKey) return;
     try {
       await navigator.clipboard.writeText(project.apiKey);
-      toast.success('API key copied to clipboard');
+      toast.info('API key copied to clipboard');
     } catch {
-      toast.error('Failed to copy API key');
+      toast.info('Failed to copy API key');
     }
   };
 
   const handleRegenerate = async () => {
     try {
       await regenerateApiKey.mutateAsync(project.id);
-      toast.success('API key regenerated successfully');
+      toast.success('API key', 'regenerated');
       setRegenerateDialogOpen(false);
       setShowKey(true);
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error(
-        problemDetails?.detail || problemDetails?.title || 'Failed to regenerate API key'
-      );
+      toast.error('API key', 'regenerate', problemDetails?.detail || problemDetails?.title);
     }
   };
 

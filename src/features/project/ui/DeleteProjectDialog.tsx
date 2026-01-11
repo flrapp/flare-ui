@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
+import { toast } from '@/shared/lib/toast';
 import {
   Dialog,
   DialogContent,
@@ -34,12 +34,12 @@ export function DeleteProjectDialog({ project, children }: DeleteProjectDialogPr
 
     try {
       await deleteProject.mutateAsync(project.id);
-      toast.success('Project deleted successfully');
+      toast.success('project', 'deleted');
       setOpen(false);
       navigate('/projects');
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error(problemDetails?.detail || problemDetails?.title || 'Failed to delete project');
+      toast.error('project', 'delete', problemDetails?.detail || problemDetails?.title);
     }
   };
 

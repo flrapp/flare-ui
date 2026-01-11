@@ -1,6 +1,7 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '@/shared/stores/authStore';
 import { Button } from '@/shared/ui/button';
+import { Badge } from '@/shared/ui/badge';
 import { GlobalRole } from '@/shared/types/entities';
 import { Users } from 'lucide-react';
 
@@ -11,10 +12,6 @@ export function AppHeader() {
   const handleLogout = async () => {
     await logout();
     navigate('/login', { replace: true });
-  };
-
-  const getRoleLabel = (role: number) => {
-    return role === GlobalRole.Admin ? 'Admin' : 'User';
   };
 
   const isAdmin = user?.globalRole === GlobalRole.Admin;
@@ -40,7 +37,7 @@ export function AppHeader() {
             {user && (
               <div className="flex items-center gap-2 text-sm text-gray-700">
                 <span className="font-medium">{user.fullName}</span>
-                <div>{getRoleLabel(user.globalRole)}</div>
+                {isAdmin && <Badge>Admin</Badge>}
               </div>
             )}
             <Button variant="outline" onClick={handleLogout}>

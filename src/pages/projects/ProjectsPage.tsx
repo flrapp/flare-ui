@@ -12,7 +12,7 @@ import {
   TableRow,
 } from '@/shared/ui/table';
 import { Badge } from '@/shared/ui/badge';
-import { LoadingSpinner } from '@/shared/ui/LoadingSpinner';
+import { TableSkeleton } from '@/shared/ui/TableSkeleton';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { FolderOpen, Plus } from 'lucide-react';
@@ -32,8 +32,8 @@ export function ProjectsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-100">
-        <LoadingSpinner text="Loading projects..." />
+      <div className="p-8">
+        <TableSkeleton rows={5} columns={5} />
       </div>
     );
   }

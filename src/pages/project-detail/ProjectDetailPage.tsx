@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { toast } from 'sonner';
+import { toast } from '@/shared/lib/toast';
 import { useProject } from '@/entities/project/model/useProjects';
 import { usePermissions } from '@/shared/hooks/usePermissions';
 import { ProjectPermission } from '@/shared/types/entities';
@@ -9,7 +9,7 @@ import { ApiKeySection } from '@/features/project/ui/ApiKeySection';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
-import { LoadingSpinner } from '@/shared/ui/LoadingSpinner';
+import { PageLoader } from '@/shared/ui/PageLoader';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import {
   useArchiveProject,
@@ -31,11 +31,7 @@ export function ProjectDetailPage() {
   const unarchiveProject = useUnarchiveProject();
 
   if (isLoading || permissionsLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <LoadingSpinner text="Loading project..." />
-      </div>
-    );
+    return <PageLoader message="Loading project..." />;
   }
 
   if (error || !project) {
@@ -54,18 +50,15 @@ export function ProjectDetailPage() {
     try {
       if (project.isArchived) {
         await unarchiveProject.mutateAsync(project.id);
-        toast.success('Project unarchived successfully');
+        toast.success('project', 'unarchived');
       } else {
         await archiveProject.mutateAsync(project.id);
-        toast.success('Project archived successfully');
+        toast.success('project', 'archived');
       }
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error(
-        problemDetails?.detail ||
-          problemDetails?.title ||
-          `Failed to ${project.isArchived ? 'unarchive' : 'archive'} project`
-      );
+      const action = project.isArchived ? 'unarchive' : 'archive';
+      toast.error('project', action, problemDetails?.detail || problemDetails?.title);
     }
   };
 

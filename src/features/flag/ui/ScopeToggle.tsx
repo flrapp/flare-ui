@@ -1,4 +1,4 @@
-import { toast } from 'sonner';
+import { toast } from '@/shared/lib/toast';
 import { Switch } from '@/shared/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/ui/tooltip';
 import { useUpdateFeatureFlagValue } from '@/entities/flag';
@@ -36,10 +36,10 @@ export function ScopeToggle({
           isEnabled: checked,
         },
       });
-      toast.success(`Feature flag ${checked ? 'enabled' : 'disabled'} for ${scopeName}`);
+      toast.info(`Feature flag ${checked ? 'enabled' : 'disabled'} for ${scopeName}`);
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error(problemDetails?.detail || problemDetails?.title || 'Failed to update flag value');
+      toast.error('flag value', 'update', problemDetails?.detail || problemDetails?.title);
     }
   };
 
