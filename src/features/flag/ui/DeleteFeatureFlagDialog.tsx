@@ -47,7 +47,7 @@ export function DeleteFeatureFlagDialog({
       setConfirmName('');
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error('feature flag', 'delete', problemDetails?.detail || problemDetails?.title);
+      toast.error('feature flag', 'delete', problemDetails?.detail ?? problemDetails?.title ?? undefined);
     }
   };
 

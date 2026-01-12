@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from '@/shared/lib/toast';
@@ -31,6 +32,11 @@ const createProjectSchema = z.object({
     .string()
     .min(3, 'Name must be at least 3 characters')
     .max(255, 'Name must not exceed 255 characters'),
+  alias: z
+    .string()
+    .min(3, 'Alias must be at least 3 characters')
+    .max(255, 'Alias must not exceed 255 characters')
+    .regex(/^\S+$/, 'Alias must not contain spaces'),
   description: z
     .string()
     .max(1000, 'Description must not exceed 1000 characters')
@@ -49,9 +55,10 @@ export function CreateProjectDialog({ children }: CreateProjectDialogProps) {
   const createProject = useCreateProject();
 
   const form = useForm<CreateProjectFormData>({
-    resolver: zodResolver(createProjectSchema),
+    resolver: zodResolver(createProjectSchema) as Resolver<CreateProjectFormData>,
     defaultValues: {
       name: '',
+      alias: '',
       description: '',
     },
   });
@@ -60,6 +67,7 @@ export function CreateProjectDialog({ children }: CreateProjectDialogProps) {
     try {
       await createProject.mutateAsync({
         name: data.name,
+        alias: data.alias,
         description: data.description || null,
       });
       toast.success('project', 'created');
@@ -67,7 +75,7 @@ export function CreateProjectDialog({ children }: CreateProjectDialogProps) {
       form.reset();
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error('project', 'create', problemDetails?.detail || problemDetails?.title);
+      toast.error('project', 'create', problemDetails?.detail ?? problemDetails?.title ?? undefined);
     }
   };
 
@@ -96,6 +104,22 @@ export function CreateProjectDialog({ children }: CreateProjectDialogProps) {
                   </FormControl>
                   <FormDescription>
                     A unique name for your project (3-255 characters).
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="alias"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Alias</FormLabel>
+                  <FormControl>
+                    <Input placeholder="my-project" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    A unique identifier for API usage (3-255 characters, no spaces).
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

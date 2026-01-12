@@ -36,7 +36,7 @@ export function DeleteScopeDialog({ scope, children }: DeleteScopeDialogProps) {
       setOpen(false);
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error('scope', 'delete', problemDetails?.detail || problemDetails?.title);
+      toast.error('scope', 'delete', problemDetails?.detail ?? problemDetails?.title ?? undefined);
     }
   };
 

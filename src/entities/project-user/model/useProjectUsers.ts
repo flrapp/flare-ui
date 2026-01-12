@@ -5,7 +5,7 @@ import type {
   InviteUserDto,
   UpdateUserPermissionsDto,
 } from '@/shared/types/dtos';
-import type { ProjectUser } from '@/shared/types/entities';
+import type { ProjectUser, ProjectPermission, ScopePermission } from '@/shared/types/entities';
 
 // Query keys
 export const projectUserKeys = {
@@ -83,8 +83,8 @@ export function useUpdateUserPermissions() {
             user.userId === userId
               ? {
                   ...user,
-                  projectPermissions: data.projectPermissions ?? user.projectPermissions,
-                  scopePermissions: data.scopePermissions ?? user.scopePermissions,
+                  projectPermissions: (data.projectPermissions as ProjectPermission[] | undefined) ?? user.projectPermissions,
+                  scopePermissions: (data.scopePermissions as Record<string, ScopePermission[]> | undefined) ?? user.scopePermissions,
                 }
               : user
           )
@@ -94,8 +94,8 @@ export function useUpdateUserPermissions() {
       if (previousUser) {
         queryClient.setQueryData<ProjectUser>(projectUserKeys.detail(projectId, userId), {
           ...previousUser,
-          projectPermissions: data.projectPermissions ?? previousUser.projectPermissions,
-          scopePermissions: data.scopePermissions ?? previousUser.scopePermissions,
+          projectPermissions: (data.projectPermissions as ProjectPermission[] | undefined) ?? previousUser.projectPermissions,
+          scopePermissions: (data.scopePermissions as Record<string, ScopePermission[]> | undefined) ?? previousUser.scopePermissions,
         });
       }
 

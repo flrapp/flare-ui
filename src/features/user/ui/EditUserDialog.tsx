@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from '@/shared/lib/toast';
@@ -12,7 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/shared/ui/dialog';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
 import { Input } from '@/shared/ui/input';
 import { Button } from '@/shared/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
@@ -39,10 +40,10 @@ export function EditUserDialog({ user, children }: EditUserDialogProps) {
   const updateUser = useUpdateUser();
 
   const form = useForm<UpdateUserFormData>({
-    resolver: zodResolver(updateUserSchema),
+    resolver: zodResolver(updateUserSchema) as Resolver<UpdateUserFormData>,
     defaultValues: {
       fullName: user.fullName,
-      globalRole: user.globalRole,
+      globalRole: user.globalRole as GlobalRole,
     },
   });
 
@@ -50,7 +51,7 @@ export function EditUserDialog({ user, children }: EditUserDialogProps) {
     if (open) {
       form.reset({
         fullName: user.fullName,
-        globalRole: user.globalRole,
+        globalRole: user.globalRole as GlobalRole,
       });
     }
   }, [open, user, form]);
@@ -68,7 +69,7 @@ export function EditUserDialog({ user, children }: EditUserDialogProps) {
       setOpen(false);
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error('user', 'update', problemDetails?.detail || problemDetails?.title);
+      toast.error('user', 'update', problemDetails?.detail ?? problemDetails?.title ?? undefined);
     }
   };
 

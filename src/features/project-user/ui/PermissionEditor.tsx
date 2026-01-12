@@ -9,7 +9,6 @@ import {
   getProjectPermissionLabel,
   getScopePermissionLabel,
 } from '@/shared/lib/permissions';
-import type { ProjectPermission, ScopePermission } from '@/shared/types/entities';
 import { Copy } from 'lucide-react';
 
 interface PermissionEditorValue {

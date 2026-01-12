@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from '@/shared/lib/toast';
@@ -31,6 +32,11 @@ const createScopeSchema = z.object({
     .string()
     .min(2, 'Name must be at least 2 characters')
     .max(255, 'Name must not exceed 255 characters'),
+  alias: z
+    .string()
+    .min(2, 'Alias must be at least 2 characters')
+    .max(255, 'Alias must not exceed 255 characters')
+    .regex(/^\S+$/, 'Alias must not contain spaces'),
   description: z
     .string()
     .max(1000, 'Description must not exceed 1000 characters')
@@ -50,9 +56,10 @@ export function CreateScopeDialog({ projectId, children }: CreateScopeDialogProp
   const createScope = useCreateScope();
 
   const form = useForm<CreateScopeFormData>({
-    resolver: zodResolver(createScopeSchema),
+    resolver: zodResolver(createScopeSchema) as Resolver<CreateScopeFormData>,
     defaultValues: {
       name: '',
+      alias: '',
       description: '',
     },
   });
@@ -63,6 +70,7 @@ export function CreateScopeDialog({ projectId, children }: CreateScopeDialogProp
         projectId,
         data: {
           name: data.name,
+          alias: data.alias,
           description: data.description || null,
         },
       });
@@ -71,7 +79,7 @@ export function CreateScopeDialog({ projectId, children }: CreateScopeDialogProp
       form.reset();
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error('scope', 'create', problemDetails?.detail || problemDetails?.title);
+      toast.error('scope', 'create', problemDetails?.detail ?? problemDetails?.title ?? undefined);
     }
   };
 
@@ -101,6 +109,22 @@ export function CreateScopeDialog({ projectId, children }: CreateScopeDialogProp
                   </FormControl>
                   <FormDescription>
                     A unique name for this scope (2-255 characters).
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="alias"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Alias</FormLabel>
+                  <FormControl>
+                    <Input placeholder="production" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    A unique identifier for API usage (2-255 characters, no spaces).
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

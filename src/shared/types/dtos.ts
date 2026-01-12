@@ -1,6 +1,7 @@
 // Project DTOs
 export interface CreateProjectDto {
   name: string; // 3-255 chars
+  alias: string; // 3-255 chars, no spaces
   description?: string | null; // max 1000 chars
 }
 
@@ -17,6 +18,7 @@ export interface RegenerateApiKeyResponseDto {
 // Scope DTOs
 export interface CreateScopeDto {
   name: string; // 2-255 chars
+  alias: string; // 2-255 chars, no spaces
   description?: string | null; // max 1000 chars
 }
 

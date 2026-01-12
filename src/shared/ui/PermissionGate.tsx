@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { usePermissions } from '@/shared/hooks/usePermissions';
 import { ProjectPermission, ScopePermission } from '@/shared/types/entities';
 

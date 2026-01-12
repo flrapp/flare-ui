@@ -51,7 +51,7 @@ export function ApiKeySection({ project, canView, canRegenerate }: ApiKeySection
       setShowKey(true);
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error('API key', 'regenerate', problemDetails?.detail || problemDetails?.title);
+      toast.error('API key', 'regenerate', problemDetails?.detail ?? problemDetails?.title ?? undefined);
     }
   };
 

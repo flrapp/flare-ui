@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from '@/shared/lib/toast';
@@ -50,7 +51,7 @@ export function EditScopeDialog({ scope, children }: EditScopeDialogProps) {
   const updateScope = useUpdateScope();
 
   const form = useForm<UpdateScopeFormData>({
-    resolver: zodResolver(updateScopeSchema),
+    resolver: zodResolver(updateScopeSchema) as Resolver<UpdateScopeFormData>,
     defaultValues: {
       name: scope.name,
       description: scope.description || '',
@@ -79,7 +80,7 @@ export function EditScopeDialog({ scope, children }: EditScopeDialogProps) {
       setOpen(false);
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error('scope', 'update', problemDetails?.detail || problemDetails?.title);
+      toast.error('scope', 'update', problemDetails?.detail ?? problemDetails?.title ?? undefined);
     }
   };
 

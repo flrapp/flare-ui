@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from '@/shared/lib/toast';
@@ -33,7 +34,7 @@ export function ChangePasswordDialog() {
   const clearMustChangePassword = useAuthStore((state) => state.clearMustChangePassword);
 
   const form = useForm<ChangePasswordFormData>({
-    resolver: zodResolver(changePasswordSchema),
+    resolver: zodResolver(changePasswordSchema) as Resolver<ChangePasswordFormData>,
     defaultValues: {
       currentPassword: '',
       newPassword: '',
@@ -52,7 +53,7 @@ export function ChangePasswordDialog() {
       toast.success('password', 'changed');
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error('password', 'change', problemDetails?.detail || problemDetails?.title);
+      toast.error('password', 'change', problemDetails?.detail ?? problemDetails?.title ?? undefined);
     } finally {
       setIsSubmitting(false);
     }

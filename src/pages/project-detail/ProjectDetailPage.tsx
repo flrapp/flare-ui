@@ -58,7 +58,7 @@ export function ProjectDetailPage() {
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
       const action = project.isArchived ? 'unarchive' : 'archive';
-      toast.error('project', action, problemDetails?.detail || problemDetails?.title);
+      toast.error('project', action, problemDetails?.detail ?? problemDetails?.title ?? undefined);
     }
   };
 

@@ -75,7 +75,7 @@ export function InviteUserDialog({ projectId, children }: InviteUserDialogProps)
       setOpen(false);
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error('user', 'invite', problemDetails?.detail || problemDetails?.title);
+      toast.error('user', 'invite', problemDetails?.detail ?? problemDetails?.title ?? undefined);
     }
   };
 

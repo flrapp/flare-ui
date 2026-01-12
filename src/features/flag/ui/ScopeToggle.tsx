@@ -41,7 +41,7 @@ export function ScopeToggle({
       onToggle();
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error('flag value', 'update', problemDetails?.detail || problemDetails?.title);
+      toast.error('flag value', 'update', problemDetails?.detail ?? problemDetails?.title ?? undefined);
     }
   };
 

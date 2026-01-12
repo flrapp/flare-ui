@@ -41,7 +41,7 @@ export function DeleteUserDialog({ user, children }: DeleteUserDialogProps) {
       setConfirmUsername('');
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error('user', 'delete', problemDetails?.detail || problemDetails?.title);
+      toast.error('user', 'delete', problemDetails?.detail ?? problemDetails?.title ?? undefined);
     }
   };
 

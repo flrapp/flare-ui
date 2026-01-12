@@ -76,7 +76,7 @@ export function EditUserPermissionsDialog({ projectId, user, children }: EditUse
       setOpen(false);
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error('permissions', 'update', problemDetails?.detail || problemDetails?.title);
+      toast.error('permissions', 'update', problemDetails?.detail ?? problemDetails?.title ?? undefined);
     }
   };
 

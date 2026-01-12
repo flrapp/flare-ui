@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from '@/shared/lib/toast';
@@ -50,7 +51,7 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
   const updateProject = useUpdateProject();
 
   const form = useForm<UpdateProjectFormData>({
-    resolver: zodResolver(updateProjectSchema),
+    resolver: zodResolver(updateProjectSchema) as Resolver<UpdateProjectFormData>,
     defaultValues: {
       name: project.name,
       description: project.description || '',
@@ -79,7 +80,7 @@ export function EditProjectDialog({ project, children }: EditProjectDialogProps)
       setOpen(false);
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error('project', 'update', problemDetails?.detail || problemDetails?.title);
+      toast.error('project', 'update', problemDetails?.detail ?? problemDetails?.title ?? undefined);
     }
   };
 

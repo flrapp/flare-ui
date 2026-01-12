@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from '@/shared/lib/toast';
@@ -65,7 +66,7 @@ export function EditFeatureFlagDialog({
   const setOpen = onOpenChange ?? setInternalOpen;
 
   const form = useForm<UpdateFeatureFlagFormData>({
-    resolver: zodResolver(updateFeatureFlagSchema),
+    resolver: zodResolver(updateFeatureFlagSchema) as Resolver<UpdateFeatureFlagFormData>,
     defaultValues: {
       name: flag.name,
       description: flag.description || '',
@@ -95,7 +96,7 @@ export function EditFeatureFlagDialog({
       setOpen(false);
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error('feature flag', 'update', problemDetails?.detail || problemDetails?.title);
+      toast.error('feature flag', 'update', problemDetails?.detail ?? problemDetails?.title ?? undefined);
     }
   };
 

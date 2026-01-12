@@ -39,7 +39,7 @@ export function DeleteProjectDialog({ project, children }: DeleteProjectDialogPr
       navigate('/projects');
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error('project', 'delete', problemDetails?.detail || problemDetails?.title);
+      toast.error('project', 'delete', problemDetails?.detail ?? problemDetails?.title ?? undefined);
     }
   };
 

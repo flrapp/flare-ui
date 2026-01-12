@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from '@/shared/lib/toast';
@@ -58,7 +59,7 @@ export function CreateUserDialog({ children }: CreateUserDialogProps) {
   const createUser = useCreateUser();
 
   const form = useForm<CreateUserFormData>({
-    resolver: zodResolver(createUserSchema),
+    resolver: zodResolver(createUserSchema) as Resolver<CreateUserFormData>,
     defaultValues: {
       username: '',
       fullName: '',
@@ -81,7 +82,7 @@ export function CreateUserDialog({ children }: CreateUserDialogProps) {
           message: 'This username is already taken',
         });
       } else {
-        toast.error('user', 'create', problemDetails?.detail || problemDetails?.title);
+        toast.error('user', 'create', problemDetails?.detail ?? problemDetails?.title ?? undefined);
       }
     }
   };

@@ -45,7 +45,7 @@ export function RemoveUserDialog({ projectId, user, children }: RemoveUserDialog
       setConfirmUsername('');
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error('user', 'remove', problemDetails?.detail || problemDetails?.title);
+      toast.error('user', 'remove', problemDetails?.detail ?? problemDetails?.title ?? undefined);
     }
   };
 
