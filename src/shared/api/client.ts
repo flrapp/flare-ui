@@ -1,7 +1,6 @@
 import axios from 'axios';
-import {API_BASE_URL} from "@/shared/api/config.ts";
 
-const baseURL = API_BASE_URL;
+const baseURL = (window as any).ENV?.API_BASE_URL;
 
 export const apiClient = axios.create({
   baseURL,

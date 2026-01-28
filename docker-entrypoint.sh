@@ -1,10 +1,12 @@
 #!/bin/sh
 set -e
 
-# Replace placeholder with actual environment variable
-if [ -n "$API_BASE_URL" ]; then
+if [ -z "$API_BASE_URL" ]; then
+    echo "WARNING: API_BASE_URL environment variable is not set"
+    echo "Application will show configuration error screen"
+else
     echo "Setting API_BASE_URL to: $API_BASE_URL"
-    find /usr/share/nginx/html -type f -name '*.js' -exec sed -i "s|__API_BASE_URL__|$API_BASE_URL|g" {} +
+    sed -i "s|__API_BASE_URL__|$API_BASE_URL|g" /usr/share/nginx/html/config.js
 fi
 
 # Start nginx
