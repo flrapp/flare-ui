@@ -31,6 +31,11 @@ const updateProjectSchema = z.object({
     .string()
     .min(3, 'Name must be at least 3 characters')
     .max(255, 'Name must not exceed 255 characters'),
+  alias: z
+    .string()
+    .min(3, 'Alias must be at least 3 characters')
+    .max(255, 'Alias must not exceed 255 characters')
+    .regex(/^\S+$/, 'Alias must not contain spaces'),
   description: z
     .string()
     .max(1000, 'Description must not exceed 1000 characters'),
@@ -56,6 +61,7 @@ export function ProjectSettingsPage() {
     resolver: zodResolver(updateProjectSchema) as Resolver<UpdateProjectFormData>,
     defaultValues: {
       name: '',
+      alias: '',
       description: '',
     },
   });
@@ -64,6 +70,7 @@ export function ProjectSettingsPage() {
     if (project) {
       form.reset({
         name: project.name,
+        alias: project.alias,
         description: project.description || '',
       });
     }
@@ -91,6 +98,7 @@ export function ProjectSettingsPage() {
         id: project.id,
         data: {
           name: data.name,
+          alias: data.alias,
           description: data.description || null,
         },
       });
@@ -158,16 +166,18 @@ export function ProjectSettingsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="alias">Project Alias</Label>
+                <Label htmlFor="project-alias">Project Alias</Label>
                 <Input
-                  id="alias"
-                  value={project.alias}
-                  readOnly
-                  disabled
-                  placeholder="Enter project alias"
+                  id="project-alias"
+                  {...form.register('alias')}
+                  placeholder="my-project"
+                  disabled={!canManageSettings || updateProject.isPending}
                 />
+                {form.formState.errors.alias && (
+                  <p className="text-sm text-destructive">{form.formState.errors.alias.message}</p>
+                )}
                 <p className="text-xs text-muted-foreground">
-                  The project alias cannot be changed after creation.
+                  Used in API calls and URLs. No spaces allowed.
                 </p>
               </div>
 

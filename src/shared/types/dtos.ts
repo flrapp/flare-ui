@@ -7,6 +7,7 @@ export interface CreateProjectDto {
 
 export interface UpdateProjectDto {
   name: string; // 3-255 chars
+  alias: string; // 3-255 chars, no spaces
   description?: string | null; // max 1000 chars
 }
 

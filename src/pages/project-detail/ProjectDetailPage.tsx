@@ -7,6 +7,7 @@ import { ProjectPermission } from '@/shared/types/entities';
 import { CreateFeatureFlagDialog } from '@/features/flag/ui/CreateFeatureFlagDialog';
 import { EditFeatureFlagDialog } from '@/features/flag/ui/EditFeatureFlagDialog';
 import { DeleteFeatureFlagDialog } from '@/features/flag/ui/DeleteFeatureFlagDialog';
+import { DeleteProjectDialog } from '@/features/project/ui/DeleteProjectDialog';
 import { FeatureFlagsTable } from '@/widgets/flags/FeatureFlagsTable';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
@@ -31,6 +32,7 @@ import {
   Users,
   Shield,
   Plus,
+  Trash2,
 } from 'lucide-react';
 import type { ProblemDetails, FeatureFlag } from '@/shared/types';
 
@@ -47,6 +49,7 @@ export function ProjectDetailPage() {
   const unarchiveProject = useUnarchiveProject();
 
   const [showCreateFlagDialog, setShowCreateFlagDialog] = useState(false);
+  const [showDeleteProjectDialog, setShowDeleteProjectDialog] = useState(false);
   const [editingFlag, setEditingFlag] = useState<FeatureFlag | null>(null);
   const [deletingFlag, setDeletingFlag] = useState<FeatureFlag | null>(null);
 
@@ -153,6 +156,16 @@ export function ProjectDetailPage() {
                   )}
                 </DropdownMenuItem>
               )}
+              {canManageSettings && project.isArchived && <DropdownMenuSeparator />}
+              {canManageSettings && project.isArchived && (
+                <DropdownMenuItem
+                  onClick={() => setShowDeleteProjectDialog(true)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="size-4 mr-2" />
+                  Delete Project
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -185,6 +198,12 @@ export function ProjectDetailPage() {
       </div>
 
       {/* Dialogs */}
+      <DeleteProjectDialog
+        project={project}
+        open={showDeleteProjectDialog}
+        onOpenChange={setShowDeleteProjectDialog}
+      />
+
       <CreateFeatureFlagDialog
         projectId={project.id}
         open={showCreateFlagDialog}

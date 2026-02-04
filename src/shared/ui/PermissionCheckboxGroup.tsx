@@ -6,6 +6,7 @@ interface PermissionCheckboxGroupProps {
   selectedPermissions: number[];
   onChange: (selectedPermissions: number[]) => void;
   disabled?: boolean;
+  idPrefix: string;
 }
 
 export function PermissionCheckboxGroup({
@@ -13,6 +14,7 @@ export function PermissionCheckboxGroup({
   selectedPermissions,
   onChange,
   disabled = false,
+  idPrefix,
 }: PermissionCheckboxGroupProps) {
   const handleToggle = (permission: number, checked: boolean) => {
     if (checked) {
@@ -29,13 +31,13 @@ export function PermissionCheckboxGroup({
         return (
           <div key={permission.value} className="flex items-center space-x-2">
             <Checkbox
-              id={`permission-${permission.value}`}
+              id={`${idPrefix}-permission-${permission.value}`}
               checked={isChecked}
               onCheckedChange={(checked) => handleToggle(permission.value, checked as boolean)}
               disabled={disabled}
             />
             <Label
-              htmlFor={`permission-${permission.value}`}
+              htmlFor={`${idPrefix}-permission-${permission.value}`}
               className={`text-sm font-normal cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {permission.label}
