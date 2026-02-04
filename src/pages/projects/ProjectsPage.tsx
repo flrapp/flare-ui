@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useProjects } from '@/entities/project/model/useProjects';
 import { CreateProjectDialog } from '@/features/project/ui/CreateProjectDialog';
 import { Button } from '@/shared/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import {
   Table,
   TableBody,
@@ -67,9 +67,6 @@ export function ProjectsPage() {
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <h1 className="text-3xl font-bold">Projects</h1>
-            <p className="text-sm text-muted-foreground">
-              Manage your feature flag projects
-            </p>
           </div>
           <CreateProjectDialog>
             <Button>
@@ -85,9 +82,6 @@ export function ProjectsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>All Projects</CardTitle>
-                <CardDescription>
-                  View and manage all your feature flag projects
-                </CardDescription>
               </div>
               <Tabs
                 value={showArchived ? 'archived' : 'active'}
@@ -122,13 +116,12 @@ export function ProjectsPage() {
                 }
               />
             ) : (
-              <div className="border rounded-lg overflow-hidden">
+              <div className="rounded-lg overflow-hidden">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Name</TableHead>
                       <TableHead>Alias</TableHead>
-                      <TableHead>Description</TableHead>
                       <TableHead>Created At</TableHead>
                       <TableHead>Status</TableHead>
                     </TableRow>
@@ -145,13 +138,6 @@ export function ProjectsPage() {
                           <code className="text-sm bg-muted px-2 py-1 rounded text-muted-foreground">
                             {project.alias}
                           </code>
-                        </TableCell>
-                        <TableCell className="max-w-md truncate">
-                          {project.description || (
-                            <span className="text-muted-foreground italic">
-                              No description
-                            </span>
-                          )}
                         </TableCell>
                         <TableCell>
                           {new Date(project.createdAt).toLocaleDateString()}
