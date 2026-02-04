@@ -122,7 +122,7 @@ export function FeatureFlagsTable({
           />
         }
       >
-        <div className="border rounded-lg overflow-hidden">
+        <div className="overflow-hidden [&_tr]:border-0">
           <div className="overflow-x-auto">
             <Table>
             <TableHeader>
