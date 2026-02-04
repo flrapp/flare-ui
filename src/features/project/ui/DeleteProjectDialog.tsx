@@ -18,14 +18,24 @@ import { AlertCircle } from 'lucide-react';
 
 interface DeleteProjectDialogProps {
   project: ProjectDetail;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   children?: React.ReactNode;
 }
 
-export function DeleteProjectDialog({ project, children }: DeleteProjectDialogProps) {
-  const [open, setOpen] = useState(false);
+export function DeleteProjectDialog({
+  project,
+  open: controlledOpen,
+  onOpenChange,
+  children,
+}: DeleteProjectDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
   const [confirmName, setConfirmName] = useState('');
   const navigate = useNavigate();
   const deleteProject = useDeleteProject();
+
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = onOpenChange ?? setInternalOpen;
 
   const isConfirmValid = confirmName === project.name;
 
@@ -36,6 +46,7 @@ export function DeleteProjectDialog({ project, children }: DeleteProjectDialogPr
       await deleteProject.mutateAsync(project.id);
       toast.success('project', 'deleted');
       setOpen(false);
+      setConfirmName('');
       navigate('/projects');
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
@@ -52,9 +63,7 @@ export function DeleteProjectDialog({ project, children }: DeleteProjectDialogPr
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        {children || <Button variant="destructive">Delete Project</Button>}
-      </DialogTrigger>
+      {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-destructive">

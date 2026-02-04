@@ -6,6 +6,7 @@ import { ProjectDetailPage } from '@/pages/project-detail/ProjectDetailPage';
 import { ScopesPage } from '@/pages/scopes/ScopesPage';
 import { FlagsPage } from '@/pages/flags/FlagsPage';
 import { UsersPage } from '@/pages/users/UsersPage';
+import { ProjectSettingsPage } from '@/pages/project-settings/ProjectSettingsPage';
 import { GlobalUsersPage } from '@/pages/global-users/GlobalUsersPage';
 
 export function AppRoutes() {
@@ -26,6 +27,14 @@ export function AppRoutes() {
         element={
           <ProtectedRoute>
             <ProjectDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/projects/:projectId/settings"
+        element={
+          <ProtectedRoute>
+            <ProjectSettingsPage />
           </ProtectedRoute>
         }
       />

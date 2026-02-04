@@ -1,34 +1,57 @@
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { toast } from '@/shared/lib/toast';
 import { useProject } from '@/entities/project/model/useProjects';
 import { usePermissions } from '@/shared/hooks/usePermissions';
 import { ProjectPermission } from '@/shared/types/entities';
-import { EditProjectDialog } from '@/features/project/ui/EditProjectDialog';
+import { CreateFeatureFlagDialog } from '@/features/flag/ui/CreateFeatureFlagDialog';
+import { EditFeatureFlagDialog } from '@/features/flag/ui/EditFeatureFlagDialog';
+import { DeleteFeatureFlagDialog } from '@/features/flag/ui/DeleteFeatureFlagDialog';
 import { DeleteProjectDialog } from '@/features/project/ui/DeleteProjectDialog';
-import { ApiKeySection } from '@/features/project/ui/ApiKeySection';
+import { FeatureFlagsTable } from '@/widgets/flags/FeatureFlagsTable';
 import { Button } from '@/shared/ui/button';
-import { Badge } from '@/shared/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
 import { PageLoader } from '@/shared/ui/PageLoader';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/shared/ui/dropdown-menu';
+import {
   useArchiveProject,
   useUnarchiveProject,
 } from '@/entities/project/model/useProjects';
-import { ChevronLeft, Archive, ArchiveRestore, Settings, Pencil, Trash2 } from 'lucide-react';
-import type { ProblemDetails } from '@/shared/types';
+import {
+  ChevronLeft,
+  Archive,
+  ArchiveRestore,
+  Settings,
+  Users,
+  Shield,
+  Plus,
+  Trash2,
+} from 'lucide-react';
+import type { ProblemDetails, FeatureFlag } from '@/shared/types';
 
 export function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const { data: project, isLoading, error, refetch } = useProject(projectId);
   const {
     canPerformProjectAction,
-    hasProjectPermission,
+    permissions,
     isLoading: permissionsLoading,
   } = usePermissions(projectId);
 
   const archiveProject = useArchiveProject();
   const unarchiveProject = useUnarchiveProject();
+
+  const [showCreateFlagDialog, setShowCreateFlagDialog] = useState(false);
+  const [showDeleteProjectDialog, setShowDeleteProjectDialog] = useState(false);
+  const [editingFlag, setEditingFlag] = useState<FeatureFlag | null>(null);
+  const [deletingFlag, setDeletingFlag] = useState<FeatureFlag | null>(null);
 
   if (isLoading || permissionsLoading) {
     return <PageLoader message="Loading project..." />;
@@ -63,128 +86,145 @@ export function ProjectDetailPage() {
   };
 
   const canManageSettings = canPerformProjectAction(ProjectPermission.ManageProjectSettings);
-  const canDelete = canPerformProjectAction(ProjectPermission.DeleteProject);
-  const canViewApiKey = hasProjectPermission(ProjectPermission.ViewApiKey);
-  const canRegenerateApiKey = canPerformProjectAction(ProjectPermission.RegenerateApiKey);
+  const canManageFlags = canPerformProjectAction(ProjectPermission.ManageFeatureFlags);
 
   return (
-    <div className="p-8">
-      <div className="mb-6">
-        <Link to="/projects" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4">
-          <ChevronLeft className="h-4 w-4 mr-1" />
-          Back to Projects
-        </Link>
-        <div className="flex items-start justify-between">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold">{project.name}</h1>
-              {project.isArchived && <Badge variant="secondary">Archived</Badge>}
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-7xl p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Button variant="ghost" size="sm" className="gap-2" asChild>
+                <Link to="/projects">
+                  <ChevronLeft className="size-4" />
+                  Back to Projects
+                </Link>
+              </Button>
             </div>
-            <p className="text-muted-foreground">
+            <h1 className="text-3xl font-bold">{project.name}</h1>
+            <p className="text-sm text-muted-foreground">
               {project.description || 'No description provided'}
             </p>
           </div>
-          <div className="flex gap-2">
-            {canManageSettings && (
-              <EditProjectDialog project={project}>
-                <Button variant="outline" size="sm">
-                  <Pencil className="h-4 w-4 mr-2" />
-                  Edit
-                </Button>
-              </EditProjectDialog>
-            )}
-            {canManageSettings && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleArchiveToggle}
-                disabled={archiveProject.isPending || unarchiveProject.isPending}
-              >
-                {project.isArchived ? (
-                  <>
-                    <ArchiveRestore className="h-4 w-4 mr-2" />
-                    Unarchive
-                  </>
-                ) : (
-                  <>
-                    <Archive className="h-4 w-4 mr-2" />
-                    Archive
-                  </>
-                )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Settings className="size-4 mr-2" />
+                Settings
               </Button>
-            )}
-            {canDelete && (
-              <DeleteProjectDialog project={project}>
-                <Button variant="destructive" size="sm">
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
-                </Button>
-              </DeleteProjectDialog>
-            )}
-          </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem asChild>
+                <Link to={`/projects/${project.id}/users`}>
+                  <Users className="size-4 mr-2" />
+                  Team Management
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to={`/projects/${project.id}/scopes`}>
+                  <Shield className="size-4 mr-2" />
+                  Scope Management
+                </Link>
+              </DropdownMenuItem>
+              {canManageSettings && <DropdownMenuSeparator />}
+              {canManageSettings && (
+                <DropdownMenuItem asChild>
+                  <Link to={`/projects/${project.id}/settings`}>
+                    <Settings className="size-4 mr-2" />
+                    Project Settings
+                  </Link>
+                </DropdownMenuItem>
+              )}
+              {canManageSettings && <DropdownMenuSeparator />}
+              {canManageSettings && (
+                <DropdownMenuItem
+                  onClick={handleArchiveToggle}
+                  disabled={archiveProject.isPending || unarchiveProject.isPending}
+                  className={project.isArchived ? '' : 'text-destructive'}
+                >
+                  {project.isArchived ? (
+                    <>
+                      <ArchiveRestore className="size-4 mr-2" />
+                      Unarchive Project
+                    </>
+                  ) : (
+                    <>
+                      <Archive className="size-4 mr-2" />
+                      Archive Project
+                    </>
+                  )}
+                </DropdownMenuItem>
+              )}
+              {canManageSettings && project.isArchived && <DropdownMenuSeparator />}
+              {canManageSettings && project.isArchived && (
+                <DropdownMenuItem
+                  onClick={() => setShowDeleteProjectDialog(true)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="size-4 mr-2" />
+                  Delete Project
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-      </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-6">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Project Alias</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <code className="text-lg font-mono bg-muted px-2 py-1 rounded">
-              {project.alias}
-            </code>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Last Updated</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-lg">
-              {new Date(project.updatedAt).toLocaleDateString()}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="space-y-6">
-        <ApiKeySection
-          project={project}
-          canView={canViewApiKey}
-          canRegenerate={canRegenerateApiKey}
-        />
-
+        {/* Feature Toggles Table */}
         <Card>
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>
-              Manage scopes, feature flags, and team members for this project.
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Feature Toggles</CardTitle>
+              </div>
+              {canManageFlags && (
+                <Button onClick={() => setShowCreateFlagDialog(true)}>
+                  <Plus className="size-4 mr-2" />
+                  New Feature
+                </Button>
+              )}
+            </div>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-3">
-            <Button variant="outline" className="h-20 flex-col" asChild>
-              <Link to={`/projects/${project.id}/scopes`}>
-                <Settings className="h-6 w-6 mb-2" />
-                Manage Scopes
-              </Link>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col" asChild>
-              <Link to={`/projects/${project.id}/flags`}>
-                <Settings className="h-6 w-6 mb-2" />
-                Feature Flags
-              </Link>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col" asChild>
-              <Link to={`/projects/${project.id}/users`}>
-                <Settings className="h-6 w-6 mb-2" />
-                Team Members
-              </Link>
-            </Button>
+          <CardContent>
+            <FeatureFlagsTable
+              projectId={project.id}
+              permissions={permissions}
+              canManageFlags={canManageFlags}
+              onEditFlag={(flag) => setEditingFlag(flag)}
+              onDeleteFlag={(flag) => setDeletingFlag(flag)}
+            />
           </CardContent>
         </Card>
       </div>
+
+      {/* Dialogs */}
+      <DeleteProjectDialog
+        project={project}
+        open={showDeleteProjectDialog}
+        onOpenChange={setShowDeleteProjectDialog}
+      />
+
+      <CreateFeatureFlagDialog
+        projectId={project.id}
+        open={showCreateFlagDialog}
+        onOpenChange={setShowCreateFlagDialog}
+      />
+
+      {editingFlag && (
+        <EditFeatureFlagDialog
+          flag={editingFlag}
+          open={!!editingFlag}
+          onOpenChange={(open) => !open && setEditingFlag(null)}
+        />
+      )}
+
+      {deletingFlag && (
+        <DeleteFeatureFlagDialog
+          flag={deletingFlag}
+          open={!!deletingFlag}
+          onOpenChange={(open) => !open && setDeletingFlag(null)}
+        />
+      )}
     </div>
   );
 }
