@@ -85,6 +85,7 @@ export function PermissionEditor({ projectId, value, onChange, disabledPermissio
         <h3 className="text-sm font-semibold mb-3">Project Permissions</h3>
         <div className="border rounded-lg p-4 bg-muted/50">
           <PermissionCheckboxGroup
+            idPrefix="project"
             permissions={projectPermissions}
             selectedPermissions={value.projectPermissions}
             onChange={handleProjectPermissionsChange}
@@ -123,6 +124,7 @@ export function PermissionEditor({ projectId, value, onChange, disabledPermissio
                   </AccordionTrigger>
                   <AccordionContent className="px-4 pb-4">
                     <PermissionCheckboxGroup
+                      idPrefix={`scope-${scope.id}`}
                       permissions={scopePermissions}
                       selectedPermissions={scopePerms}
                       onChange={(perms) => handleScopePermissionsChange(scope.id, perms)}
