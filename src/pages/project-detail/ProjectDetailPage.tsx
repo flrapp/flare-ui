@@ -4,7 +4,6 @@ import { toast } from '@/shared/lib/toast';
 import { useProject } from '@/entities/project/model/useProjects';
 import { usePermissions } from '@/shared/hooks/usePermissions';
 import { ProjectPermission } from '@/shared/types/entities';
-import { EditProjectDialog } from '@/features/project/ui/EditProjectDialog';
 import { CreateFeatureFlagDialog } from '@/features/flag/ui/CreateFeatureFlagDialog';
 import { EditFeatureFlagDialog } from '@/features/flag/ui/EditFeatureFlagDialog';
 import { DeleteFeatureFlagDialog } from '@/features/flag/ui/DeleteFeatureFlagDialog';
@@ -127,12 +126,12 @@ export function ProjectDetailPage() {
               </DropdownMenuItem>
               {canManageSettings && <DropdownMenuSeparator />}
               {canManageSettings && (
-                <EditProjectDialog project={project}>
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <DropdownMenuItem asChild>
+                  <Link to={`/projects/${project.id}/settings`}>
                     <Settings className="size-4 mr-2" />
                     Project Settings
-                  </DropdownMenuItem>
-                </EditProjectDialog>
+                  </Link>
+                </DropdownMenuItem>
               )}
               {canManageSettings && <DropdownMenuSeparator />}
               {canManageSettings && (
