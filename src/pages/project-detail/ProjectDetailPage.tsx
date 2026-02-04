@@ -10,7 +10,7 @@ import { DeleteFeatureFlagDialog } from '@/features/flag/ui/DeleteFeatureFlagDia
 import { DeleteProjectDialog } from '@/features/project/ui/DeleteProjectDialog';
 import { FeatureFlagsTable } from '@/widgets/flags/FeatureFlagsTable';
 import { Button } from '@/shared/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { PageLoader } from '@/shared/ui/PageLoader';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import {
