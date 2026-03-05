@@ -116,7 +116,7 @@ export function FlagEditPage() {
     }
   };
 
-  const sortedValues = [...flag.values].sort((a, b) => a.scopeName.localeCompare(b.scopeName));
+  const sortedValues = flag.values;
 
   return (
     <div className="p-8 max-w-5xl mx-auto space-y-6">

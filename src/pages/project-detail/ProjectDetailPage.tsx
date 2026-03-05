@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { toast } from '@/shared/lib/toast';
 import { useProject } from '@/entities/project/model/useProjects';
 import { usePermissions } from '@/shared/hooks/usePermissions';
 import { ProjectPermission } from '@/shared/types/entities';
 import { CreateFeatureFlagDialog } from '@/features/flag/ui/CreateFeatureFlagDialog';
-import { EditFeatureFlagDialog } from '@/features/flag/ui/EditFeatureFlagDialog';
 import { DeleteFeatureFlagDialog } from '@/features/flag/ui/DeleteFeatureFlagDialog';
 import { DeleteProjectDialog } from '@/features/project/ui/DeleteProjectDialog';
 import { FeatureFlagsTable } from '@/widgets/flags/FeatureFlagsTable';
@@ -39,6 +38,7 @@ import type { ProblemDetails, FeatureFlag } from '@/shared/types';
 
 export function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
+  const navigate = useNavigate();
   const { data: project, isLoading, error, refetch } = useProject(projectId);
   const {
     canPerformProjectAction,
@@ -51,7 +51,6 @@ export function ProjectDetailPage() {
 
   const [showCreateFlagDialog, setShowCreateFlagDialog] = useState(false);
   const [showDeleteProjectDialog, setShowDeleteProjectDialog] = useState(false);
-  const [editingFlag, setEditingFlag] = useState<FeatureFlag | null>(null);
   const [deletingFlag, setDeletingFlag] = useState<FeatureFlag | null>(null);
 
   if (isLoading || permissionsLoading) {
@@ -197,7 +196,7 @@ export function ProjectDetailPage() {
               projectId={project.id}
               permissions={permissions}
               canManageFlags={canManageFlags}
-              onEditFlag={(flag) => setEditingFlag(flag)}
+              onEditFlag={(flag) => navigate(`/projects/${project.id}/flags/${flag.id}/edit`)}
               onDeleteFlag={(flag) => setDeletingFlag(flag)}
             />
           </CardContent>
@@ -216,14 +215,6 @@ export function ProjectDetailPage() {
         open={showCreateFlagDialog}
         onOpenChange={setShowCreateFlagDialog}
       />
-
-      {editingFlag && (
-        <EditFeatureFlagDialog
-          flag={editingFlag}
-          open={!!editingFlag}
-          onOpenChange={(open) => !open && setEditingFlag(null)}
-        />
-      )}
 
       {deletingFlag && (
         <DeleteFeatureFlagDialog
