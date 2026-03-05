@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useProject } from '@/entities/project/model/useProjects';
 import { usePermissions } from '@/shared/hooks/usePermissions';
 import { ProjectPermission } from '@/shared/types/entities';
 import { FeatureFlagsTable } from '@/widgets/flags/FeatureFlagsTable';
 import { CreateFeatureFlagDialog } from '@/features/flag/ui/CreateFeatureFlagDialog';
-import { EditFeatureFlagDialog } from '@/features/flag/ui/EditFeatureFlagDialog';
 import { DeleteFeatureFlagDialog } from '@/features/flag/ui/DeleteFeatureFlagDialog';
 import { PageLoader } from '@/shared/ui/PageLoader';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
@@ -14,12 +13,12 @@ import type { FeatureFlag } from '@/shared/types';
 
 export function FlagsPage() {
   const { projectId } = useParams<{ projectId: string }>();
+  const navigate = useNavigate();
   const { data: project, isLoading, error, refetch } = useProject(projectId);
   const { permissions, canPerformProjectAction, isLoading: permissionsLoading } =
     usePermissions(projectId);
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [editingFlag, setEditingFlag] = useState<FeatureFlag | null>(null);
   const [deletingFlag, setDeletingFlag] = useState<FeatureFlag | null>(null);
 
   if (isLoading || permissionsLoading) {
@@ -61,7 +60,7 @@ export function FlagsPage() {
         permissions={permissions}
         canManageFlags={canManageFlags}
         onCreateFlag={() => setCreateDialogOpen(true)}
-        onEditFlag={(flag) => setEditingFlag(flag)}
+        onEditFlag={(flag) => navigate(`/projects/${projectId}/flags/${flag.id}/edit`)}
         onDeleteFlag={(flag) => setDeletingFlag(flag)}
       />
 
@@ -71,15 +70,6 @@ export function FlagsPage() {
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
       />
-
-      {/* Edit Dialog */}
-      {editingFlag && (
-        <EditFeatureFlagDialog
-          flag={editingFlag}
-          open={!!editingFlag}
-          onOpenChange={(open) => !open && setEditingFlag(null)}
-        />
-      )}
 
       {/* Delete Dialog */}
       {deletingFlag && (

@@ -5,6 +5,7 @@ import { ProjectsPage } from '@/pages/projects/ProjectsPage';
 import { ProjectDetailPage } from '@/pages/project-detail/ProjectDetailPage';
 import { ScopesPage } from '@/pages/scopes/ScopesPage';
 import { FlagsPage } from '@/pages/flags/FlagsPage';
+import { FlagEditPage } from '@/pages/flag-edit/FlagEditPage';
 import { UsersPage } from '@/pages/users/UsersPage';
 import { ProjectSettingsPage } from '@/pages/project-settings/ProjectSettingsPage';
 import { GlobalUsersPage } from '@/pages/global-users/GlobalUsersPage';
@@ -51,6 +52,14 @@ export function AppRoutes() {
         element={
           <ProtectedRoute>
             <FlagsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/projects/:projectId/flags/:flagId/edit"
+        element={
+          <ProtectedRoute>
+            <FlagEditPage />
           </ProtectedRoute>
         }
       />
