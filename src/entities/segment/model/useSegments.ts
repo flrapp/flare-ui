@@ -8,6 +8,15 @@ export const segmentKeys = {
   byProject: (projectId: string) => [...segmentKeys.lists(), projectId] as const,
 };
 
+export function useSegmentById(projectId: string | undefined, segmentId: string | undefined) {
+  return useQuery({
+    queryKey: segmentKeys.byProject(projectId!),
+    queryFn: () => segmentApi.getSegments(projectId!),
+    select: (segments) => segments.find((s) => s.id === segmentId),
+    enabled: !!projectId && !!segmentId,
+  });
+}
+
 export function useSegments(projectId: string) {
   return useQuery({
     queryKey: segmentKeys.byProject(projectId),

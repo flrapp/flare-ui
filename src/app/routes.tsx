@@ -9,6 +9,8 @@ import { FlagEditPage } from '@/pages/flag-edit/FlagEditPage';
 import { UsersPage } from '@/pages/users/UsersPage';
 import { ProjectSettingsPage } from '@/pages/project-settings/ProjectSettingsPage';
 import { GlobalUsersPage } from '@/pages/global-users/GlobalUsersPage';
+import { SegmentsPage } from '@/pages/segments/SegmentsPage';
+import { SegmentDetailPage } from '@/pages/segment-detail/SegmentDetailPage';
 
 export function AppRoutes() {
   return (
@@ -68,6 +70,22 @@ export function AppRoutes() {
         element={
           <ProtectedRoute>
             <UsersPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/projects/:projectId/segments"
+        element={
+          <ProtectedRoute>
+            <SegmentsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/projects/:projectId/segments/:segmentId"
+        element={
+          <ProtectedRoute>
+            <SegmentDetailPage />
           </ProtectedRoute>
         }
       />

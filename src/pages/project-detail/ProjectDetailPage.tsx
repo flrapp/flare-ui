@@ -33,6 +33,7 @@ import {
   Shield,
   Plus,
   Trash2,
+  Layers,
 } from 'lucide-react';
 import type { ProblemDetails, FeatureFlag } from '@/shared/types';
 
@@ -125,6 +126,12 @@ export function ProjectDetailPage() {
                 <Link to={`/projects/${project.id}/scopes`}>
                   <Shield className="size-4 mr-2" />
                   Scope Management
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to={`/projects/${project.id}/segments`}>
+                  <Layers className="size-4 mr-2" />
+                  Segments
                 </Link>
               </DropdownMenuItem>
               {canManageSettings && <DropdownMenuSeparator />}
