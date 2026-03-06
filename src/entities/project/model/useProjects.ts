@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { ProjectDetail, CreateProjectDto, UpdateProjectDto } from '@/shared/types';
+import type { ProjectDetail, ProjectApiKeyResponse, CreateProjectDto, UpdateProjectDto } from '@/shared/types';
 import * as projectApi from '../api/projectApi';
 
 // Query keys
@@ -9,6 +9,7 @@ export const projectKeys = {
   details: () => [...projectKeys.all, 'detail'] as const,
   detail: (id: string) => [...projectKeys.details(), id] as const,
   permissions: (projectId: string) => [...projectKeys.detail(projectId), 'permissions'] as const,
+  apiKey: (projectId: string) => [...projectKeys.detail(projectId), 'api-key'] as const,
 };
 
 // Query hooks
@@ -24,6 +25,14 @@ export function useProject(id: string | undefined) {
     queryKey: projectKeys.detail(id!),
     queryFn: () => projectApi.getProjectById(id!),
     enabled: !!id,
+  });
+}
+
+export function useProjectApiKey(projectId: string | undefined, enabled = true) {
+  return useQuery({
+    queryKey: projectKeys.apiKey(projectId!),
+    queryFn: () => projectApi.getProjectApiKey(projectId!),
+    enabled: !!projectId && enabled,
   });
 }
 
@@ -158,18 +167,11 @@ export function useRegenerateApiKey() {
   return useMutation({
     mutationFn: (id: string) => projectApi.regenerateApiKey(id),
     onSuccess: (data, id) => {
-      const previousProject = queryClient.getQueryData<ProjectDetail>(projectKeys.detail(id));
-
-      if (previousProject) {
-        queryClient.setQueryData<ProjectDetail>(projectKeys.detail(id), {
-          ...previousProject,
-          apiKey: data.apiKey,
-          updatedAt: data.regeneratedAt,
-        });
-      }
+      queryClient.setQueryData<ProjectApiKeyResponse>(projectKeys.apiKey(id), { apiKey: data.apiKey });
     },
     onSettled: (_data, _error, id) => {
       queryClient.invalidateQueries({ queryKey: projectKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: projectKeys.apiKey(id) });
     },
   });
 }

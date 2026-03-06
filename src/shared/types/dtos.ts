@@ -16,6 +16,10 @@ export interface RegenerateApiKeyResponseDto {
   regeneratedAt: string;
 }
 
+export interface ProjectApiKeyResponse {
+  apiKey: string;
+}
+
 // Scope DTOs
 export interface CreateScopeDto {
   name: string; // 2-255 chars

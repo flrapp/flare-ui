@@ -6,6 +6,7 @@ import type {
   CreateProjectDto,
   UpdateProjectDto,
   RegenerateApiKeyResponseDto,
+  ProjectApiKeyResponse,
 } from '@/shared/types';
 
 const BASE_PATH = '/v1/projects';
@@ -46,6 +47,11 @@ export async function regenerateApiKey(id: string): Promise<RegenerateApiKeyResp
   const response = await apiClient.post<RegenerateApiKeyResponseDto>(
     `${BASE_PATH}/${id}/regenerate-api-key`
   );
+  return response.data;
+}
+
+export async function getProjectApiKey(projectId: string): Promise<ProjectApiKeyResponse> {
+  const response = await apiClient.get<ProjectApiKeyResponse>(`${BASE_PATH}/${projectId}/api-key`);
   return response.data;
 }
 

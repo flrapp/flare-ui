@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-const baseURL = (window as any).ENV?.API_BASE_URL;
+const runtimeBaseURL = (window as any).ENV?.API_BASE_URL;
+const baseURL =
+  runtimeBaseURL && runtimeBaseURL !== '__API_BASE_URL__'
+    ? runtimeBaseURL
+    : 'http://localhost:5000/api';
 
 export const apiClient = axios.create({
   baseURL,
