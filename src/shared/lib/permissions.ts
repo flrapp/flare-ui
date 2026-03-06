@@ -76,6 +76,10 @@ export function getProjectPermissionLabel(permission: ProjectPermission): string
       return 'Manage Project Settings';
     case ProjectPermission.DeleteProject:
       return 'Delete Project';
+    case ProjectPermission.ManageSegments:
+      return 'Manage Segments';
+    case ProjectPermission.ManageTargetingRules:
+      return 'Manage Targeting Rules';
     default:
       return 'Unknown Permission';
   }
@@ -102,6 +106,8 @@ export function getAllProjectPermissions(): ProjectPermission[] {
     ProjectPermission.RegenerateApiKey,
     ProjectPermission.ManageProjectSettings,
     ProjectPermission.DeleteProject,
+    ProjectPermission.ManageSegments,
+    ProjectPermission.ManageTargetingRules,
   ];
 }
 

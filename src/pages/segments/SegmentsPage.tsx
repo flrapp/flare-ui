@@ -28,7 +28,7 @@ export function SegmentsPage() {
     );
   }
 
-  const canManage = canPerformProjectAction(ProjectPermission.ManageFeatureFlags);
+  const canManage = canPerformProjectAction(ProjectPermission.ManageSegments);
 
   return (
     <div className="p-8">

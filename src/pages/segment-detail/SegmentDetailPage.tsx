@@ -74,7 +74,7 @@ export function SegmentDetailPage() {
     );
   }
 
-  const canManage = canPerformProjectAction(ProjectPermission.ManageFeatureFlags);
+  const canManage = canPerformProjectAction(ProjectPermission.ManageSegments);
 
   const onSubmit = async (data: SegmentFormData) => {
     try {

@@ -8,7 +8,7 @@ import { ChevronLeft } from 'lucide-react';
 import { toast } from '@/shared/lib/toast';
 import { useFeatureFlagById, useUpdateFeatureFlag, useUpdateFeatureFlagValue } from '@/entities/flag';
 import { usePermissions } from '@/shared/hooks/usePermissions';
-import { ScopePermission } from '@/shared/types/entities';
+import { ScopePermission, ProjectPermission } from '@/shared/types/entities';
 import { canPerformScopeAction } from '@/shared/lib/permissions';
 import { PageLoader } from '@/shared/ui/PageLoader';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
@@ -52,7 +52,7 @@ export function FlagEditPage() {
   const { projectId, flagId } = useParams<{ projectId: string; flagId: string }>();
 
   const { data: flag, isLoading: flagLoading, error: flagError } = useFeatureFlagById(projectId, flagId);
-  const { permissions, isLoading: permissionsLoading } = usePermissions(projectId);
+  const { permissions, canPerformProjectAction, isLoading: permissionsLoading } = usePermissions(projectId);
   const updateFlag = useUpdateFeatureFlag();
   const updateFlagValue = useUpdateFeatureFlagValue();
 
@@ -122,11 +122,11 @@ export function FlagEditPage() {
     <div className="p-8 max-w-5xl mx-auto space-y-6">
       {/* Back navigation */}
       <Link
-        to={`/projects/${projectId}/flags`}
+        to={`/projects/${projectId}`}
         className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="h-4 w-4 mr-1" />
-        Back to Feature Flags
+        Back to Project
       </Link>
 
       <div>
@@ -208,11 +208,9 @@ export function FlagEditPage() {
           </TabsList>
 
           {sortedValues.map((flagValue) => {
-            const canManage = canPerformScopeAction(
-              permissions,
-              flagValue.scopeId,
-              ScopePermission.UpdateFeatureFlags
-            );
+            const canManage =
+              canPerformProjectAction(ProjectPermission.ManageTargetingRules) &&
+              canPerformScopeAction(permissions, flagValue.scopeId, ScopePermission.UpdateFeatureFlags);
 
             return (
               <TabsContent key={flagValue.scopeId} value={flagValue.scopeId}>

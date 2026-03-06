@@ -7,6 +7,8 @@ export const ProjectPermission = {
   RegenerateApiKey: 4,
   ManageProjectSettings: 5,
   DeleteProject: 6,
+  ManageSegments: 7,
+  ManageTargetingRules: 8,
 } as const;
 
 export type ProjectPermission = typeof ProjectPermission[keyof typeof ProjectPermission];
