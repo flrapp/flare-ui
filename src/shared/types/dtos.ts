@@ -76,6 +76,10 @@ export interface ChangePasswordDto {
   newPassword: string;
 }
 
+export interface ResetUserPasswordRequest {
+  temporaryPassword: string;
+}
+
 // Project User DTOs
 export interface AvailableUserDto {
   userId: string;

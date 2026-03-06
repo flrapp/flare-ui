@@ -3,9 +3,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
-import { Pencil, Trash2, Search } from 'lucide-react';
-import { EditUserDialog, DeleteUserDialog } from '@/features/user';
+import { Pencil, Trash2, Search, KeyRound } from 'lucide-react';
+import { EditUserDialog, DeleteUserDialog, ResetPasswordDialog } from '@/features/user';
 import { GlobalRole } from '@/shared/types/entities';
+import { useAuthStore } from '@/shared/stores/authStore';
 import type { UserResponseDto } from '@/shared/types/dtos';
 
 interface GlobalUsersTableProps {
@@ -14,6 +15,8 @@ interface GlobalUsersTableProps {
 
 export function GlobalUsersTable({ users }: GlobalUsersTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const currentUser = useAuthStore((state) => state.user);
+  const isAdmin = currentUser?.globalRole === GlobalRole.Admin;
 
   const filteredUsers = users.filter(
     (user) =>
@@ -98,6 +101,13 @@ export function GlobalUsersTable({ users }: GlobalUsersTableProps) {
                           <Pencil className="h-4 w-4" />
                         </Button>
                       </EditUserDialog>
+                      {isAdmin && (
+                        <ResetPasswordDialog user={user}>
+                          <Button variant="ghost" size="sm">
+                            <KeyRound className="h-4 w-4" />
+                          </Button>
+                        </ResetPasswordDialog>
+                      )}
                       <DeleteUserDialog user={user}>
                         <Button variant="ghost" size="sm">
                           <Trash2 className="h-4 w-4" />

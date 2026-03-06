@@ -4,6 +4,7 @@ import type {
   CreateUserDto,
   UpdateUserDto,
   UserResponseDto,
+  ResetUserPasswordRequest,
 } from '@/shared/types/dtos';
 
 // Query keys
@@ -73,5 +74,12 @@ export function useDeleteUser() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: userKeys.lists() });
     },
+  });
+}
+
+export function useResetUserPassword() {
+  return useMutation({
+    mutationFn: ({ userId, data }: { userId: string; data: ResetUserPasswordRequest }) =>
+      userApi.resetUserPassword(userId, data),
   });
 }

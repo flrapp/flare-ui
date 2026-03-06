@@ -3,6 +3,7 @@ import type {
   CreateUserDto,
   UpdateUserDto,
   UserResponseDto,
+  ResetUserPasswordRequest,
 } from '@/shared/types/dtos';
 
 const BASE_PATH = '/v1/users';
@@ -24,4 +25,8 @@ export async function updateUser(userId: string, data: UpdateUserDto): Promise<U
 
 export async function deleteUser(userId: string): Promise<void> {
   await apiClient.delete(`${BASE_PATH}/${userId}`);
+}
+
+export async function resetUserPassword(userId: string, data: ResetUserPasswordRequest): Promise<void> {
+  await apiClient.post(`${BASE_PATH}/${userId}/reset-password`, data);
 }
