@@ -67,6 +67,7 @@ export interface UserResponseDto {
   username: string;
   fullName: string;
   globalRole: number;
+  isActive: boolean;
   createdAt: string;
   lastLoginAt: string | null;
 }

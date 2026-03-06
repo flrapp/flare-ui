@@ -8,8 +8,9 @@ import type {
 
 const BASE_PATH = '/v1/users';
 
-export async function getUsers(): Promise<UserResponseDto[]> {
-  const response = await apiClient.get<UserResponseDto[]>(BASE_PATH);
+export async function getUsers(isActive?: boolean): Promise<UserResponseDto[]> {
+  const params = isActive !== undefined ? { isActive } : undefined;
+  const response = await apiClient.get<UserResponseDto[]>(BASE_PATH, { params });
   return response.data;
 }
 
@@ -29,4 +30,12 @@ export async function deleteUser(userId: string): Promise<void> {
 
 export async function resetUserPassword(userId: string, data: ResetUserPasswordRequest): Promise<void> {
   await apiClient.post(`${BASE_PATH}/${userId}/reset-password`, data);
+}
+
+export async function activateUser(userId: string): Promise<void> {
+  await apiClient.post(`${BASE_PATH}/${userId}/activate`);
+}
+
+export async function deactivateUser(userId: string): Promise<void> {
+  await apiClient.post(`${BASE_PATH}/${userId}/deactivate`);
 }
