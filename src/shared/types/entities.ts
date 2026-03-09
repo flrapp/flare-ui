@@ -40,7 +40,6 @@ export interface Project {
 }
 
 export interface ProjectDetail extends Project {
-  apiKey: string | null;
   memberCount: number;
   scopeCount: number;
   featureFlagCount: number;

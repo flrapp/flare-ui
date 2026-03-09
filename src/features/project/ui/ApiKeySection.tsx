@@ -11,20 +11,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/shared/ui/dialog';
-import { useRegenerateApiKey } from '@/entities/project/model/useProjects';
+import { useRegenerateApiKey, useProjectApiKey } from '@/entities/project/model/useProjects';
 import { Eye, EyeOff, Copy, RefreshCw, AlertTriangle } from 'lucide-react';
-import type { ProjectDetail, ProblemDetails } from '@/shared/types';
+import type { ProblemDetails } from '@/shared/types';
 
 interface ApiKeySectionProps {
-  project: ProjectDetail;
+  projectId: string;
   canView: boolean;
   canRegenerate: boolean;
 }
 
-export function ApiKeySection({ project, canView, canRegenerate }: ApiKeySectionProps) {
+export function ApiKeySection({ projectId, canView, canRegenerate }: ApiKeySectionProps) {
   const [showKey, setShowKey] = useState(false);
   const [regenerateDialogOpen, setRegenerateDialogOpen] = useState(false);
   const regenerateApiKey = useRegenerateApiKey();
+  const { data: apiKeyData } = useProjectApiKey(projectId, canView);
 
   const maskApiKey = (key: string) => {
     if (key.length <= 12) return key;
@@ -34,9 +35,9 @@ export function ApiKeySection({ project, canView, canRegenerate }: ApiKeySection
   };
 
   const handleCopy = async () => {
-    if (!project.apiKey) return;
+    if (!apiKeyData?.apiKey) return;
     try {
-      await navigator.clipboard.writeText(project.apiKey);
+      await navigator.clipboard.writeText(apiKeyData.apiKey);
       toast.info('API key copied to clipboard');
     } catch {
       toast.info('Failed to copy API key');
@@ -45,7 +46,7 @@ export function ApiKeySection({ project, canView, canRegenerate }: ApiKeySection
 
   const handleRegenerate = async () => {
     try {
-      await regenerateApiKey.mutateAsync(project.id);
+      await regenerateApiKey.mutateAsync(projectId);
       toast.success('API key', 'regenerated');
       setRegenerateDialogOpen(false);
       setShowKey(true);
@@ -77,11 +78,11 @@ export function ApiKeySection({ project, canView, canRegenerate }: ApiKeySection
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {project.apiKey ? (
+        {apiKeyData?.apiKey ? (
           <>
             <div className="flex items-center gap-2">
               <code className="flex-1 bg-muted px-3 py-2 rounded font-mono text-sm">
-                {showKey ? project.apiKey : maskApiKey(project.apiKey)}
+                {showKey ? apiKeyData.apiKey : maskApiKey(apiKeyData.apiKey)}
               </code>
               <Button
                 variant="outline"

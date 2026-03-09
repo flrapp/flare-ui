@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/shared/ui/button';
 import { Plus } from 'lucide-react';
@@ -11,11 +11,21 @@ import { useUsers } from '@/entities/user';
 import { useAuthStore } from '@/shared/stores/authStore';
 import { GlobalRole } from '@/shared/types/entities';
 import { UserPlus } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs';
+
+type ActiveFilter = 'all' | 'active' | 'inactive';
+
+function filterToParam(filter: ActiveFilter): boolean | undefined {
+  if (filter === 'active') return true;
+  if (filter === 'inactive') return false;
+  return undefined;
+}
 
 export function GlobalUsersPage() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
-  const { data: users, isLoading, error, refetch } = useUsers();
+  const [activeFilter, setActiveFilter] = useState<ActiveFilter>('all');
+  const { data: users, isLoading, error, refetch } = useUsers(filterToParam(activeFilter));
 
   useEffect(() => {
     if (user && user.globalRole !== GlobalRole.Admin) {
@@ -44,6 +54,7 @@ export function GlobalUsersPage() {
   }
 
   if (!users || users.length === 0) {
+    const isFiltered = activeFilter !== 'all';
     return (
       <div className="p-8">
         <div className="flex items-center justify-between mb-6">
@@ -51,18 +62,41 @@ export function GlobalUsersPage() {
             <h1 className="text-3xl font-bold">User Management</h1>
             <p className="text-muted-foreground mt-1">Manage system users and their permissions</p>
           </div>
+          <div className="flex items-center gap-3">
+            <Tabs value={activeFilter} onValueChange={(v) => setActiveFilter(v as ActiveFilter)}>
+              <TabsList>
+                <TabsTrigger value="all">All</TabsTrigger>
+                <TabsTrigger value="active">Active</TabsTrigger>
+                <TabsTrigger value="inactive">Inactive</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            {!isFiltered && (
+              <CreateUserDialog>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create User
+                </Button>
+              </CreateUserDialog>
+            )}
+          </div>
         </div>
         <EmptyState
           icon={<UserPlus className="h-16 w-16" />}
-          title="No users yet"
-          description="Get started by creating your first user account."
+          title={isFiltered ? `No ${activeFilter} users` : 'No users yet'}
+          description={
+            isFiltered
+              ? `There are no ${activeFilter} users. Try a different filter.`
+              : 'Get started by creating your first user account.'
+          }
           action={
-            <CreateUserDialog>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Create User
-              </Button>
-            </CreateUserDialog>
+            !isFiltered ? (
+              <CreateUserDialog>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create User
+                </Button>
+              </CreateUserDialog>
+            ) : undefined
           }
         />
       </div>
@@ -75,15 +109,24 @@ export function GlobalUsersPage() {
         <div>
           <h1 className="text-3xl font-bold">User Management</h1>
           <p className="text-muted-foreground mt-1">
-            Manage system users and their permissions ({users.length} {users.length === 1 ? 'user' : 'users'})
+            Manage system users and their permissions
           </p>
         </div>
-        <CreateUserDialog>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Create User
-          </Button>
-        </CreateUserDialog>
+        <div className="flex items-center gap-3">
+          <Tabs value={activeFilter} onValueChange={(v) => setActiveFilter(v as ActiveFilter)}>
+            <TabsList>
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="active">Active</TabsTrigger>
+              <TabsTrigger value="inactive">Inactive</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <CreateUserDialog>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Create User
+            </Button>
+          </CreateUserDialog>
+        </div>
       </div>
       <GlobalUsersTable users={users} />
     </div>

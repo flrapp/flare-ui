@@ -16,6 +16,10 @@ export interface RegenerateApiKeyResponseDto {
   regeneratedAt: string;
 }
 
+export interface ProjectApiKeyResponse {
+  apiKey: string;
+}
+
 // Scope DTOs
 export interface CreateScopeDto {
   name: string; // 2-255 chars
@@ -63,6 +67,7 @@ export interface UserResponseDto {
   username: string;
   fullName: string;
   globalRole: number;
+  isActive: boolean;
   createdAt: string;
   lastLoginAt: string | null;
 }
@@ -70,6 +75,10 @@ export interface UserResponseDto {
 export interface ChangePasswordDto {
   currentPassword: string;
   newPassword: string;
+}
+
+export interface ResetUserPasswordRequest {
+  temporaryPassword: string;
 }
 
 // Project User DTOs

@@ -5,7 +5,7 @@ import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from '@/shared/lib/toast';
-import { useProject, useUpdateProject, useRegenerateApiKey } from '@/entities/project/model/useProjects';
+import { useProject, useUpdateProject, useRegenerateApiKey, useProjectApiKey } from '@/entities/project/model/useProjects';
 import { usePermissions } from '@/shared/hooks/usePermissions';
 import { ProjectPermission } from '@/shared/types/entities';
 import { Button } from '@/shared/ui/button';
@@ -56,6 +56,8 @@ export function ProjectSettingsPage() {
   const canManageSettings = canPerformProjectAction(ProjectPermission.ManageProjectSettings);
   const canViewApiKey = canPerformProjectAction(ProjectPermission.ViewApiKey);
   const canRegenerateApiKey = canPerformProjectAction(ProjectPermission.RegenerateApiKey);
+
+  const { data: apiKeyData } = useProjectApiKey(projectId, canViewApiKey && !permissionsLoading);
 
   const form = useForm<UpdateProjectFormData>({
     resolver: zodResolver(updateProjectSchema) as Resolver<UpdateProjectFormData>,
@@ -110,9 +112,9 @@ export function ProjectSettingsPage() {
   };
 
   const handleCopy = async () => {
-    if (!project.apiKey) return;
+    if (!apiKeyData?.apiKey) return;
     try {
-      await navigator.clipboard.writeText(project.apiKey);
+      await navigator.clipboard.writeText(apiKeyData.apiKey);
       toast.info('API key copied to clipboard');
     } catch {
       toast.info('Failed to copy API key');
@@ -212,13 +214,13 @@ export function ProjectSettingsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                {project.apiKey ? (
+                {apiKeyData?.apiKey ? (
                   <>
                     <div className="flex gap-2">
                       <div className="relative flex-1">
                         <Input
                           type={showApiKey ? 'text' : 'password'}
-                          value={project.apiKey}
+                          value={apiKeyData.apiKey}
                           readOnly
                           className="pr-10 font-mono text-sm"
                         />

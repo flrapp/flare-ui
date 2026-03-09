@@ -3,9 +3,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
-import { Pencil, Trash2, Search } from 'lucide-react';
-import { EditUserDialog, DeleteUserDialog } from '@/features/user';
+import { Pencil, Trash2, Search, KeyRound, UserX, UserCheck } from 'lucide-react';
+import { EditUserDialog, DeleteUserDialog, ResetPasswordDialog, ActivateUserDialog, DeactivateUserDialog } from '@/features/user';
 import { GlobalRole } from '@/shared/types/entities';
+import { useAuthStore } from '@/shared/stores/authStore';
 import type { UserResponseDto } from '@/shared/types/dtos';
 
 interface GlobalUsersTableProps {
@@ -14,6 +15,8 @@ interface GlobalUsersTableProps {
 
 export function GlobalUsersTable({ users }: GlobalUsersTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const currentUser = useAuthStore((state) => state.user);
+  const isAdmin = currentUser?.globalRole === GlobalRole.Admin;
 
   const filteredUsers = users.filter(
     (user) =>
@@ -61,6 +64,7 @@ export function GlobalUsersTable({ users }: GlobalUsersTableProps) {
               <TableHead>Username</TableHead>
               <TableHead>Full Name</TableHead>
               <TableHead>Role</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>Created</TableHead>
               <TableHead>Last Login</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -69,19 +73,24 @@ export function GlobalUsersTable({ users }: GlobalUsersTableProps) {
           <TableBody>
             {filteredUsers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                   {searchQuery ? 'No users found matching your search.' : 'No users yet.'}
                 </TableCell>
               </TableRow>
             ) : (
               filteredUsers.map((user) => (
-                <TableRow key={user.userId}>
+                <TableRow key={user.userId} className={!user.isActive ? 'opacity-60' : undefined}>
                   <TableCell className="font-medium">
                     <code className="text-sm bg-muted px-2 py-1 rounded">{user.username}</code>
                   </TableCell>
                   <TableCell>{user.fullName}</TableCell>
                   <TableCell>
                     <Badge variant={getRoleBadgeVariant(user.globalRole)}>{getRoleLabel(user.globalRole)}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={user.isActive ? 'default' : 'secondary'}>
+                      {user.isActive ? 'Active' : 'Inactive'}
+                    </Badge>
                   </TableCell>
                   <TableCell>{formatDate(user.createdAt)}</TableCell>
                   <TableCell>
@@ -93,16 +102,40 @@ export function GlobalUsersTable({ users }: GlobalUsersTableProps) {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <EditUserDialog user={user}>
-                        <Button variant="ghost" size="sm">
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                      </EditUserDialog>
-                      <DeleteUserDialog user={user}>
-                        <Button variant="ghost" size="sm">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </DeleteUserDialog>
+                      {user.isActive ? (
+                        <>
+                          <EditUserDialog user={user}>
+                            <Button variant="ghost" size="sm">
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </EditUserDialog>
+                          {isAdmin && (
+                            <ResetPasswordDialog user={user}>
+                              <Button variant="ghost" size="sm">
+                                <KeyRound className="h-4 w-4" />
+                              </Button>
+                            </ResetPasswordDialog>
+                          )}
+                          <DeactivateUserDialog user={user}>
+                            <Button variant="ghost" size="sm">
+                              <UserX className="h-4 w-4" />
+                            </Button>
+                          </DeactivateUserDialog>
+                        </>
+                      ) : (
+                        <>
+                          <ActivateUserDialog user={user}>
+                            <Button variant="ghost" size="sm">
+                              <UserCheck className="h-4 w-4" />
+                            </Button>
+                          </ActivateUserDialog>
+                          <DeleteUserDialog user={user}>
+                            <Button variant="ghost" size="sm">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </DeleteUserDialog>
+                        </>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
