@@ -24,6 +24,15 @@ export function useFeatureFlags(projectId: string | undefined) {
   });
 }
 
+export function useFeatureFlagById(projectId: string | undefined, flagId: string | undefined) {
+  return useQuery({
+    queryKey: flagKeys.byProject(projectId!),
+    queryFn: () => flagApi.getFeatureFlags(projectId!),
+    select: (flags) => flags.find((f) => f.id === flagId),
+    enabled: !!projectId && !!flagId,
+  });
+}
+
 // Mutation hooks
 export function useCreateFeatureFlag() {
   const queryClient = useQueryClient();
