@@ -36,6 +36,7 @@ import { OPERATOR_OPTIONS, SEGMENT_OPERATORS } from './operatorConfig';
 import type { TargetingRule } from '@/entities/targeting-rule/model/types';
 import type { ProblemDetails } from '@/shared/types/auth';
 
+
 const conditionSchema = z.object({
   _id: z.string().optional(),
   attributeKey: z.string().min(1, 'Required').max(255),
@@ -101,7 +102,7 @@ export function RuleModal({ open, onOpenChange, flagValueId, projectId, rule }: 
             serveValue: data.serveValue,
             conditions: data.conditions.map((c) => ({
               attributeKey: c.attributeKey,
-              operator: c.operator,
+              operator: c.operator as ComparisonOperator,
               value: c.value,
             })),
           },
@@ -133,7 +134,7 @@ export function RuleModal({ open, onOpenChange, flagValueId, projectId, rule }: 
             await updateCondition.mutateAsync({
               conditionId: fc._id!,
               flagValueId,
-              data: { attributeKey: fc.attributeKey, operator: fc.operator, value: fc.value },
+              data: { attributeKey: fc.attributeKey, operator: fc.operator as ComparisonOperator, value: fc.value },
             });
           }
         }
@@ -142,7 +143,7 @@ export function RuleModal({ open, onOpenChange, flagValueId, projectId, rule }: 
           await createCondition.mutateAsync({
             ruleId: rule.id,
             flagValueId,
-            data: { attributeKey: fc.attributeKey, operator: fc.operator, value: fc.value },
+            data: { attributeKey: fc.attributeKey, operator: fc.operator as ComparisonOperator, value: fc.value },
           });
         }
 
@@ -151,7 +152,7 @@ export function RuleModal({ open, onOpenChange, flagValueId, projectId, rule }: 
       onOpenChange(false);
     } catch (error: any) {
       const pd = error.response?.data as ProblemDetails | undefined;
-      toast.error('targeting rule', isEdit ? 'update' : 'create', pd?.detail ?? pd?.title);
+      toast.error('targeting rule', isEdit ? 'update' : 'create', pd?.detail ?? pd?.title ?? undefined);
     }
   };
 
@@ -269,93 +270,80 @@ function ConditionRow({ index, form, segments, projectId, isPending, canRemove, 
   return (
     <div className="grid grid-cols-[1fr_auto_1fr_auto] gap-2 items-start">
       {/* Attribute Key */}
-      <div className="space-y-1">
-        <Controller
-          control={form.control}
-          name={`conditions.${index}.attributeKey`}
-          render={({ field, fieldState }) => (
-            <>
-              <Input placeholder="attributeKey" {...field} disabled={isPending} />
-              {fieldState.error && (
-                <p className="text-xs text-destructive">{fieldState.error.message}</p>
-              )}
-            </>
-          )}
-        />
-      </div>
+      <AttributeKeyInput
+        value={form.watch(`conditions.${index}.attributeKey`)}
+        onChange={(v) => form.setValue(`conditions.${index}.attributeKey`, v, { shouldValidate: true })}
+        disabled={isPending}
+        error={form.formState.errors.conditions?.[index]?.attributeKey?.message}
+      />
 
       {/* Operator */}
-      <div className="space-y-1">
-        <Controller
-          control={form.control}
-          name={`conditions.${index}.operator`}
-          render={({ field }) => (
-            <Select
-              value={String(field.value)}
-              onValueChange={(v) => {
-                field.onChange(Number(v));
-                // Reset value when switching to/from segment operator
-                form.setValue(`conditions.${index}.value`, '');
-              }}
-              disabled={isPending}
-            >
-              <SelectTrigger className="w-36">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {OPERATOR_OPTIONS.map((opt) => (
-                  <SelectItem key={opt.value} value={String(opt.value)}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        />
-      </div>
+      <Controller
+        control={form.control}
+        name={`conditions.${index}.operator`}
+        render={({ field }) => (
+          <Select
+            value={String(field.value)}
+            onValueChange={(v) => {
+              field.onChange(Number(v));
+              form.setValue(`conditions.${index}.value`, '');
+            }}
+            disabled={isPending}
+          >
+            <SelectTrigger className="w-36">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {OPERATOR_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={String(opt.value)}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+      />
 
-      {/* Value */}
-      <div className="space-y-1">
-        <Controller
-          control={form.control}
-          name={`conditions.${index}.value`}
-          render={({ field, fieldState }) => (
-            <>
-              {isSegmentOp ? (
-                <Select value={field.value} onValueChange={field.onChange} disabled={isPending}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select segment..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {segments.length === 0 ? (
-                      <div className="p-2 text-sm text-muted-foreground">
-                        No segments yet.{' '}
-                        <Link
-                          to={`/projects/${projectId}/segments`}
-                          className="underline hover:text-foreground"
-                        >
-                          Create one
-                        </Link>
-                      </div>
-                    ) : (
-                      segments.map((s) => (
-                        <SelectItem key={s.id} value={s.id}>
-                          {s.name}
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <Input placeholder="value" {...field} disabled={isPending} />
-              )}
-              {fieldState.error && (
-                <p className="text-xs text-destructive">{fieldState.error.message}</p>
-              )}
-            </>
-          )}
-        />
-      </div>
+      {/* Value — text input or segment dropdown */}
+      <Controller
+        control={form.control}
+        name={`conditions.${index}.value`}
+        render={({ field, fieldState }) => (
+          <div className="space-y-1">
+            {isSegmentOp ? (
+              <Select value={field.value} onValueChange={field.onChange} disabled={isPending}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select segment..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {segments.length === 0 ? (
+                    <div className="p-2 text-sm text-muted-foreground">
+                      No segments yet.{' '}
+                      <Link
+                        to={`/projects/${projectId}/segments`}
+                        className="underline hover:text-foreground"
+                      >
+                        Create one
+                      </Link>
+                    </div>
+                  ) : (
+                    segments.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input placeholder="value" {...field} disabled={isPending} />
+            )}
+            {fieldState.error && (
+              <p className="text-xs text-destructive">{fieldState.error.message}</p>
+            )}
+          </div>
+        )}
+      />
 
       {/* Remove */}
       <Button
@@ -368,6 +356,27 @@ function ConditionRow({ index, form, segments, projectId, isPending, canRemove, 
       >
         <X className="h-4 w-4" />
       </Button>
+    </div>
+  );
+}
+
+interface AttributeKeyInputProps {
+  value: string;
+  onChange: (v: string) => void;
+  disabled: boolean;
+  error?: string;
+}
+
+function AttributeKeyInput({ value, onChange, disabled, error }: AttributeKeyInputProps) {
+  return (
+    <div className="space-y-1">
+      <Input
+        placeholder="targetingKey"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
+      />
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
 }

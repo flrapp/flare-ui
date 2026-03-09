@@ -4,7 +4,6 @@ export const OPERATOR_LABELS: Record<number, string> = {
   [ComparisonOperator.Equals]: 'equals',
   [ComparisonOperator.NotEquals]: 'not equals',
   [ComparisonOperator.Contains]: 'contains',
-  [ComparisonOperator.NotContains]: 'not contains',
   [ComparisonOperator.In]: 'in',
   [ComparisonOperator.NotIn]: 'not in',
   [ComparisonOperator.StartsWith]: 'starts with',

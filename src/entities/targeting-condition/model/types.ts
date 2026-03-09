@@ -2,15 +2,14 @@ export const ComparisonOperator = {
   Equals: 0,
   NotEquals: 1,
   Contains: 2,
-  NotContains: 3,
-  In: 4,
-  NotIn: 5,
-  StartsWith: 6,
-  EndsWith: 7,
-  GreaterThan: 8,
-  LessThan: 9,
-  InSegment: 10,
-  NotInSegment: 11,
+  In: 3,
+  NotIn: 4,
+  StartsWith: 5,
+  EndsWith: 6,
+  GreaterThan: 7,
+  LessThan: 8,
+  InSegment: 9,
+  NotInSegment: 10,
 } as const;
 
 export type ComparisonOperator = typeof ComparisonOperator[keyof typeof ComparisonOperator];
