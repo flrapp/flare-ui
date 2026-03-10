@@ -52,7 +52,7 @@ export function TargetingRuleCard({
       toast.success('targeting rule', 'deleted');
     } catch (error: any) {
       const pd = error.response?.data as ProblemDetails | undefined;
-      toast.error('targeting rule', 'delete', pd?.detail ?? pd?.title);
+      toast.error('targeting rule', 'delete', pd?.detail ?? pd?.title ?? undefined);
     }
   };
 

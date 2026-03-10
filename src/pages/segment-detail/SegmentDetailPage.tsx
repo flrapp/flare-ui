@@ -86,7 +86,7 @@ export function SegmentDetailPage() {
       toast.success('segment', 'updated');
     } catch (error: any) {
       const pd = error.response?.data as ProblemDetails | undefined;
-      toast.error('segment', 'update', pd?.detail ?? pd?.title);
+      toast.error('segment', 'update', pd?.detail ?? pd?.title ?? undefined);
     }
   };
 

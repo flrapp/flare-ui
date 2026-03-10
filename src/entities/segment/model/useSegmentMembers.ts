@@ -29,7 +29,7 @@ export function useAddSegmentMembers() {
       segmentId: string;
       targetingKeys: string[];
     }) => segmentMemberApi.addSegmentMembers(segmentId, targetingKeys),
-    onSuccess: (_data, { segmentId }) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: segmentMemberKeys.lists() });
       // Invalidate all segment lists so memberCount stays in sync
       queryClient.invalidateQueries({ queryKey: segmentKeys.lists() });
@@ -43,7 +43,7 @@ export function useRemoveSegmentMember() {
   return useMutation({
     mutationFn: ({ segmentId, memberKey }: { segmentId: string; memberKey: string }) =>
       segmentMemberApi.removeSegmentMember(segmentId, memberKey),
-    onSuccess: (_data, { segmentId }) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: segmentMemberKeys.lists() });
       queryClient.invalidateQueries({ queryKey: segmentKeys.lists() });
     },

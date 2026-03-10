@@ -35,7 +35,7 @@ export function DeleteSegmentDialog({
       onOpenChange(false);
     } catch (error: any) {
       const pd = error.response?.data as ProblemDetails | undefined;
-      toast.error('segment', 'delete', pd?.detail ?? pd?.title);
+      toast.error('segment', 'delete', pd?.detail ?? pd?.title ?? undefined);
     }
   };
 

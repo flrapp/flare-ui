@@ -42,7 +42,7 @@ export function AddMembersModal({ segmentId, open, onOpenChange }: AddMembersMod
       onOpenChange(false);
     } catch (error: any) {
       const pd = error.response?.data as ProblemDetails | undefined;
-      toast.error('members', 'add', pd?.detail ?? pd?.title);
+      toast.error('members', 'add', pd?.detail ?? pd?.title ?? undefined);
     }
   };
 

@@ -42,7 +42,7 @@ function RemoveMemberButton({
       toast.info(`Removed "${member.targetingKey}" from segment.`);
     } catch (error: any) {
       const pd = error.response?.data as ProblemDetails | undefined;
-      toast.error('member', 'remove', pd?.detail ?? pd?.title);
+      toast.error('member', 'remove', pd?.detail ?? pd?.title ?? undefined);
     }
   };
 

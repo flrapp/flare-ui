@@ -45,7 +45,7 @@ export function TargetingRulesSection({
       await reorder.mutateAsync({ flagValueId, data: { ruleIds: newOrder } });
     } catch (error: any) {
       const pd = error.response?.data as ProblemDetails | undefined;
-      toast.error('rules', 'reorder', pd?.detail ?? pd?.title);
+      toast.error('rules', 'reorder', pd?.detail ?? pd?.title ?? undefined);
     }
   };
 
@@ -57,7 +57,7 @@ export function TargetingRulesSection({
       await reorder.mutateAsync({ flagValueId, data: { ruleIds: newOrder } });
     } catch (error: any) {
       const pd = error.response?.data as ProblemDetails | undefined;
-      toast.error('rules', 'reorder', pd?.detail ?? pd?.title);
+      toast.error('rules', 'reorder', pd?.detail ?? pd?.title ?? undefined);
     }
   };
 

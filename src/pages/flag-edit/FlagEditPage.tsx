@@ -99,7 +99,7 @@ export function FlagEditPage() {
       toast.success('feature flag', 'updated');
     } catch (error: any) {
       const pd = error.response?.data as ProblemDetails | undefined;
-      toast.error('feature flag', 'update', pd?.detail ?? pd?.title);
+      toast.error('feature flag', 'update', pd?.detail ?? pd?.title ?? undefined);
     }
   };
 
@@ -112,7 +112,7 @@ export function FlagEditPage() {
       toast.info(`Default value ${checked ? 'enabled' : 'disabled'} for ${flagValue.scopeName}`);
     } catch (error: any) {
       const pd = error.response?.data as ProblemDetails | undefined;
-      toast.error('flag value', 'update', pd?.detail ?? pd?.title);
+      toast.error('flag value', 'update', pd?.detail ?? pd?.title ?? undefined);
     }
   };
 

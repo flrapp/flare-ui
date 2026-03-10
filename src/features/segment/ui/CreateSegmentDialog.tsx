@@ -66,7 +66,7 @@ export function CreateSegmentDialog({ projectId, open, onOpenChange }: CreateSeg
       form.reset();
     } catch (error: any) {
       const pd = error.response?.data as ProblemDetails | undefined;
-      toast.error('segment', 'create', pd?.detail ?? pd?.title);
+      toast.error('segment', 'create', pd?.detail ?? pd?.title ?? undefined);
     }
   };
 
