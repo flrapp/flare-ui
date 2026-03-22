@@ -44,7 +44,7 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Flare</CardTitle>
@@ -91,7 +91,7 @@ export function LoginPage() {
                 )}
               />
               {error && (
-                <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">
+                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
                   {error}
                 </div>
               )}

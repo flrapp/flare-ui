@@ -127,7 +127,7 @@ export function FeatureFlagsTable({
             <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="sticky left-0 bg-background z-10 min-w-62.5">
+                <TableHead className="sticky left-0 bg-card z-10 min-w-62.5">
                   Feature Flag
                 </TableHead>
                 {scopes.map((scope) => (
@@ -148,7 +148,7 @@ export function FeatureFlagsTable({
                   </TableHead>
                 ))}
                 {canManageFlags && (
-                  <TableHead className="text-right sticky right-0 bg-background z-10 min-w-25">
+                  <TableHead className="text-right sticky right-0 bg-card z-10 min-w-25">
                     Actions
                   </TableHead>
                 )}
@@ -157,7 +157,7 @@ export function FeatureFlagsTable({
             <TableBody>
               {flags.map((flag) => (
                 <TableRow key={flag.id}>
-                  <TableCell className="sticky left-0 bg-background z-10">
+                  <TableCell className="sticky left-0 bg-card z-10">
                     <div className="space-y-1">
                       <div className="font-medium">
                         {flag.description ? (
@@ -209,7 +209,7 @@ export function FeatureFlagsTable({
                     );
                   })}
                   {canManageFlags && (
-                    <TableCell className="text-right sticky right-0 bg-background z-10">
+                    <TableCell className="text-right sticky right-0 bg-card z-10">
                       <div className="flex justify-end gap-2">
                         {onEditFlag && (
                           <Button variant="ghost" size="sm" onClick={() => onEditFlag(flag)}>

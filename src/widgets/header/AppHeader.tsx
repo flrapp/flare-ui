@@ -17,12 +17,12 @@ export function AppHeader() {
   const isAdmin = user?.globalRole === GlobalRole.Admin;
 
   return (
-    <header className="bg-white border-b border-gray-200">
+    <header className="bg-card border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-6">
             <Link to="/projects">
-              <h1 className="text-xl font-bold text-gray-900 hover:text-gray-700">Flare</h1>
+              <h1 className="text-xl font-bold text-foreground hover:text-foreground/70">Flare</h1>
             </Link>
             {isAdmin && (
               <Link to="/admin/users">
@@ -35,7 +35,7 @@ export function AppHeader() {
           </div>
           <div className="flex items-center gap-4">
             {user && (
-              <div className="flex items-center gap-2 text-sm text-gray-700">
+              <div className="flex items-center gap-2 text-sm text-foreground">
                 <span className="font-medium">{user.fullName}</span>
                 {isAdmin && <Badge>Admin</Badge>}
               </div>
