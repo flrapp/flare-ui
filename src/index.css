@@ -55,7 +55,7 @@ body {
     --ring: 25 95% 53.1%;
 
     /* --- Border radius --- */
-    --radius: 0.5rem;
+    --radius: 0.375rem;
 
     /* --- Chart colors --- */
     --chart-1: 25 95% 53.1%;
