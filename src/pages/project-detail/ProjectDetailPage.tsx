@@ -10,7 +10,8 @@ import { DeleteProjectDialog } from '@/features/project/ui/DeleteProjectDialog';
 import { FeatureFlagsTable } from '@/widgets/flags/FeatureFlagsTable';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { PageLoader } from '@/shared/ui/PageLoader';
+import { Skeleton } from '@/shared/ui/skeleton';
+import { TableSkeleton } from '@/shared/ui/TableSkeleton';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import {
   DropdownMenu,
@@ -54,7 +55,29 @@ export function ProjectDetailPage() {
   const [deletingFlag, setDeletingFlag] = useState<FeatureFlag | null>(null);
 
   if (isLoading || permissionsLoading) {
-    return <PageLoader message="Loading project..." />;
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="mx-auto max-w-7xl p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-36" />
+              <Skeleton className="h-9 w-56" />
+              <Skeleton className="h-4 w-72" />
+            </div>
+            <Skeleton className="h-9 w-28" />
+          </div>
+          <div className="border rounded-lg">
+            <div className="flex items-center justify-between p-6 pb-4">
+              <Skeleton className="h-5 w-36" />
+              <Skeleton className="h-9 w-32" />
+            </div>
+            <div className="px-6 pb-6">
+              <TableSkeleton rows={5} columns={5} />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (error || !project) {

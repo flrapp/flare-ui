@@ -14,6 +14,7 @@ import {
 } from '@/shared/ui/table';
 import { Badge } from '@/shared/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs';
+import { Skeleton } from '@/shared/ui/skeleton';
 import { TableSkeleton } from '@/shared/ui/TableSkeleton';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { EmptyState } from '@/shared/ui/EmptyState';
@@ -28,8 +29,20 @@ export function ProjectsPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="mx-auto max-w-7xl p-6">
-          <TableSkeleton rows={5} columns={5} />
+        <div className="mx-auto max-w-7xl p-6 space-y-6">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-9 w-32" />
+            <Skeleton className="h-9 w-32" />
+          </div>
+          <div className="border rounded-lg">
+            <div className="flex items-center justify-between p-6 pb-4">
+              <Skeleton className="h-5 w-28" />
+              <Skeleton className="h-9 w-44" />
+            </div>
+            <div className="px-6 pb-6">
+              <TableSkeleton rows={5} columns={4} />
+            </div>
+          </div>
         </div>
       </div>
     );

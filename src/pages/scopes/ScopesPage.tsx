@@ -3,7 +3,8 @@ import { useProject } from '@/entities/project/model/useProjects';
 import { usePermissions } from '@/shared/hooks/usePermissions';
 import { ProjectPermission } from '@/shared/types/entities';
 import { ScopesList } from '@/widgets/scopes/ScopesList';
-import { PageLoader } from '@/shared/ui/PageLoader';
+import { Skeleton } from '@/shared/ui/skeleton';
+import { TableSkeleton } from '@/shared/ui/TableSkeleton';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { ChevronLeft } from 'lucide-react';
 
@@ -13,7 +14,18 @@ export function ScopesPage() {
   const { canPerformProjectAction, isLoading: permissionsLoading } = usePermissions(projectId);
 
   if (isLoading || permissionsLoading) {
-    return <PageLoader message="Loading scopes..." />;
+    return (
+      <div className="p-8">
+        <div className="mb-6">
+          <Skeleton className="h-4 w-36 mb-4" />
+          <div className="space-y-1.5">
+            <Skeleton className="h-9 w-28" />
+            <Skeleton className="h-4 w-56" />
+          </div>
+        </div>
+        <TableSkeleton rows={5} columns={3} />
+      </div>
+    );
   }
 
   if (error || !project || !projectId) {

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/shared/ui/button';
 import { Plus } from 'lucide-react';
+import { Skeleton } from '@/shared/ui/skeleton';
 import { TableSkeleton } from '@/shared/ui/TableSkeleton';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { EmptyState } from '@/shared/ui/EmptyState';
@@ -36,6 +37,16 @@ export function GlobalUsersPage() {
   if (isLoading) {
     return (
       <div className="max-w-5xl mx-auto p-8">
+        <div className="flex items-start justify-between mb-6">
+          <div className="space-y-1.5">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-9 w-44" />
+            <Skeleton className="h-9 w-32" />
+          </div>
+        </div>
         <TableSkeleton rows={5} columns={4} />
       </div>
     );

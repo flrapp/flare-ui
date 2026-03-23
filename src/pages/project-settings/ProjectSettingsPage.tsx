@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { Textarea } from '@/shared/ui/textarea';
-import { PageLoader } from '@/shared/ui/PageLoader';
+import { Skeleton } from '@/shared/ui/skeleton';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import {
   Dialog,
@@ -79,7 +79,39 @@ export function ProjectSettingsPage() {
   }, [project, form]);
 
   if (isLoading || permissionsLoading) {
-    return <PageLoader message="Loading settings..." />;
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="mx-auto max-w-2xl p-6 space-y-6">
+          <div className="space-y-1">
+            <Skeleton className="h-8 w-32" />
+            <Skeleton className="h-6 w-40" />
+          </div>
+          <div className="border rounded-lg p-5 space-y-4">
+            <Skeleton className="h-5 w-32" />
+            <div className="space-y-1.5">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-9 w-full" />
+            </div>
+            <div className="space-y-1.5">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-9 w-full" />
+            </div>
+            <div className="space-y-1.5">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-20 w-full" />
+            </div>
+            <div className="flex justify-end">
+              <Skeleton className="h-9 w-28" />
+            </div>
+          </div>
+          <div className="border rounded-lg p-5 space-y-4">
+            <Skeleton className="h-5 w-16" />
+            <Skeleton className="h-9 w-full" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (error || !project) {

@@ -10,7 +10,7 @@ import { useFeatureFlagById, useUpdateFeatureFlag, useUpdateFeatureFlagValue } f
 import { usePermissions } from '@/shared/hooks/usePermissions';
 import { ScopePermission, ProjectPermission } from '@/shared/types/entities';
 import { canPerformScopeAction } from '@/shared/lib/permissions';
-import { PageLoader } from '@/shared/ui/PageLoader';
+import { Skeleton } from '@/shared/ui/skeleton';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
@@ -72,7 +72,45 @@ export function FlagEditPage() {
   }, [flag, form]);
 
   if (flagLoading || permissionsLoading) {
-    return <PageLoader message="Loading feature flag..." />;
+    return (
+      <div className="p-8 max-w-5xl mx-auto space-y-6">
+        <Skeleton className="h-4 w-32" />
+        <div className="space-y-1">
+          <Skeleton className="h-8 w-56" />
+          <Skeleton className="h-4 w-32" />
+        </div>
+        <div className="border rounded-lg p-5 space-y-4">
+          <Skeleton className="h-5 w-28" />
+          <div className="space-y-1.5">
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-9 w-full" />
+          </div>
+          <div className="space-y-1.5">
+            <Skeleton className="h-4 w-10" />
+            <Skeleton className="h-9 w-full" />
+          </div>
+          <div className="space-y-1.5">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-9 w-full" />
+          </div>
+          <div className="flex justify-end">
+            <Skeleton className="h-9 w-28" />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <Skeleton className="h-9 w-24" />
+            <Skeleton className="h-9 w-24" />
+          </div>
+          <div className="border rounded-lg p-5 space-y-4">
+            <Skeleton className="h-14 w-full rounded-lg" />
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-9 w-full" />
+            <Skeleton className="h-9 w-full" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (flagError || !flag || !flagId || !projectId) {

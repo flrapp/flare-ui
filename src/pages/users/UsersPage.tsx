@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/shared/ui/button';
 import { Plus, ChevronLeft } from 'lucide-react';
+import { Skeleton } from '@/shared/ui/skeleton';
 import { TableSkeleton } from '@/shared/ui/TableSkeleton';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { EmptyState } from '@/shared/ui/EmptyState';
@@ -23,6 +24,16 @@ export function UsersPage() {
   if (isLoadingProject || isLoadingUsers) {
     return (
       <div className="p-8">
+        <div className="mb-6">
+          <Skeleton className="h-8 w-32" />
+        </div>
+        <div className="flex items-center justify-between mb-6">
+          <div className="space-y-1.5">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <Skeleton className="h-9 w-28" />
+        </div>
         <TableSkeleton rows={5} columns={4} />
       </div>
     );
