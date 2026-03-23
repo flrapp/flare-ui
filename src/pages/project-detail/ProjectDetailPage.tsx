@@ -113,7 +113,7 @@ export function ProjectDetailPage() {
         <PageHeader
           title={project.name}
           subtitle={project.description || 'No description provided'}
-          backLink={{ href: '/projects', label: 'Back to Projects' }}
+          backTo="/projects"
           actions={
             <div className="flex items-center gap-3">
               {canManageFlags && (

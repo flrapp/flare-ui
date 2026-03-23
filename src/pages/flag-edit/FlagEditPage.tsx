@@ -164,7 +164,7 @@ export function FlagEditPage() {
       <PageHeader
         title={flag.name}
         subtitle={<span className="font-mono">{flag.key}</span>}
-        backLink={{ href: `/projects/${projectId}`, label: 'Back to Project' }}
+        backTo={`/projects/${projectId}`}
         actions={
           <>
             <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>

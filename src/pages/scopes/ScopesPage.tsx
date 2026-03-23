@@ -47,7 +47,7 @@ export function ScopesPage() {
       <PageHeader
         title="Scopes"
         subtitle={`Manage scopes for ${project.name}`}
-        backLink={{ href: `/projects/${projectId}`, label: `Back to ${project.name}` }}
+        backTo={`/projects/${projectId}`}
       />
       <ScopesList projectId={projectId} canManage={canManageScopes} />
     </div>

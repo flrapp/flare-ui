@@ -124,7 +124,7 @@ export function SegmentDetailPage() {
       <div className="mx-auto max-w-2xl">
       <PageHeader
         title={segment.name}
-        backLink={{ href: `/projects/${projectId}/segments`, label: 'Back to Segments' }}
+        backTo={`/projects/${projectId}/segments`}
         actions={
           canManage ? (
             <Button variant="outline" size="sm" onClick={() => setDeleteOpen(true)} className="border-destructive text-destructive hover:bg-destructive/10">

@@ -1,34 +1,30 @@
-import { ChevronLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { ReactNode } from 'react';
-
-interface BackLink {
-  href: string;
-  label: string;
-}
 
 interface PageHeaderProps {
   title: string;
   subtitle?: ReactNode;
-  backLink?: BackLink;
+  backTo?: string;
   actions?: ReactNode;
 }
 
-export function PageHeader({ title, subtitle, backLink, actions }: PageHeaderProps) {
+export function PageHeader({ title, subtitle, backTo, actions }: PageHeaderProps) {
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          {backLink && (
-            <Link
-              to={backLink.href}
-              className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              {backLink.label}
-            </Link>
-          )}
-          <h1 className="text-xl font-semibold">{title}</h1>
+          <div className="flex items-center gap-2">
+            {backTo && (
+              <Link
+                to={backTo}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Link>
+            )}
+            <h1 className="text-xl font-semibold">{title}</h1>
+          </div>
           {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
         </div>
         {actions && (

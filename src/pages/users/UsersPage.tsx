@@ -58,7 +58,7 @@ export function UsersPage() {
         <PageHeader
           title="Team Members"
           subtitle={`${project?.name} - Manage project team and permissions`}
-          backLink={{ href: `/projects/${projectId}`, label: 'Back to Project' }}
+          backTo={`/projects/${projectId}`}
         />
         <EmptyState
           icon={<UserPlus className="h-16 w-16" />}

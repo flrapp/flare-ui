@@ -47,7 +47,7 @@ export function SegmentsPage() {
       <PageHeader
         title="Segments"
         subtitle={`Manage segments for ${project.name}`}
-        backLink={{ href: `/projects/${projectId}`, label: `Back to ${project.name}` }}
+        backTo={`/projects/${projectId}`}
       />
       <SegmentsList projectId={projectId} canManage={canManage} />
     </div>

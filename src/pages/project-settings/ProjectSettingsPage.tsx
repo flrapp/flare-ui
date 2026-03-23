@@ -171,7 +171,7 @@ export function ProjectSettingsPage() {
       <div className="mx-auto max-w-2xl p-6">
         <PageHeader
           title="Project Settings"
-          backLink={{ href: `/projects/${project.id}`, label: 'Back to Project' }}
+          backTo={`/projects/${project.id}`}
         />
 
         <div className="space-y-6">
