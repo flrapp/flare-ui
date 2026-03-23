@@ -1,6 +1,7 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Button } from '@/shared/ui/button';
-import { Plus, ChevronLeft } from 'lucide-react';
+import { PageHeader } from '@/shared/ui/page-header';
+import { Plus } from 'lucide-react';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { TableSkeleton } from '@/shared/ui/TableSkeleton';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
@@ -54,22 +55,11 @@ export function UsersPage() {
   if (!users || users.length === 0) {
     return (
       <div className="p-8">
-        <div className="mb-6">
-          <Link to={`/projects/${projectId}`}>
-            <Button variant="ghost" size="sm" className="gap-2">
-              <ChevronLeft className="h-4 w-4" />
-              Back to Project
-            </Button>
-          </Link>
-        </div>
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold">Team Members</h1>
-            <p className="text-muted-foreground mt-1">
-              {project?.name} - Manage project team and permissions
-            </p>
-          </div>
-        </div>
+        <PageHeader
+          title="Team Members"
+          subtitle={`${project?.name} - Manage project team and permissions`}
+          backLink={{ href: `/projects/${projectId}`, label: 'Back to Project' }}
+        />
         <EmptyState
           icon={<UserPlus className="h-16 w-16" />}
           title="No team members yet"
@@ -91,30 +81,21 @@ export function UsersPage() {
 
   return (
     <div className="p-8">
-      <div className="mb-6">
-        <Link to={`/projects/${projectId}`}>
-          <Button variant="ghost" size="sm" className="gap-2">
-            <ChevronLeft className="h-4 w-4" />
-            Back to Project
-          </Button>
-        </Link>
-      </div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Team Members</h1>
-          <p className="text-muted-foreground mt-1">
-            {project?.name} - {users.length} {users.length === 1 ? 'member' : 'members'}
-          </p>
-        </div>
-        {canManageUsers && (
-          <InviteUserDialog projectId={projectId!}>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Invite User
-            </Button>
-          </InviteUserDialog>
-        )}
-      </div>
+      <PageHeader
+        title="Team Members"
+        subtitle={`${project?.name} - ${users.length} ${users.length === 1 ? 'member' : 'members'}`}
+        backLink={{ href: `/projects/${projectId}`, label: 'Back to Project' }}
+        actions={
+          canManageUsers ? (
+            <InviteUserDialog projectId={projectId!}>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Invite User
+              </Button>
+            </InviteUserDialog>
+          ) : undefined
+        }
+      />
       <ProjectUsersTable projectId={projectId!} users={users} canManageUsers={canManageUsers} />
     </div>
   );

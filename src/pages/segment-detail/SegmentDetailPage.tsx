@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ChevronLeft, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { toast } from '@/shared/lib/toast';
 import { useSegmentById, useUpdateSegment } from '@/entities/segment';
 import { usePermissions } from '@/shared/hooks/usePermissions';
@@ -13,6 +13,7 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { TableSkeleton } from '@/shared/ui/TableSkeleton';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { PageHeader } from '@/shared/ui/page-header';
 import { Button } from '@/shared/ui/button';
 import {
   Form,
@@ -120,24 +121,20 @@ export function SegmentDetailPage() {
 
   return (
     <div className="p-8">
-      <Link
-        to={`/projects/${projectId}/segments`}
-        className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ChevronLeft className="h-4 w-4 mr-1" />
-        Back to Segments
-      </Link>
-
-      <div className="mx-auto max-w-2xl space-y-6 mt-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">{segment.name}</h1>
-        {canManage && (
-          <Button variant="outline" size="sm" onClick={() => setDeleteOpen(true)} className="border-destructive text-destructive hover:bg-destructive/10">
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete
-          </Button>
-        )}
-      </div>
+      <div className="mx-auto max-w-2xl">
+      <PageHeader
+        title={segment.name}
+        backLink={{ href: `/projects/${projectId}/segments`, label: 'Back to Segments' }}
+        actions={
+          canManage ? (
+            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(true)} className="border-destructive text-destructive hover:bg-destructive/10">
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
+          ) : undefined
+        }
+      />
+      <div className="space-y-6">
 
       {/* Edit form */}
       <Card>
@@ -203,6 +200,7 @@ export function SegmentDetailPage() {
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
       />
+      </div>
       </div>
     </div>
   );

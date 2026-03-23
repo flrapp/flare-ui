@@ -1,12 +1,12 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useProject } from '@/entities/project/model/useProjects';
 import { usePermissions } from '@/shared/hooks/usePermissions';
 import { ProjectPermission } from '@/shared/types/entities';
 import { SegmentsList } from '@/widgets/segments/SegmentsList';
+import { PageHeader } from '@/shared/ui/page-header';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { TableSkeleton } from '@/shared/ui/TableSkeleton';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
-import { ChevronLeft } from 'lucide-react';
 
 export function SegmentsPage() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -44,20 +44,11 @@ export function SegmentsPage() {
 
   return (
     <div className="p-8">
-      <div className="mb-6">
-        <Link
-          to={`/projects/${projectId}`}
-          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
-        >
-          <ChevronLeft className="h-4 w-4 mr-1" />
-          Back to {project.name}
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold">Segments</h1>
-          <p className="text-muted-foreground mt-1">Manage segments for {project.name}</p>
-        </div>
-      </div>
-
+      <PageHeader
+        title="Segments"
+        subtitle={`Manage segments for ${project.name}`}
+        backLink={{ href: `/projects/${projectId}`, label: `Back to ${project.name}` }}
+      />
       <SegmentsList projectId={projectId} canManage={canManage} />
     </div>
   );

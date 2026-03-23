@@ -10,6 +10,7 @@ import { DeleteProjectDialog } from '@/features/project/ui/DeleteProjectDialog';
 import { FeatureFlagsTable } from '@/widgets/flags/FeatureFlagsTable';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { PageHeader } from '@/shared/ui/page-header';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { TableSkeleton } from '@/shared/ui/TableSkeleton';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
@@ -25,7 +26,6 @@ import {
   useUnarchiveProject,
 } from '@/entities/project/model/useProjects';
 import {
-  ChevronLeft,
   Archive,
   ArchiveRestore,
   Settings,
@@ -113,91 +113,81 @@ export function ProjectDetailPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-7xl p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Button variant="ghost" size="sm" className="gap-2" asChild>
-                <Link to="/projects">
-                  <ChevronLeft className="size-4" />
-                  Back to Projects
-                </Link>
-              </Button>
-            </div>
-            <h1 className="text-xl font-semibold">{project.name}</h1>
-            <p className="text-sm text-muted-foreground">
-              {project.description || 'No description provided'}
-            </p>
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                <Settings className="size-4 mr-2" />
-                Settings
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem asChild>
-                <Link to={`/projects/${project.id}/users`}>
-                  <Users className="size-4 mr-2" />
-                  Team Management
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to={`/projects/${project.id}/scopes`}>
-                  <Shield className="size-4 mr-2" />
-                  Scope Management
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to={`/projects/${project.id}/segments`}>
-                  <Layers className="size-4 mr-2" />
-                  Segments
-                </Link>
-              </DropdownMenuItem>
-              {canManageSettings && <DropdownMenuSeparator />}
-              {canManageSettings && (
+      <div className="mx-auto max-w-7xl p-6">
+        <PageHeader
+          title={project.name}
+          subtitle={project.description || 'No description provided'}
+          backLink={{ href: '/projects', label: 'Back to Projects' }}
+          actions={
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                  <Settings className="size-4 mr-2" />
+                  Settings
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem asChild>
-                  <Link to={`/projects/${project.id}/settings`}>
-                    <Settings className="size-4 mr-2" />
-                    Project Settings
+                  <Link to={`/projects/${project.id}/users`}>
+                    <Users className="size-4 mr-2" />
+                    Team Management
                   </Link>
                 </DropdownMenuItem>
-              )}
-              {canManageSettings && <DropdownMenuSeparator />}
-              {canManageSettings && (
-                <DropdownMenuItem
-                  onClick={handleArchiveToggle}
-                  disabled={archiveProject.isPending || unarchiveProject.isPending}
-                  className={project.isArchived ? '' : 'text-destructive'}
-                >
-                  {project.isArchived ? (
-                    <>
-                      <ArchiveRestore className="size-4 mr-2" />
-                      Unarchive Project
-                    </>
-                  ) : (
-                    <>
-                      <Archive className="size-4 mr-2" />
-                      Archive Project
-                    </>
-                  )}
+                <DropdownMenuItem asChild>
+                  <Link to={`/projects/${project.id}/scopes`}>
+                    <Shield className="size-4 mr-2" />
+                    Scope Management
+                  </Link>
                 </DropdownMenuItem>
-              )}
-              {canManageSettings && project.isArchived && <DropdownMenuSeparator />}
-              {canManageSettings && project.isArchived && (
-                <DropdownMenuItem
-                  onClick={() => setShowDeleteProjectDialog(true)}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <Trash2 className="size-4 mr-2" />
-                  Delete Project
+                <DropdownMenuItem asChild>
+                  <Link to={`/projects/${project.id}/segments`}>
+                    <Layers className="size-4 mr-2" />
+                    Segments
+                  </Link>
                 </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+                {canManageSettings && <DropdownMenuSeparator />}
+                {canManageSettings && (
+                  <DropdownMenuItem asChild>
+                    <Link to={`/projects/${project.id}/settings`}>
+                      <Settings className="size-4 mr-2" />
+                      Project Settings
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                {canManageSettings && <DropdownMenuSeparator />}
+                {canManageSettings && (
+                  <DropdownMenuItem
+                    onClick={handleArchiveToggle}
+                    disabled={archiveProject.isPending || unarchiveProject.isPending}
+                    className={project.isArchived ? '' : 'text-destructive'}
+                  >
+                    {project.isArchived ? (
+                      <>
+                        <ArchiveRestore className="size-4 mr-2" />
+                        Unarchive Project
+                      </>
+                    ) : (
+                      <>
+                        <Archive className="size-4 mr-2" />
+                        Archive Project
+                      </>
+                    )}
+                  </DropdownMenuItem>
+                )}
+                {canManageSettings && project.isArchived && <DropdownMenuSeparator />}
+                {canManageSettings && project.isArchived && (
+                  <DropdownMenuItem
+                    onClick={() => setShowDeleteProjectDialog(true)}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="size-4 mr-2" />
+                    Delete Project
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          }
+        />
 
         {/* Feature Toggles Table */}
         <Card>

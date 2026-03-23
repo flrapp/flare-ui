@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useProjects } from '@/entities/project/model/useProjects';
 import { CreateProjectDialog } from '@/features/project/ui/CreateProjectDialog';
 import { Button } from '@/shared/ui/button';
+import { PageHeader } from '@/shared/ui/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import {
   Table,
@@ -19,6 +20,7 @@ import { TableSkeleton } from '@/shared/ui/TableSkeleton';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { FolderOpen, Plus } from 'lucide-react';
+
 import type { Project } from '@/shared/types';
 
 export function ProjectsPage() {
@@ -75,19 +77,18 @@ export function ProjectsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-7xl p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-bold">Projects</h1>
-          </div>
-          <CreateProjectDialog>
-            <Button>
-              <Plus className="size-4 mr-2" />
-              New Project
-            </Button>
-          </CreateProjectDialog>
-        </div>
+      <div className="mx-auto max-w-7xl p-6">
+        <PageHeader
+          title="Projects"
+          actions={
+            <CreateProjectDialog>
+              <Button>
+                <Plus className="size-4 mr-2" />
+                New Project
+              </Button>
+            </CreateProjectDialog>
+          }
+        />
 
         {/* Projects Card */}
         <Card>

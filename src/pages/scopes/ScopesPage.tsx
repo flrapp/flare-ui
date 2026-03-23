@@ -1,12 +1,12 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useProject } from '@/entities/project/model/useProjects';
 import { usePermissions } from '@/shared/hooks/usePermissions';
 import { ProjectPermission } from '@/shared/types/entities';
 import { ScopesList } from '@/widgets/scopes/ScopesList';
+import { PageHeader } from '@/shared/ui/page-header';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { TableSkeleton } from '@/shared/ui/TableSkeleton';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
-import { ChevronLeft } from 'lucide-react';
 
 export function ScopesPage() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -44,22 +44,11 @@ export function ScopesPage() {
 
   return (
     <div className="p-8">
-      <div className="mb-6">
-        <Link
-          to={`/projects/${projectId}`}
-          className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
-        >
-          <ChevronLeft className="h-4 w-4 mr-1" />
-          Back to {project.name}
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold">Scopes</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage scopes for {project.name}
-          </p>
-        </div>
-      </div>
-
+      <PageHeader
+        title="Scopes"
+        subtitle={`Manage scopes for ${project.name}`}
+        backLink={{ href: `/projects/${projectId}`, label: `Back to ${project.name}` }}
+      />
       <ScopesList projectId={projectId} canManage={canManageScopes} />
     </div>
   );

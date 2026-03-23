@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,6 +10,7 @@ import { usePermissions } from '@/shared/hooks/usePermissions';
 import { ProjectPermission } from '@/shared/types/entities';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { PageHeader } from '@/shared/ui/page-header';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { Textarea } from '@/shared/ui/textarea';
@@ -23,7 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/shared/ui/dialog';
-import { ChevronLeft, Eye, EyeOff, Copy, RefreshCw } from 'lucide-react';
+import { Eye, EyeOff, Copy, RefreshCw } from 'lucide-react';
 import type { ProblemDetails } from '@/shared/types';
 
 const updateProjectSchema = z.object({
@@ -167,18 +168,13 @@ export function ProjectSettingsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-2xl p-6 space-y-6">
-        {/* Header */}
-        <div className="space-y-1">
-          <Button variant="ghost" size="sm" className="gap-2" asChild>
-            <Link to={`/projects/${project.id}`}>
-              <ChevronLeft className="size-4" />
-              Back to Project
-            </Link>
-          </Button>
-          <h1 className="text-xl font-semibold">Project Settings</h1>
-        </div>
+      <div className="mx-auto max-w-2xl p-6">
+        <PageHeader
+          title="Project Settings"
+          backLink={{ href: `/projects/${project.id}`, label: 'Back to Project' }}
+        />
 
+        <div className="space-y-6">
         {/* Project Details */}
         <Card>
           <CardHeader>
@@ -294,6 +290,7 @@ export function ProjectSettingsPage() {
             </CardContent>
           </Card>
         )}
+        </div>
       </div>
 
       {/* Regenerate confirmation dialog */}

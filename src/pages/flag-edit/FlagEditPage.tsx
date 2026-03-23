@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ChevronLeft } from 'lucide-react';
+import { PageHeader } from '@/shared/ui/page-header';
 import { toast } from '@/shared/lib/toast';
 import { useFeatureFlagById, useUpdateFeatureFlag, useUpdateFeatureFlagValue } from '@/entities/flag';
 import { usePermissions } from '@/shared/hooks/usePermissions';
@@ -157,21 +157,14 @@ export function FlagEditPage() {
   const sortedValues = flag.values;
 
   return (
-    <div className="p-8 max-w-5xl mx-auto space-y-6">
-      {/* Back navigation */}
-      <Link
-        to={`/projects/${projectId}`}
-        className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ChevronLeft className="h-4 w-4 mr-1" />
-        Back to Project
-      </Link>
+    <div className="p-8 max-w-5xl mx-auto">
+      <PageHeader
+        title={flag.name}
+        subtitle={flag.key}
+        backLink={{ href: `/projects/${projectId}`, label: 'Back to Project' }}
+      />
 
-      <div>
-        <h1 className="text-2xl font-bold">{flag.name}</h1>
-        <p className="text-sm text-muted-foreground font-mono">{flag.key}</p>
-      </div>
-
+      <div className="space-y-6">
       {/* Metadata edit form */}
       <Card>
         <CardHeader>
@@ -297,6 +290,7 @@ export function FlagEditPage() {
           </CardContent>
         </Card>
       )}
+      </div>
     </div>
   );
 }
