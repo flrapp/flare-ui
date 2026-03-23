@@ -125,14 +125,14 @@ export function ProjectDetailPage() {
                 </Link>
               </Button>
             </div>
-            <h1 className="text-3xl font-bold">{project.name}</h1>
+            <h1 className="text-xl font-semibold">{project.name}</h1>
             <p className="text-sm text-muted-foreground">
               {project.description || 'No description provided'}
             </p>
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
+              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                 <Settings className="size-4 mr-2" />
                 Settings
               </Button>
@@ -204,7 +204,7 @@ export function ProjectDetailPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Feature Toggles</CardTitle>
+                <CardTitle className="text-base font-medium">Feature Toggles</CardTitle>
               </div>
               {canManageFlags && (
                 <Button onClick={() => setShowCreateFlagDialog(true)}>

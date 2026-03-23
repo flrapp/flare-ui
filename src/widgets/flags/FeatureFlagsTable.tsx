@@ -127,11 +127,11 @@ export function FeatureFlagsTable({
             <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="sticky left-0 bg-card z-10 min-w-62.5">
+                <TableHead className="sticky left-0 bg-card z-10 min-w-62.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Feature Flag
                 </TableHead>
                 {scopes.map((scope) => (
-                  <TableHead key={scope.id} className="text-center min-w-30">
+                  <TableHead key={scope.id} className="text-center min-w-30 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -148,7 +148,7 @@ export function FeatureFlagsTable({
                   </TableHead>
                 ))}
                 {canManageFlags && (
-                  <TableHead className="text-right sticky right-0 bg-card z-10 min-w-25">
+                  <TableHead className="text-right sticky right-0 bg-card z-10 min-w-25 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     Actions
                   </TableHead>
                 )}
@@ -157,9 +157,9 @@ export function FeatureFlagsTable({
             <TableBody>
               {flags.map((flag) => (
                 <TableRow key={flag.id}>
-                  <TableCell className="sticky left-0 bg-card z-10">
-                    <div className="space-y-1">
-                      <div className="font-medium">
+                  <TableCell className="sticky left-0 bg-card z-10 px-3 py-3">
+                    <div>
+                      <div className="text-sm font-medium">
                         {flag.description ? (
                           <TooltipProvider>
                             <Tooltip>
@@ -175,7 +175,7 @@ export function FeatureFlagsTable({
                           <span>{flag.name}</span>
                         )}
                       </div>
-                      <div className="text-xs text-muted-foreground font-mono">{flag.key}</div>
+                      <span className="block text-xs font-mono text-muted-foreground mt-0.5">{flag.key}</span>
                     </div>
                   </TableCell>
                   {scopes.map((scope) => {
@@ -187,7 +187,7 @@ export function FeatureFlagsTable({
                     );
 
                     return (
-                      <TableCell key={scope.id} className="text-center">
+                      <TableCell key={scope.id} className="text-center px-3 py-3">
                         {value ? (
                           <ScopeToggle
                             featureFlagId={flag.id}
@@ -209,17 +209,31 @@ export function FeatureFlagsTable({
                     );
                   })}
                   {canManageFlags && (
-                    <TableCell className="text-right sticky right-0 bg-card z-10">
+                    <TableCell className="text-right sticky right-0 bg-card z-10 px-3 py-3">
                       <div className="flex justify-end gap-2">
                         {onEditFlag && (
-                          <Button variant="ghost" size="sm" onClick={() => onEditFlag(flag)}>
-                            <Pencil className="h-4 w-4" />
-                          </Button>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => onEditFlag(flag)}>
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Edit flag</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         )}
                         {onDeleteFlag && (
-                          <Button variant="ghost" size="sm" onClick={() => onDeleteFlag(flag)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => onDeleteFlag(flag)}>
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Delete flag</TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         )}
                       </div>
                     </TableCell>
