@@ -26,7 +26,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from '@/shared/ui/input';
 import { Button } from '@/shared/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
-import { Copy, CheckCircle } from 'lucide-react';
+import { Copy, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { useCreateUser } from '@/entities/user';
 import { GlobalRole } from '@/shared/types/entities';
 import type { ProblemDetails } from '@/shared/types/auth';
@@ -54,6 +54,7 @@ interface CreateUserDialogProps {
 export function CreateUserDialog({ children }: CreateUserDialogProps) {
   const [open, setOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [revealPassword, setRevealPassword] = useState(false);
   const [createdPassword, setCreatedPassword] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const createUser = useCreateUser();
@@ -125,7 +126,7 @@ export function CreateUserDialog({ children }: CreateUserDialogProps) {
                   <FormItem>
                     <FormLabel>Username</FormLabel>
                     <FormControl>
-                      <Input placeholder="john_doe" {...field} />
+                      <Input className="font-mono" placeholder="john_doe" {...field} />
                     </FormControl>
                     <FormDescription>
                       3-100 characters. Letters, numbers, hyphens, and underscores only.
@@ -154,7 +155,18 @@ export function CreateUserDialog({ children }: CreateUserDialogProps) {
                   <FormItem>
                     <FormLabel>Temporary Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Enter temporary password" {...field} />
+                      <div className="relative">
+                        <Input type={revealPassword ? 'text' : 'password'} className="pr-10" placeholder="Enter temporary password" {...field} />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-0 top-0 h-full px-3 text-muted-foreground hover:text-foreground"
+                          onClick={() => setRevealPassword(!revealPassword)}
+                        >
+                          {revealPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                      </div>
                     </FormControl>
                     <FormDescription>Minimum 8 characters. User must change on first login.</FormDescription>
                     <FormMessage />
@@ -184,7 +196,7 @@ export function CreateUserDialog({ children }: CreateUserDialogProps) {
                 )}
               />
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={createUser.isPending}>
+                <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={createUser.isPending}>
                   Cancel
                 </Button>
                 <Button type="submit" disabled={createUser.isPending}>
