@@ -35,7 +35,7 @@ export function GlobalUsersPage() {
 
   if (isLoading) {
     return (
-      <div className="p-8">
+      <div className="max-w-5xl mx-auto p-8">
         <TableSkeleton rows={5} columns={4} />
       </div>
     );
@@ -43,7 +43,7 @@ export function GlobalUsersPage() {
 
   if (error) {
     return (
-      <div className="p-8">
+      <div className="max-w-5xl mx-auto p-8">
         <ErrorMessage
           title="Failed to load users"
           message="There was an error loading the user list. Please try again."
@@ -53,64 +53,37 @@ export function GlobalUsersPage() {
     );
   }
 
-  if (!users || users.length === 0) {
-    const isFiltered = activeFilter !== 'all';
-    return (
-      <div className="p-8">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold">User Management</h1>
-            <p className="text-muted-foreground mt-1">Manage system users and their permissions</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Tabs value={activeFilter} onValueChange={(v) => setActiveFilter(v as ActiveFilter)}>
-              <TabsList>
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="active">Active</TabsTrigger>
-                <TabsTrigger value="inactive">Inactive</TabsTrigger>
-              </TabsList>
-            </Tabs>
-            {!isFiltered && (
-              <CreateUserDialog>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create User
-                </Button>
-              </CreateUserDialog>
-            )}
-          </div>
-        </div>
-        <EmptyState
-          icon={<UserPlus className="h-16 w-16" />}
-          title={isFiltered ? `No ${activeFilter} users` : 'No users yet'}
-          description={
-            isFiltered
-              ? `There are no ${activeFilter} users. Try a different filter.`
-              : 'Get started by creating your first user account.'
-          }
-          action={
-            !isFiltered ? (
-              <CreateUserDialog>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create User
-                </Button>
-              </CreateUserDialog>
-            ) : undefined
-          }
-        />
-      </div>
-    );
-  }
+  const isFiltered = activeFilter !== 'all';
+  const userList = users ?? [];
+
+  const emptyNode = (
+    <EmptyState
+      icon={<UserPlus className="h-16 w-16" />}
+      title={isFiltered ? `No ${activeFilter} users` : 'No users yet'}
+      description={
+        isFiltered
+          ? `There are no ${activeFilter} users. Try a different filter.`
+          : 'Get started by creating your first user account.'
+      }
+      action={
+        !isFiltered ? (
+          <CreateUserDialog>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Create User
+            </Button>
+          </CreateUserDialog>
+        ) : undefined
+      }
+    />
+  );
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="max-w-5xl mx-auto p-8">
+      <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold">User Management</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage system users and their permissions
-          </p>
+          <h1 className="text-xl font-semibold">User Management</h1>
+          <p className="text-sm text-muted-foreground">Manage system users and their permissions</p>
         </div>
         <div className="flex items-center gap-3">
           <Tabs value={activeFilter} onValueChange={(v) => setActiveFilter(v as ActiveFilter)}>
@@ -128,7 +101,7 @@ export function GlobalUsersPage() {
           </CreateUserDialog>
         </div>
       </div>
-      <GlobalUsersTable users={users} />
+      <GlobalUsersTable users={userList} emptyNode={emptyNode} />
     </div>
   );
 }

@@ -21,6 +21,8 @@ const badgeVariants = cva(
           "border-transparent bg-[hsl(var(--scope-staging)/0.1)] text-[hsl(var(--scope-staging))]",
         "scope-production":
           "border-transparent bg-[hsl(var(--scope-production)/0.1)] text-[hsl(var(--scope-production))]",
+        success:
+          "border-transparent bg-[hsl(var(--success)/0.1)] text-[hsl(var(--success))]",
       },
     },
     defaultVariants: {

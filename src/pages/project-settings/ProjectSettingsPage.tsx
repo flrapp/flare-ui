@@ -135,7 +135,7 @@ export function ProjectSettingsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-4xl p-6 space-y-6">
+      <div className="mx-auto max-w-2xl p-6 space-y-6">
         {/* Header */}
         <div className="space-y-1">
           <Button variant="ghost" size="sm" className="gap-2" asChild>
@@ -144,7 +144,7 @@ export function ProjectSettingsPage() {
               Back to Project
             </Link>
           </Button>
-          <h1 className="text-3xl font-bold">Project Settings</h1>
+          <h1 className="text-xl font-semibold">Project Settings</h1>
         </div>
 
         {/* Project Details */}
@@ -154,7 +154,7 @@ export function ProjectSettingsPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="project-name">Project Name</Label>
                 <Input
                   id="project-name"
@@ -167,23 +167,21 @@ export function ProjectSettingsPage() {
                 )}
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="project-alias">Project Alias</Label>
-                <Input
-                  id="project-alias"
-                  {...form.register('alias')}
-                  placeholder="my-project"
-                  disabled={!canManageSettings || updateProject.isPending}
-                />
-                {form.formState.errors.alias && (
-                  <p className="text-sm text-destructive">{form.formState.errors.alias.message}</p>
-                )}
+                <input type="hidden" {...form.register('alias')} />
+                <div className="bg-muted rounded-md px-3 py-2 font-mono text-sm text-foreground">
+                  {project.alias}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   Used in API calls and URLs. No spaces allowed.
                 </p>
+                <p className="text-xs text-muted-foreground">
+                  Set during project creation and cannot be changed.
+                </p>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
@@ -227,13 +225,13 @@ export function ProjectSettingsPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="absolute right-0 top-0 h-full"
+                          className="absolute right-0 top-0 h-full text-muted-foreground hover:text-foreground transition-colors"
                           onClick={() => setShowApiKey(!showApiKey)}
                         >
                           {showApiKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                         </Button>
                       </div>
-                      <Button variant="outline" size="icon" onClick={handleCopy}>
+                      <Button variant="outline" size="icon" onClick={handleCopy} className="text-muted-foreground hover:text-foreground transition-colors">
                         <Copy className="size-4" />
                       </Button>
                     </div>
@@ -249,14 +247,14 @@ export function ProjectSettingsPage() {
               {canRegenerateApiKey && (
                 <div className="pt-2">
                   <Button
-                    variant="destructive"
-                    className="gap-2"
+                    variant="outline"
+                    className="gap-2 text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
                     onClick={() => setRegenerateDialogOpen(true)}
                   >
                     <RefreshCw className="size-4" />
                     Regenerate API Key
                   </Button>
-                  <p className="text-xs text-muted-foreground mt-2">
+                  <p className="text-sm text-destructive/80 mt-2">
                     Warning: Regenerating will invalidate the current key and may break existing integrations.
                   </p>
                 </div>

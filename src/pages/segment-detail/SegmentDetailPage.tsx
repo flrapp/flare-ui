@@ -91,7 +91,7 @@ export function SegmentDetailPage() {
   };
 
   return (
-    <div className="p-8 max-w-3xl mx-auto space-y-6">
+    <div className="p-8">
       <Link
         to={`/projects/${projectId}/segments`}
         className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
@@ -100,10 +100,11 @@ export function SegmentDetailPage() {
         Back to Segments
       </Link>
 
+      <div className="mx-auto max-w-2xl space-y-6 mt-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{segment.name}</h1>
+        <h1 className="text-xl font-semibold">{segment.name}</h1>
         {canManage && (
-          <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
+          <Button variant="outline" size="sm" onClick={() => setDeleteOpen(true)} className="border-destructive text-destructive hover:bg-destructive/10">
             <Trash2 className="h-4 w-4 mr-2" />
             Delete
           </Button>
@@ -112,10 +113,10 @@ export function SegmentDetailPage() {
 
       {/* Edit form */}
       <Card>
-        <CardHeader>
+        <CardHeader className="p-5 pb-0">
           <CardTitle>Segment Settings</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-5">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
@@ -163,7 +164,7 @@ export function SegmentDetailPage() {
 
       {/* Members */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="p-5">
           <SegmentMembersSection segmentId={segmentId} canManage={canManage} />
         </CardContent>
       </Card>
@@ -174,6 +175,7 @@ export function SegmentDetailPage() {
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
       />
+      </div>
     </div>
   );
 }

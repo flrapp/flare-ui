@@ -134,7 +134,7 @@ export function SegmentMembersSection({ segmentId, canManage }: SegmentMembersSe
           }
           action={
             !search && canManage ? (
-              <Button size="sm" onClick={() => setAddOpen(true)}>
+              <Button variant="outline" size="sm" onClick={() => setAddOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Members
               </Button>
