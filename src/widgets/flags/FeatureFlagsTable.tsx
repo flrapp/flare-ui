@@ -127,11 +127,11 @@ export function FeatureFlagsTable({
             <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="sticky left-0 bg-card z-10 min-w-62.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                <TableHead className="sticky left-0 bg-card z-10 min-w-62.5">
                   Feature Flag
                 </TableHead>
                 {scopes.map((scope) => (
-                  <TableHead key={scope.id} className="text-center min-w-30 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <TableHead key={scope.id} className="text-center min-w-30">
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -148,7 +148,7 @@ export function FeatureFlagsTable({
                   </TableHead>
                 ))}
                 {canManageFlags && (
-                  <TableHead className="text-right sticky right-0 bg-card z-10 min-w-25 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <TableHead className="text-right sticky right-0 bg-card z-10 min-w-25">
                     Actions
                   </TableHead>
                 )}

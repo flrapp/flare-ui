@@ -49,7 +49,7 @@ function RemoveMemberButton({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="sm" disabled={remove.isPending}>
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" disabled={remove.isPending}>
           <Trash2 className="h-4 w-4" />
         </Button>
       </AlertDialogTrigger>

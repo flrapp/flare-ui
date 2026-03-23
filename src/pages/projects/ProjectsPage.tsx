@@ -4,7 +4,6 @@ import { useProjects } from '@/entities/project/model/useProjects';
 import { CreateProjectDialog } from '@/features/project/ui/CreateProjectDialog';
 import { Button } from '@/shared/ui/button';
 import { PageHeader } from '@/shared/ui/page-header';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import {
   Table,
   TableBody,
@@ -31,17 +30,16 @@ export function ProjectsPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="mx-auto max-w-7xl p-6 space-y-6">
+        <div className="mx-auto max-w-5xl p-6 space-y-6">
           <div className="flex items-center justify-between">
             <Skeleton className="h-9 w-32" />
             <Skeleton className="h-9 w-32" />
           </div>
-          <div className="border rounded-lg">
-            <div className="flex items-center justify-between p-6 pb-4">
-              <Skeleton className="h-5 w-28" />
+          <div className="space-y-4">
+            <div className="flex justify-end">
               <Skeleton className="h-9 w-44" />
             </div>
-            <div className="px-6 pb-6">
+            <div className="border border-border rounded-lg overflow-hidden">
               <TableSkeleton rows={5} columns={4} />
             </div>
           </div>
@@ -77,7 +75,7 @@ export function ProjectsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-7xl p-6">
+      <div className="mx-auto max-w-5xl p-6">
         <PageHeader
           title="Projects"
           actions={
@@ -90,85 +88,78 @@ export function ProjectsPage() {
           }
         />
 
-        {/* Projects Card */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>All Projects</CardTitle>
-              </div>
-              <Tabs
-                value={showArchived ? 'archived' : 'active'}
-                onValueChange={(value) => setShowArchived(value === 'archived')}
-              >
-                <TabsList>
-                  <TabsTrigger value="active">Active ({activeCount})</TabsTrigger>
-                  <TabsTrigger value="archived">Archived ({archivedCount})</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {!filteredProjects || filteredProjects.length === 0 ? (
-              <EmptyState
-                icon={<FolderOpen className="size-16" />}
-                title={showArchived ? 'No archived projects' : 'No projects yet'}
-                description={
-                  showArchived
-                    ? 'Archived projects will appear here.'
-                    : 'Get started by creating your first project.'
-                }
-                action={
-                  !showArchived && (
-                    <CreateProjectDialog>
-                      <Button>
-                        <Plus className="size-4 mr-2" />
-                        Create Your First Project
-                      </Button>
-                    </CreateProjectDialog>
-                  )
-                }
-              />
-            ) : (
-              <div className="rounded-lg overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Alias</TableHead>
-                      <TableHead>Created At</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredProjects.map((project) => (
-                      <TableRow
-                        key={project.id}
-                        className="cursor-pointer hover:bg-muted/50"
-                        onClick={() => handleRowClick(project)}
-                      >
-                        <TableCell className="font-medium">{project.name}</TableCell>
-                        <TableCell>
-                          <code className="text-sm bg-muted px-2 py-1 rounded text-muted-foreground">
-                            {project.alias}
-                          </code>
-                        </TableCell>
-                        <TableCell>
+        <div className="space-y-4">
+          <div className="flex justify-end">
+            <Tabs
+              value={showArchived ? 'archived' : 'active'}
+              onValueChange={(value) => setShowArchived(value === 'archived')}
+            >
+              <TabsList>
+                <TabsTrigger value="active">Active ({activeCount})</TabsTrigger>
+                <TabsTrigger value="archived">Archived ({archivedCount})</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+
+          {!filteredProjects || filteredProjects.length === 0 ? (
+            <EmptyState
+              icon={<FolderOpen className="size-16" />}
+              title={showArchived ? 'No archived projects' : 'No projects yet'}
+              description={
+                showArchived
+                  ? 'Archived projects will appear here.'
+                  : 'Get started by creating your first project.'
+              }
+              action={
+                !showArchived && (
+                  <CreateProjectDialog>
+                    <Button>
+                      <Plus className="size-4 mr-2" />
+                      Create Your First Project
+                    </Button>
+                  </CreateProjectDialog>
+                )
+              }
+            />
+          ) : (
+            <div className="border border-border rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Alias</TableHead>
+                    <TableHead>Created At</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredProjects.map((project) => (
+                    <TableRow
+                      key={project.id}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => handleRowClick(project)}
+                    >
+                      <TableCell className="font-medium">{project.name}</TableCell>
+                      <TableCell>
+                        <span className="font-mono text-sm">{project.alias}</span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm text-muted-foreground">
                           {new Date(project.createdAt).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={project.isArchived ? 'secondary' : 'default'}>
-                            {project.isArchived ? 'Archived' : 'Active'}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={project.isArchived ? 'secondary' : 'success'}>
+                          {project.isArchived ? 'Archived' : 'Active'}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

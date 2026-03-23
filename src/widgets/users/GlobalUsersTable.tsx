@@ -60,13 +60,13 @@ export function GlobalUsersTable({ users, emptyNode }: GlobalUsersTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="text-xs uppercase tracking-wider">Username</TableHead>
-              <TableHead className="text-xs uppercase tracking-wider">Full Name</TableHead>
-              <TableHead className="text-xs uppercase tracking-wider">Role</TableHead>
-              <TableHead className="text-xs uppercase tracking-wider">Status</TableHead>
-              <TableHead className="text-xs uppercase tracking-wider">Created</TableHead>
-              <TableHead className="text-xs uppercase tracking-wider">Last Login</TableHead>
-              <TableHead className="text-xs uppercase tracking-wider text-right">Actions</TableHead>
+              <TableHead>Username</TableHead>
+              <TableHead>Full Name</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Created</TableHead>
+              <TableHead>Last Login</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

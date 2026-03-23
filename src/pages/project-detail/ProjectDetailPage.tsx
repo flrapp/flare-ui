@@ -9,7 +9,6 @@ import { DeleteFeatureFlagDialog } from '@/features/flag/ui/DeleteFeatureFlagDia
 import { DeleteProjectDialog } from '@/features/project/ui/DeleteProjectDialog';
 import { FeatureFlagsTable } from '@/widgets/flags/FeatureFlagsTable';
 import { Button } from '@/shared/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { PageHeader } from '@/shared/ui/page-header';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { TableSkeleton } from '@/shared/ui/TableSkeleton';
@@ -57,23 +56,20 @@ export function ProjectDetailPage() {
   if (isLoading || permissionsLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="mx-auto max-w-7xl p-6 space-y-6">
+        <div className="mx-auto max-w-6xl p-6 space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-2">
               <Skeleton className="h-8 w-36" />
               <Skeleton className="h-9 w-56" />
               <Skeleton className="h-4 w-72" />
             </div>
-            <Skeleton className="h-9 w-28" />
-          </div>
-          <div className="border rounded-lg">
-            <div className="flex items-center justify-between p-6 pb-4">
-              <Skeleton className="h-5 w-36" />
+            <div className="flex items-center gap-3">
               <Skeleton className="h-9 w-32" />
+              <Skeleton className="h-9 w-28" />
             </div>
-            <div className="px-6 pb-6">
-              <TableSkeleton rows={5} columns={5} />
-            </div>
+          </div>
+          <div className="border border-border rounded-lg overflow-hidden">
+            <TableSkeleton rows={5} columns={5} />
           </div>
         </div>
       </div>
@@ -113,13 +109,20 @@ export function ProjectDetailPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-7xl p-6">
+      <div className="mx-auto max-w-6xl p-6">
         <PageHeader
           title={project.name}
           subtitle={project.description || 'No description provided'}
           backLink={{ href: '/projects', label: 'Back to Projects' }}
           actions={
-            <DropdownMenu>
+            <div className="flex items-center gap-3">
+              {canManageFlags && (
+                <Button onClick={() => setShowCreateFlagDialog(true)}>
+                  <Plus className="size-4 mr-2" />
+                  New Feature
+                </Button>
+              )}
+              <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                   <Settings className="size-4 mr-2" />
@@ -186,34 +189,20 @@ export function ProjectDetailPage() {
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
+          </div>
           }
         />
 
         {/* Feature Toggles Table */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-base font-medium">Feature Toggles</CardTitle>
-              </div>
-              {canManageFlags && (
-                <Button onClick={() => setShowCreateFlagDialog(true)}>
-                  <Plus className="size-4 mr-2" />
-                  New Feature
-                </Button>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <FeatureFlagsTable
-              projectId={project.id}
-              permissions={permissions}
-              canManageFlags={canManageFlags}
-              onEditFlag={(flag) => navigate(`/projects/${project.id}/flags/${flag.id}/edit`)}
-              onDeleteFlag={(flag) => setDeletingFlag(flag)}
-            />
-          </CardContent>
-        </Card>
+        <div className="border border-border rounded-lg overflow-hidden">
+          <FeatureFlagsTable
+            projectId={project.id}
+            permissions={permissions}
+            canManageFlags={canManageFlags}
+            onEditFlag={(flag) => navigate(`/projects/${project.id}/flags/${flag.id}/edit`)}
+            onDeleteFlag={(flag) => setDeletingFlag(flag)}
+          />
+        </div>
       </div>
 
       {/* Dialogs */}

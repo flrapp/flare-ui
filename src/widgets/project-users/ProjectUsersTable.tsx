@@ -77,11 +77,13 @@ export function ProjectUsersTable({ projectId, users, canManageUsers }: ProjectU
                 const totalPermissions = getTotalPermissionsCount(user);
                 return (
                   <TableRow key={user.userId}>
-                    <TableCell className="font-medium">
-                      <code className="text-sm bg-muted px-2 py-1 rounded">{user.username}</code>
+                    <TableCell>
+                      <span className="font-mono text-sm">{user.username}</span>
                     </TableCell>
                     <TableCell>{user.fullName}</TableCell>
-                    <TableCell>{formatDate(user.joinedAt)}</TableCell>
+                    <TableCell>
+                      <span className="text-sm text-muted-foreground">{formatDate(user.joinedAt)}</span>
+                    </TableCell>
                     <TableCell>
                       <div className="space-y-1">
                         {user.projectPermissions.length > 0 && (
@@ -108,12 +110,12 @@ export function ProjectUsersTable({ projectId, users, canManageUsers }: ProjectU
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <EditUserPermissionsDialog projectId={projectId} user={user}>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
                               <Pencil className="h-4 w-4" />
                             </Button>
                           </EditUserPermissionsDialog>
                           <RemoveUserDialog projectId={projectId} user={user}>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </RemoveUserDialog>
