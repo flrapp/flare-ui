@@ -21,6 +21,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select';
@@ -183,7 +184,7 @@ export function RuleModal({ open, onOpenChange, flagValueId, projectId, rule }: 
             />
             <Label htmlFor="serveValue" className="cursor-pointer">
               Serve value:{' '}
-              <span className="font-semibold">
+              <span className={`font-semibold ${form.watch('serveValue') ? 'text-[hsl(var(--success))]' : 'text-muted-foreground'}`}>
                 {form.watch('serveValue') ? 'ON' : 'OFF'}
               </span>
             </Label>
@@ -226,7 +227,7 @@ export function RuleModal({ open, onOpenChange, flagValueId, projectId, rule }: 
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)} disabled={isPending}>
               Cancel
             </Button>
             <Button type="submit" disabled={isPending}>
@@ -267,6 +268,9 @@ function ConditionRow({ index, form, segments, projectId, isPending, canRemove, 
   const operator = form.watch(`conditions.${index}.operator`);
   const isSegmentOp = SEGMENT_OPERATORS.has(operator);
 
+  const regularOptions = OPERATOR_OPTIONS.filter((opt) => !SEGMENT_OPERATORS.has(opt.value));
+  const segmentOptions = OPERATOR_OPTIONS.filter((opt) => SEGMENT_OPERATORS.has(opt.value));
+
   return (
     <div className="grid grid-cols-[1fr_auto_1fr_auto] gap-2 items-start">
       {/* Attribute Key */}
@@ -294,7 +298,13 @@ function ConditionRow({ index, form, segments, projectId, isPending, canRemove, 
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {OPERATOR_OPTIONS.map((opt) => (
+              {regularOptions.map((opt) => (
+                <SelectItem key={opt.value} value={String(opt.value)}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+              <SelectSeparator />
+              {segmentOptions.map((opt) => (
                 <SelectItem key={opt.value} value={String(opt.value)}>
                   {opt.label}
                 </SelectItem>
@@ -336,7 +346,7 @@ function ConditionRow({ index, form, segments, projectId, isPending, canRemove, 
                 </SelectContent>
               </Select>
             ) : (
-              <Input placeholder="value" {...field} disabled={isPending} />
+              <Input placeholder="value" className="font-mono" {...field} disabled={isPending} />
             )}
             {fieldState.error && (
               <p className="text-xs text-destructive">{fieldState.error.message}</p>
@@ -352,7 +362,7 @@ function ConditionRow({ index, form, segments, projectId, isPending, canRemove, 
         size="icon"
         onClick={onRemove}
         disabled={!canRemove || isPending}
-        className="mt-0.5"
+        className="mt-0.5 hover:bg-destructive/10 hover:text-destructive"
       >
         <X className="h-4 w-4" />
       </Button>
@@ -372,6 +382,7 @@ function AttributeKeyInput({ value, onChange, disabled, error }: AttributeKeyInp
     <div className="space-y-1">
       <Input
         placeholder="targetingKey"
+        className="font-mono"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}

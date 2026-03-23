@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,6 +27,7 @@ import {
 } from '@/shared/ui/form';
 import { Input } from '@/shared/ui/input';
 import { TargetingRulesSection } from '@/features/flag/ui/TargetingRulesSection';
+import { DeleteFeatureFlagDialog } from '@/features/flag/ui/DeleteFeatureFlagDialog';
 import type { ProblemDetails } from '@/shared/types/auth';
 import type { FeatureFlagValue } from '@/shared/types';
 
@@ -50,6 +51,8 @@ type FlagFormData = z.infer<typeof flagSchema>;
 
 export function FlagEditPage() {
   const { projectId, flagId } = useParams<{ projectId: string; flagId: string }>();
+  const navigate = useNavigate();
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const { data: flag, isLoading: flagLoading, error: flagError } = useFeatureFlagById(projectId, flagId);
   const { permissions, canPerformProjectAction, isLoading: permissionsLoading } = usePermissions(projectId);
@@ -157,20 +160,33 @@ export function FlagEditPage() {
   const sortedValues = flag.values;
 
   return (
-    <div className="p-8 max-w-5xl mx-auto">
+    <div className="p-8 max-w-2xl mx-auto">
       <PageHeader
         title={flag.name}
-        subtitle={flag.key}
+        subtitle={<span className="font-mono">{flag.key}</span>}
         backLink={{ href: `/projects/${projectId}`, label: 'Back to Project' }}
+        actions={
+          <>
+            <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
+              Delete
+            </Button>
+            <DeleteFeatureFlagDialog
+              flag={flag}
+              open={deleteOpen}
+              onOpenChange={setDeleteOpen}
+              onDeleted={() => navigate(`/projects/${projectId}`)}
+            />
+          </>
+        }
       />
 
       <div className="space-y-6">
       {/* Metadata edit form */}
       <Card>
-        <CardHeader>
-          <CardTitle>Flag Settings</CardTitle>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-base font-medium">Flag Settings</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-5 pt-0">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmitMeta)} className="space-y-4">
               <FormField
@@ -193,7 +209,7 @@ export function FlagEditPage() {
                   <FormItem>
                     <FormLabel>Key</FormLabel>
                     <FormControl>
-                      <Input placeholder="new_dashboard" {...field} />
+                      <Input placeholder="new_dashboard" className="font-mono" {...field} />
                     </FormControl>
                     <FormDescription>Used to identify this flag in your code.</FormDescription>
                     <FormMessage />

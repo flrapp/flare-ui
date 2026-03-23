@@ -83,7 +83,7 @@ export function TargetingRulesSection({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-semibold">Targeting Rules</h4>
+        <h4 className="text-base font-medium">Targeting Rules</h4>
         {canManage && (
           <Button variant="outline" size="sm" onClick={() => setAddOpen(true)}>
             <Plus className="h-3.5 w-3.5 mr-1" />
