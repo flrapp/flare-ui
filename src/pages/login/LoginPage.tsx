@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { Flame } from 'lucide-react';
 import { useAuthStore } from '@/shared/stores/authStore';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
@@ -45,9 +46,12 @@ export function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md border border-border rounded-lg shadow-sm">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Flare</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center flex items-center justify-center gap-2">
+            <Flame className="h-6 w-6 text-primary" />
+            Flare
+          </CardTitle>
           <CardDescription className="text-center">
             Sign in to your account
           </CardDescription>
@@ -64,6 +68,7 @@ export function LoginPage() {
                     <FormControl>
                       <Input
                         placeholder="Enter your username"
+                        className="font-mono"
                         {...field}
                         disabled={isLoading}
                       />
