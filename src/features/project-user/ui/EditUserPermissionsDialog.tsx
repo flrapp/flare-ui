@@ -121,7 +121,7 @@ export function EditUserPermissionsDialog({ projectId, user, children }: EditUse
         </div>
 
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={updatePermissions.isPending}>
+          <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={updatePermissions.isPending}>
             Cancel
           </Button>
           <Button onClick={handleUpdate} disabled={updatePermissions.isPending || willLoseManageUsers}>

@@ -1,5 +1,7 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/shared/ui/accordion';
+import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip';
 import { PermissionCheckboxGroup } from '@/shared/ui/PermissionCheckboxGroup';
 import { useScopes } from '@/entities/scope';
 import { LoadingSpinner } from '@/shared/ui/LoadingSpinner';
@@ -99,10 +101,15 @@ export function PermissionEditor({ projectId, value, onChange, disabledPermissio
         <div>
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold">Scope Permissions</h3>
-            <Button type="button" variant="outline" size="sm" onClick={handleApplyToAllScopes}>
-              <Copy className="h-3 w-3 mr-2" />
-              Apply to All Scopes
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button type="button" variant="outline" size="sm" onClick={handleApplyToAllScopes}>
+                  <Copy className="h-3 w-3 mr-2" />
+                  Apply to All Scopes
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Copy the first scope's permissions to all other scopes</TooltipContent>
+            </Tooltip>
           </div>
           <Accordion type="single" collapsible className="border rounded-lg">
             {scopes.map((scope, index) => {
@@ -115,7 +122,7 @@ export function PermissionEditor({ projectId, value, onChange, disabledPermissio
                     <div className="flex items-center justify-between w-full pr-2">
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{scope.name}</span>
-                        <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{scope.alias}</code>
+                        <Badge variant="secondary" className="font-mono text-xs">{scope.alias}</Badge>
                       </div>
                       <span className="text-sm text-muted-foreground">
                         {scopePerms.length} {scopePerms.length === 1 ? 'permission' : 'permissions'}

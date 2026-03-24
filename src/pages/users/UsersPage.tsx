@@ -24,7 +24,7 @@ export function UsersPage() {
 
   if (isLoadingProject || isLoadingUsers) {
     return (
-      <div className="p-8">
+      <div className="max-w-5xl mx-auto p-8">
         <div className="mb-6">
           <Skeleton className="h-8 w-32" />
         </div>
@@ -42,7 +42,7 @@ export function UsersPage() {
 
   if (error) {
     return (
-      <div className="p-8">
+      <div className="max-w-5xl mx-auto p-8">
         <ErrorMessage
           title="Failed to load team members"
           message="There was an error loading the project team members. Please try again."
@@ -54,10 +54,10 @@ export function UsersPage() {
 
   if (!users || users.length === 0) {
     return (
-      <div className="p-8">
+      <div className="max-w-5xl mx-auto p-8">
         <PageHeader
           title="Team Members"
-          subtitle={`${project?.name} - Manage project team and permissions`}
+          subtitle={project?.name}
           backTo={`/projects/${projectId}`}
         />
         <EmptyState
@@ -80,11 +80,11 @@ export function UsersPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="max-w-5xl mx-auto p-8">
       <PageHeader
         title="Team Members"
-        subtitle={`${project?.name} - ${users.length} ${users.length === 1 ? 'member' : 'members'}`}
-        backLink={{ href: `/projects/${projectId}`, label: 'Back to Project' }}
+        subtitle={project?.name}
+        backTo={`/projects/${projectId}`}
         actions={
           canManageUsers ? (
             <InviteUserDialog projectId={projectId!}>
