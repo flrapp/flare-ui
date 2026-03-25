@@ -1,4 +1,5 @@
 import { useScopes } from '@/entities/scope/model/useScopes';
+import { formatDate } from '@/shared/lib/format-date';
 import { CreateScopeDialog } from '@/features/scope/ui/CreateScopeDialog';
 import { EditScopeDialog } from '@/features/scope/ui/EditScopeDialog';
 import { DeleteScopeDialog } from '@/features/scope/ui/DeleteScopeDialog';
@@ -97,7 +98,7 @@ export function ScopesList({ projectId, canManage }: ScopesListProps) {
                     <span className="text-muted-foreground italic">No description</span>
                   )}
                 </TableCell>
-                <TableCell>{new Date(scope.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell>{formatDate(scope.createdAt)}</TableCell>
                 {canManage && (
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">

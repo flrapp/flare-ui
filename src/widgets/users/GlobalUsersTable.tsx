@@ -9,6 +9,7 @@ import { Pencil, Trash2, Search, KeyRound, UserX, UserCheck } from 'lucide-react
 import { EditUserDialog, DeleteUserDialog, ResetPasswordDialog, ActivateUserDialog, DeactivateUserDialog } from '@/features/user';
 import { GlobalRole } from '@/shared/types/entities';
 import { useAuthStore } from '@/shared/stores/authStore';
+import { formatDate } from '@/shared/lib/format-date';
 import type { UserResponseDto } from '@/shared/types/dtos';
 
 interface GlobalUsersTableProps {
@@ -29,14 +30,6 @@ export function GlobalUsersTable({ users, emptyNode }: GlobalUsersTableProps) {
 
   const getRoleLabel = (role: number) => {
     return role === GlobalRole.Admin ? 'Admin' : 'User';
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
   };
 
   return (

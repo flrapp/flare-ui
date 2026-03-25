@@ -3,6 +3,7 @@ import { Switch } from '@/shared/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/ui/tooltip';
 import { useUpdateFeatureFlagValue } from '@/entities/flag';
 import { LoadingSpinner } from '@/shared/ui/LoadingSpinner';
+import { formatDateTime } from '@/shared/lib/format-date';
 import type { ProblemDetails } from '@/shared/types/auth';
 
 interface ScopeToggleProps {
@@ -45,10 +46,6 @@ export function ScopeToggle({
     }
   };
 
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleString();
-  };
-
   const toggleContent = (
     <div className="flex items-center justify-center">
       {updateValue.isPending ? (
@@ -86,7 +83,7 @@ export function ScopeToggle({
             <div>{toggleContent}</div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Last updated: {formatDate(lastUpdated)}</p>
+            <p>Last updated: {formatDateTime(lastUpdated)}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

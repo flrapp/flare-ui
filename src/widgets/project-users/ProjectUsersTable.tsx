@@ -8,6 +8,7 @@ import { PermissionBadges } from '@/shared/ui/PermissionBadges';
 import { EditUserPermissionsDialog, RemoveUserDialog } from '@/features/project-user';
 import { useScopes } from '@/entities/scope';
 import { getScopePermissionLabel } from '@/shared/lib/permissions';
+import { formatDate } from '@/shared/lib/format-date';
 import type { ProjectUser, ScopePermission } from '@/shared/types/entities';
 
 interface ProjectUsersTableProps {
@@ -27,14 +28,6 @@ export function ProjectUsersTable({ projectId, users, canManageUsers }: ProjectU
       user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.fullName.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
 
   const getTotalPermissionsCount = (user: ProjectUser) => {
     const projectPerms = user.projectPermissions.length;

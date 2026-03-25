@@ -1,9 +1,13 @@
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { Plus } from 'lucide-react';
 import { useProject } from '@/entities/project/model/useProjects';
 import { usePermissions } from '@/shared/hooks/usePermissions';
 import { ProjectPermission } from '@/shared/types/entities';
 import { SegmentsList } from '@/widgets/segments/SegmentsList';
+import { CreateSegmentDialog } from '@/features/segment/ui/CreateSegmentDialog';
 import { PageHeader } from '@/shared/ui/page-header';
+import { Button } from '@/shared/ui/button';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { TableSkeleton } from '@/shared/ui/TableSkeleton';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
@@ -41,6 +45,7 @@ export function SegmentsPage() {
   }
 
   const canManage = canPerformProjectAction(ProjectPermission.ManageSegments);
+  const [createOpen, setCreateOpen] = useState(false);
 
   return (
     <div className="p-8">
@@ -48,8 +53,21 @@ export function SegmentsPage() {
         title="Segments"
         subtitle={`Manage segments for ${project.name}`}
         backTo={`/projects/${projectId}`}
+        actions={
+          canManage ? (
+            <Button onClick={() => setCreateOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Segment
+            </Button>
+          ) : undefined
+        }
       />
-      <SegmentsList projectId={projectId} canManage={canManage} />
+      <SegmentsList
+        projectId={projectId}
+        canManage={canManage}
+        createOpen={createOpen}
+        onCreateOpenChange={setCreateOpen}
+      />
     </div>
   );
 }

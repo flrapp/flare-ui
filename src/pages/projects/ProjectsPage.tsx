@@ -13,6 +13,7 @@ import {
   TableRow,
 } from '@/shared/ui/table';
 import { Badge } from '@/shared/ui/badge';
+import { formatDate } from '@/shared/lib/format-date';
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { TableSkeleton } from '@/shared/ui/TableSkeleton';
@@ -145,7 +146,7 @@ export function ProjectsPage() {
                       </TableCell>
                       <TableCell>
                         <span className="text-sm text-muted-foreground">
-                          {new Date(project.createdAt).toLocaleDateString()}
+                          {formatDate(project.createdAt)}
                         </span>
                       </TableCell>
                       <TableCell>

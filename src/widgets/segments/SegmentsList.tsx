@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Users } from 'lucide-react';
 import { useSegments } from '@/entities/segment';
@@ -9,17 +8,18 @@ import { Badge } from '@/shared/ui/badge';
 import { LoadingSpinner } from '@/shared/ui/LoadingSpinner';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { EmptyState } from '@/shared/ui/EmptyState';
+import { formatDate } from '@/shared/lib/format-date';
 
 interface SegmentsListProps {
   projectId: string;
   canManage: boolean;
+  createOpen: boolean;
+  onCreateOpenChange: (open: boolean) => void;
 }
 
-export function SegmentsList({ projectId, canManage }: SegmentsListProps) {
+export function SegmentsList({ projectId, canManage, createOpen, onCreateOpenChange }: SegmentsListProps) {
   const navigate = useNavigate();
   const { data: segments, isLoading, error, refetch } = useSegments(projectId);
-
-  const [createOpen, setCreateOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -48,7 +48,7 @@ export function SegmentsList({ projectId, canManage }: SegmentsListProps) {
           description="Create segments to group users or entities for use in targeting rules."
           action={
             canManage ? (
-              <Button onClick={() => setCreateOpen(true)}>
+              <Button variant="outline" onClick={() => onCreateOpenChange(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Create Your First Segment
               </Button>
@@ -59,7 +59,7 @@ export function SegmentsList({ projectId, canManage }: SegmentsListProps) {
           <CreateSegmentDialog
             projectId={projectId}
             open={createOpen}
-            onOpenChange={setCreateOpen}
+            onOpenChange={onCreateOpenChange}
           />
         )}
       </>
@@ -68,16 +68,7 @@ export function SegmentsList({ projectId, canManage }: SegmentsListProps) {
 
   return (
     <div className="space-y-4">
-      {canManage && (
-        <div className="flex justify-end">
-          <Button onClick={() => setCreateOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Segment
-          </Button>
-        </div>
-      )}
-
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 max-w-3xl">
         {segments.map((segment) => (
           <Card
             key={segment.id}
@@ -94,12 +85,15 @@ export function SegmentsList({ projectId, canManage }: SegmentsListProps) {
                     </p>
                   )}
                 </div>
-                <Badge variant="secondary" className="shrink-0">
+                <Badge
+                  variant="secondary"
+                  className={`shrink-0 ${segment.memberCount === 0 ? 'text-muted-foreground' : ''}`}
+                >
                   {segment.memberCount} {segment.memberCount === 1 ? 'member' : 'members'}
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground mt-3">
-                Created {new Date(segment.createdAt).toLocaleDateString()}
+                Created {formatDate(segment.createdAt)}
               </p>
             </CardContent>
           </Card>
@@ -110,7 +104,7 @@ export function SegmentsList({ projectId, canManage }: SegmentsListProps) {
         <CreateSegmentDialog
           projectId={projectId}
           open={createOpen}
-          onOpenChange={setCreateOpen}
+          onOpenChange={onCreateOpenChange}
         />
       )}
     </div>
