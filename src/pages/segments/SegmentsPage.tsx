@@ -5,7 +5,6 @@ import { useProject } from '@/entities/project/model/useProjects';
 import { usePermissions } from '@/shared/hooks/usePermissions';
 import { ProjectPermission } from '@/shared/types/entities';
 import { SegmentsList } from '@/widgets/segments/SegmentsList';
-import { CreateSegmentDialog } from '@/features/segment/ui/CreateSegmentDialog';
 import { PageHeader } from '@/shared/ui/page-header';
 import { Button } from '@/shared/ui/button';
 import { Skeleton } from '@/shared/ui/skeleton';
