@@ -1,4 +1,5 @@
 import { Badge } from '@/shared/ui/badge';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip';
 import { getProjectPermissionLabel, getScopePermissionLabel } from '@/shared/lib/permissions';
 import type { ProjectPermission, ScopePermission } from '@/shared/types/entities';
 
@@ -14,22 +15,34 @@ export function PermissionBadges({ permissions, type, max = 3 }: PermissionBadge
   }
 
   const getLabel = type === 'project' ? getProjectPermissionLabel : getScopePermissionLabel;
-  const variant = type === 'project' ? 'default' : 'secondary';
 
   const visiblePermissions = permissions.slice(0, max);
-  const remainingCount = permissions.length - max;
+  const hiddenPermissions = permissions.slice(max);
 
   return (
-    <div className="flex flex-wrap gap-1">
+    <div className="flex flex-wrap gap-1 items-center">
       {visiblePermissions.map((permission) => (
-        <Badge key={permission} variant={variant} className="text-xs">
+        <Badge key={permission} variant="secondary" className="text-xs font-normal">
           {getLabel(permission as ProjectPermission & ScopePermission)}
         </Badge>
       ))}
-      {remainingCount > 0 && (
-        <Badge variant="outline" className="text-xs">
-          +{remainingCount} more
-        </Badge>
+      {hiddenPermissions.length > 0 && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="text-xs text-muted-foreground cursor-pointer underline-offset-4 hover:underline hover:text-foreground">
+              +{hiddenPermissions.length} more
+            </span>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-xs">
+            <div className="space-y-0.5">
+              {hiddenPermissions.map((permission) => (
+                <div key={permission}>
+                  {getLabel(permission as ProjectPermission & ScopePermission)}
+                </div>
+              ))}
+            </div>
+          </TooltipContent>
+        </Tooltip>
       )}
     </div>
   );

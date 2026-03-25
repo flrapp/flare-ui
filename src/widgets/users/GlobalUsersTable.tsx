@@ -1,19 +1,23 @@
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip';
 import { Pencil, Trash2, Search, KeyRound, UserX, UserCheck } from 'lucide-react';
 import { EditUserDialog, DeleteUserDialog, ResetPasswordDialog, ActivateUserDialog, DeactivateUserDialog } from '@/features/user';
 import { GlobalRole } from '@/shared/types/entities';
 import { useAuthStore } from '@/shared/stores/authStore';
+import { formatDate } from '@/shared/lib/format-date';
 import type { UserResponseDto } from '@/shared/types/dtos';
 
 interface GlobalUsersTableProps {
   users: UserResponseDto[];
+  emptyNode?: ReactNode;
 }
 
-export function GlobalUsersTable({ users }: GlobalUsersTableProps) {
+export function GlobalUsersTable({ users, emptyNode }: GlobalUsersTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const currentUser = useAuthStore((state) => state.user);
   const isAdmin = currentUser?.globalRole === GlobalRole.Admin;
@@ -24,20 +28,8 @@ export function GlobalUsersTable({ users }: GlobalUsersTableProps) {
       user.fullName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const getRoleBadgeVariant = (role: number) => {
-    return role === GlobalRole.Admin ? 'outline' : 'secondary';
-  };
-
   const getRoleLabel = (role: number) => {
     return role === GlobalRole.Admin ? 'Admin' : 'User';
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
   };
 
   return (
@@ -73,67 +65,102 @@ export function GlobalUsersTable({ users }: GlobalUsersTableProps) {
           <TableBody>
             {filteredUsers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                  {searchQuery ? 'No users found matching your search.' : 'No users yet.'}
+                <TableCell
+                  colSpan={7}
+                  className={users.length === 0 && emptyNode ? undefined : 'text-center py-8 text-muted-foreground'}
+                >
+                  {users.length === 0 && emptyNode
+                    ? emptyNode
+                    : searchQuery
+                    ? 'No users found matching your search.'
+                    : 'No users yet.'
+                  }
                 </TableCell>
               </TableRow>
             ) : (
               filteredUsers.map((user) => (
                 <TableRow key={user.userId} className={!user.isActive ? 'opacity-60' : undefined}>
-                  <TableCell className="font-medium">
-                    <code className="text-sm bg-muted px-2 py-1 rounded">{user.username}</code>
+                  <TableCell>
+                    <span className="font-mono text-sm">{user.username}</span>
                   </TableCell>
                   <TableCell>{user.fullName}</TableCell>
                   <TableCell>
-                    <Badge variant={getRoleBadgeVariant(user.globalRole)}>{getRoleLabel(user.globalRole)}</Badge>
+                    <Badge variant="outline">{getRoleLabel(user.globalRole)}</Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={user.isActive ? 'default' : 'secondary'}>
+                    <Badge variant={user.isActive ? 'success' : 'secondary'}>
                       {user.isActive ? 'Active' : 'Inactive'}
                     </Badge>
                   </TableCell>
-                  <TableCell>{formatDate(user.createdAt)}</TableCell>
+                  <TableCell>
+                    <span className="text-sm text-muted-foreground">{formatDate(user.createdAt)}</span>
+                  </TableCell>
                   <TableCell>
                     {user.lastLoginAt ? (
-                      formatDate(user.lastLoginAt)
+                      <span className="text-sm text-muted-foreground">{formatDate(user.lastLoginAt)}</span>
                     ) : (
-                      <span className="text-muted-foreground italic">Never</span>
+                      <span className="text-sm text-muted-foreground italic">Never</span>
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end gap-1">
                       {user.isActive ? (
                         <>
-                          <EditUserDialog user={user}>
-                            <Button variant="ghost" size="sm">
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                          </EditUserDialog>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <EditUserDialog user={user}>
+                                <Button variant="ghost" size="sm">
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              </EditUserDialog>
+                            </TooltipTrigger>
+                            <TooltipContent>Edit user</TooltipContent>
+                          </Tooltip>
                           {isAdmin && (
-                            <ResetPasswordDialog user={user}>
-                              <Button variant="ghost" size="sm">
-                                <KeyRound className="h-4 w-4" />
-                              </Button>
-                            </ResetPasswordDialog>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <ResetPasswordDialog user={user}>
+                                  <Button variant="ghost" size="sm">
+                                    <KeyRound className="h-4 w-4" />
+                                  </Button>
+                                </ResetPasswordDialog>
+                              </TooltipTrigger>
+                              <TooltipContent>Reset password</TooltipContent>
+                            </Tooltip>
                           )}
-                          <DeactivateUserDialog user={user}>
-                            <Button variant="ghost" size="sm">
-                              <UserX className="h-4 w-4" />
-                            </Button>
-                          </DeactivateUserDialog>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <DeactivateUserDialog user={user}>
+                                <Button variant="ghost" size="sm">
+                                  <UserX className="h-4 w-4" />
+                                </Button>
+                              </DeactivateUserDialog>
+                            </TooltipTrigger>
+                            <TooltipContent>Deactivate user</TooltipContent>
+                          </Tooltip>
                         </>
                       ) : (
                         <>
-                          <ActivateUserDialog user={user}>
-                            <Button variant="ghost" size="sm">
-                              <UserCheck className="h-4 w-4" />
-                            </Button>
-                          </ActivateUserDialog>
-                          <DeleteUserDialog user={user}>
-                            <Button variant="ghost" size="sm">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </DeleteUserDialog>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <ActivateUserDialog user={user}>
+                                <Button variant="ghost" size="sm">
+                                  <UserCheck className="h-4 w-4" />
+                                </Button>
+                              </ActivateUserDialog>
+                            </TooltipTrigger>
+                            <TooltipContent>Activate user</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <DeleteUserDialog user={user}>
+                                <Button variant="ghost" size="sm">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </DeleteUserDialog>
+                            </TooltipTrigger>
+                            <TooltipContent>Delete user</TooltipContent>
+                          </Tooltip>
                         </>
                       )}
                     </div>

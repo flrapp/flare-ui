@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ChevronUp, ChevronDown, Pencil, Trash2 } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { Badge } from '@/shared/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/ui/tooltip';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -62,43 +63,66 @@ export function TargetingRuleCard({
         <div className="flex-1 min-w-0 space-y-2">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-muted-foreground">Rule {index + 1}</span>
-            <Badge variant={rule.serveValue ? 'default' : 'secondary'}>
-              {rule.serveValue ? 'ON' : 'OFF'}
-            </Badge>
+            {rule.serveValue ? (
+              <Badge className="bg-[hsl(var(--success)/0.1)] text-[hsl(var(--success))] hover:bg-[hsl(var(--success)/0.1)]">
+                ON
+              </Badge>
+            ) : (
+              <Badge variant="secondary">OFF</Badge>
+            )}
           </div>
           <ConditionsSummary rule={rule} segments={segments} />
         </div>
 
         {canManage && (
+          <TooltipProvider>
           <div className="flex items-center gap-1 shrink-0">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onMoveUp}
-              disabled={index === 0}
-              title="Move up"
-            >
-              <ChevronUp className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onMoveDown}
-              disabled={index === totalRules - 1}
-              title="Move down"
-            >
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={onEdit} title="Edit rule">
-              <Pencil className="h-4 w-4" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onMoveUp}
+                  disabled={index === 0}
+                >
+                  <ChevronUp className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Move up</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onMoveDown}
+                  disabled={index === totalRules - 1}
+                >
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Move down</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" onClick={onEdit}>
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Edit rule</TooltipContent>
+            </Tooltip>
 
             <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+              <Tooltip>
+              <TooltipTrigger asChild>
               <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="icon" title="Delete rule">
+                <Button variant="ghost" size="icon">
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </AlertDialogTrigger>
+              </TooltipTrigger>
+              <TooltipContent>Delete rule</TooltipContent>
+              </Tooltip>
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete Rule {index + 1}?</AlertDialogTitle>
@@ -120,6 +144,7 @@ export function TargetingRuleCard({
               </AlertDialogContent>
             </AlertDialog>
           </div>
+          </TooltipProvider>
         )}
       </div>
     </div>
@@ -137,7 +162,7 @@ function ConditionsSummary({ rule, segments }: ConditionsSummaryProps) {
   }
 
   return (
-    <p className="text-sm text-muted-foreground break-words">
+    <p className="font-mono text-sm text-muted-foreground break-words">
       {rule.conditions.map((cond, i) => {
         const operatorLabel = OPERATOR_LABELS[cond.operator] ?? String(cond.operator);
         const isSegmentOp = SEGMENT_OPERATORS.has(cond.operator);
@@ -147,12 +172,12 @@ function ConditionsSummary({ rule, segments }: ConditionsSummaryProps) {
 
         return (
           <span key={cond.id}>
-            {i > 0 && <span className="font-medium text-foreground mx-1">AND</span>}
-            <span className="font-mono">{cond.attributeKey}</span>
+            {i > 0 && <span className="font-sans font-medium text-foreground mx-1">AND</span>}
+            {cond.attributeKey}
             {' '}
-            <span>{operatorLabel}</span>
+            <span className="font-sans">{operatorLabel}</span>
             {' '}
-            <span className="font-mono">{valueLabel}</span>
+            {valueLabel}
           </span>
         );
       })}

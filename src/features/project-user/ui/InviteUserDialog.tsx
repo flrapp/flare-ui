@@ -111,7 +111,7 @@ export function InviteUserDialog({ projectId, children }: InviteUserDialogProps)
                   {nonMembers.map((user) => (
                     <SelectItem key={user.userId} value={user.userId}>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">{user.username}</span>
+                        <span className="font-mono font-medium">{user.username}</span>
                         <span className="text-muted-foreground">- {user.fullName}</span>
                       </div>
                     </SelectItem>
@@ -143,7 +143,7 @@ export function InviteUserDialog({ projectId, children }: InviteUserDialogProps)
         </div>
 
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={inviteUser.isPending}>
+          <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={inviteUser.isPending}>
             Cancel
           </Button>
           <Button onClick={handleInvite} disabled={!selectedUserId || inviteUser.isPending || nonMembers.length === 0}>

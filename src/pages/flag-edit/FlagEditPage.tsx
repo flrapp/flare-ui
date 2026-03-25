@@ -1,16 +1,16 @@
-import { useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ChevronLeft } from 'lucide-react';
+import { PageHeader } from '@/shared/ui/page-header';
 import { toast } from '@/shared/lib/toast';
 import { useFeatureFlagById, useUpdateFeatureFlag, useUpdateFeatureFlagValue } from '@/entities/flag';
 import { usePermissions } from '@/shared/hooks/usePermissions';
 import { ScopePermission, ProjectPermission } from '@/shared/types/entities';
 import { canPerformScopeAction } from '@/shared/lib/permissions';
-import { PageLoader } from '@/shared/ui/PageLoader';
+import { Skeleton } from '@/shared/ui/skeleton';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
@@ -27,6 +27,7 @@ import {
 } from '@/shared/ui/form';
 import { Input } from '@/shared/ui/input';
 import { TargetingRulesSection } from '@/features/flag/ui/TargetingRulesSection';
+import { DeleteFeatureFlagDialog } from '@/features/flag/ui/DeleteFeatureFlagDialog';
 import type { ProblemDetails } from '@/shared/types/auth';
 import type { FeatureFlagValue } from '@/shared/types';
 
@@ -50,6 +51,8 @@ type FlagFormData = z.infer<typeof flagSchema>;
 
 export function FlagEditPage() {
   const { projectId, flagId } = useParams<{ projectId: string; flagId: string }>();
+  const navigate = useNavigate();
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const { data: flag, isLoading: flagLoading, error: flagError } = useFeatureFlagById(projectId, flagId);
   const { permissions, canPerformProjectAction, isLoading: permissionsLoading } = usePermissions(projectId);
@@ -72,7 +75,45 @@ export function FlagEditPage() {
   }, [flag, form]);
 
   if (flagLoading || permissionsLoading) {
-    return <PageLoader message="Loading feature flag..." />;
+    return (
+      <div className="p-8 max-w-5xl mx-auto space-y-6">
+        <Skeleton className="h-4 w-32" />
+        <div className="space-y-1">
+          <Skeleton className="h-8 w-56" />
+          <Skeleton className="h-4 w-32" />
+        </div>
+        <div className="border rounded-lg p-5 space-y-4">
+          <Skeleton className="h-5 w-28" />
+          <div className="space-y-1.5">
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-9 w-full" />
+          </div>
+          <div className="space-y-1.5">
+            <Skeleton className="h-4 w-10" />
+            <Skeleton className="h-9 w-full" />
+          </div>
+          <div className="space-y-1.5">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-9 w-full" />
+          </div>
+          <div className="flex justify-end">
+            <Skeleton className="h-9 w-28" />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <Skeleton className="h-9 w-24" />
+            <Skeleton className="h-9 w-24" />
+          </div>
+          <div className="border rounded-lg p-5 space-y-4">
+            <Skeleton className="h-14 w-full rounded-lg" />
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-9 w-full" />
+            <Skeleton className="h-9 w-full" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (flagError || !flag || !flagId || !projectId) {
@@ -119,27 +160,33 @@ export function FlagEditPage() {
   const sortedValues = flag.values;
 
   return (
-    <div className="p-8 max-w-5xl mx-auto space-y-6">
-      {/* Back navigation */}
-      <Link
-        to={`/projects/${projectId}`}
-        className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ChevronLeft className="h-4 w-4 mr-1" />
-        Back to Project
-      </Link>
+    <div className="p-8 max-w-2xl mx-auto">
+      <PageHeader
+        title={flag.name}
+        subtitle={<span className="font-mono">{flag.key}</span>}
+        backTo={`/projects/${projectId}`}
+        actions={
+          <>
+            <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
+              Delete
+            </Button>
+            <DeleteFeatureFlagDialog
+              flag={flag}
+              open={deleteOpen}
+              onOpenChange={setDeleteOpen}
+              onDeleted={() => navigate(`/projects/${projectId}`)}
+            />
+          </>
+        }
+      />
 
-      <div>
-        <h1 className="text-2xl font-bold">{flag.name}</h1>
-        <p className="text-sm text-muted-foreground font-mono">{flag.key}</p>
-      </div>
-
+      <div className="space-y-6">
       {/* Metadata edit form */}
       <Card>
-        <CardHeader>
-          <CardTitle>Flag Settings</CardTitle>
+        <CardHeader className="pb-4">
+          <CardTitle className="text-base font-medium">Flag Settings</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-5 pt-0">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmitMeta)} className="space-y-4">
               <FormField
@@ -162,7 +209,7 @@ export function FlagEditPage() {
                   <FormItem>
                     <FormLabel>Key</FormLabel>
                     <FormControl>
-                      <Input placeholder="new_dashboard" {...field} />
+                      <Input placeholder="new_dashboard" className="font-mono" {...field} />
                     </FormControl>
                     <FormDescription>Used to identify this flag in your code.</FormDescription>
                     <FormMessage />
@@ -259,6 +306,7 @@ export function FlagEditPage() {
           </CardContent>
         </Card>
       )}
+      </div>
     </div>
   );
 }

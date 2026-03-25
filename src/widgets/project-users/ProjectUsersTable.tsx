@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
-import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Pencil, Trash2, Search } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip';
 import { PermissionBadges } from '@/shared/ui/PermissionBadges';
 import { EditUserPermissionsDialog, RemoveUserDialog } from '@/features/project-user';
-import type { ProjectUser } from '@/shared/types/entities';
+import { useScopes } from '@/entities/scope';
+import { getScopePermissionLabel } from '@/shared/lib/permissions';
+import { formatDate } from '@/shared/lib/format-date';
+import type { ProjectUser, ScopePermission } from '@/shared/types/entities';
 
 interface ProjectUsersTableProps {
   projectId: string;
@@ -16,20 +19,15 @@ interface ProjectUsersTableProps {
 
 export function ProjectUsersTable({ projectId, users, canManageUsers }: ProjectUsersTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const { data: scopes } = useScopes(projectId);
+
+  const scopeNameMap = new Map(scopes?.map((s) => [s.id, s.name]) ?? []);
 
   const filteredUsers = users.filter(
     (user) =>
       user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.fullName.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
 
   const getTotalPermissionsCount = (user: ProjectUser) => {
     const projectPerms = user.projectPermissions.length;
@@ -54,49 +52,70 @@ export function ProjectUsersTable({ projectId, users, canManageUsers }: ProjectU
         </div>
       </div>
 
-      <div className="rounded-md border">
+      <div className="border border-border rounded-lg overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Username</TableHead>
-              <TableHead>Full Name</TableHead>
-              <TableHead>Joined</TableHead>
-              <TableHead>Permissions</TableHead>
-              {canManageUsers && <TableHead className="text-right">Actions</TableHead>}
+              <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Username</TableHead>
+              <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Full Name</TableHead>
+              <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Joined</TableHead>
+              <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Permissions</TableHead>
+              {canManageUsers && <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wider text-right">Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredUsers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={canManageUsers ? 6 : 5} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={canManageUsers ? 5 : 4} className="text-center py-8 text-muted-foreground">
                   {searchQuery ? 'No team members found matching your search.' : 'No team members yet.'}
                 </TableCell>
               </TableRow>
             ) : (
               filteredUsers.map((user) => {
                 const totalPermissions = getTotalPermissionsCount(user);
+                const scopeEntries = Object.entries(user.scopePermissions);
+                const totalScopePerms = scopeEntries.reduce((sum, [, perms]) => sum + perms.length, 0);
+
                 return (
                   <TableRow key={user.userId}>
-                    <TableCell className="font-medium">
-                      <code className="text-sm bg-muted px-2 py-1 rounded">{user.username}</code>
+                    <TableCell>
+                      <span className="font-mono text-sm">{user.username}</span>
                     </TableCell>
                     <TableCell>{user.fullName}</TableCell>
-                    <TableCell>{formatDate(user.joinedAt)}</TableCell>
                     <TableCell>
-                      <div className="space-y-1">
+                      <span className="text-sm text-muted-foreground">{formatDate(user.joinedAt)}</span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-2">
                         {user.projectPermissions.length > 0 && (
                           <div>
                             <div className="text-xs text-muted-foreground mb-1">Project:</div>
                             <PermissionBadges permissions={user.projectPermissions} type="project" max={2} />
                           </div>
                         )}
-                        {Object.values(user.scopePermissions).flat().length > 0 && (
+                        {totalScopePerms > 0 && (
                           <div>
                             <div className="text-xs text-muted-foreground mb-1">Scopes:</div>
-                            <Badge variant="outline" className="text-xs">
-                              {Object.values(user.scopePermissions).flat().length} permissions across{' '}
-                              {Object.keys(user.scopePermissions).length} scopes
-                            </Badge>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="text-xs text-muted-foreground cursor-pointer underline-offset-4 hover:underline hover:text-foreground">
+                                  {totalScopePerms} {totalScopePerms === 1 ? 'permission' : 'permissions'} across {scopeEntries.length} {scopeEntries.length === 1 ? 'scope' : 'scopes'}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent className="max-w-xs">
+                                <div className="space-y-1">
+                                  {scopeEntries.map(([scopeId, perms]) => (
+                                    <div key={scopeId}>
+                                      <span className="font-mono">{scopeNameMap.get(scopeId) ?? scopeId}</span>
+                                      <span className="text-primary-foreground/70">: </span>
+                                      <span className="font-mono">
+                                        {perms.map((p) => getScopePermissionLabel(p as ScopePermission)).join(', ')}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
                           </div>
                         )}
                         {totalPermissions === 0 && (
@@ -107,16 +126,26 @@ export function ProjectUsersTable({ projectId, users, canManageUsers }: ProjectU
                     {canManageUsers && (
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          <EditUserPermissionsDialog projectId={projectId} user={user}>
-                            <Button variant="ghost" size="sm">
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                          </EditUserPermissionsDialog>
-                          <RemoveUserDialog projectId={projectId} user={user}>
-                            <Button variant="ghost" size="sm">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </RemoveUserDialog>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <EditUserPermissionsDialog projectId={projectId} user={user}>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              </EditUserPermissionsDialog>
+                            </TooltipTrigger>
+                            <TooltipContent>Edit permissions</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <RemoveUserDialog projectId={projectId} user={user}>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </RemoveUserDialog>
+                            </TooltipTrigger>
+                            <TooltipContent>Remove from project</TooltipContent>
+                          </Tooltip>
                         </div>
                       </TableCell>
                     )}

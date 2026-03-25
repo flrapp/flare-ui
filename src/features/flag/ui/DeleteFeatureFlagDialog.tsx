@@ -19,6 +19,7 @@ interface DeleteFeatureFlagDialogProps {
   flag: FeatureFlag;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  onDeleted?: () => void;
   children?: React.ReactNode;
 }
 
@@ -26,6 +27,7 @@ export function DeleteFeatureFlagDialog({
   flag,
   open: controlledOpen,
   onOpenChange,
+  onDeleted,
   children,
 }: DeleteFeatureFlagDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
@@ -45,6 +47,7 @@ export function DeleteFeatureFlagDialog({
       toast.success('feature flag', 'deleted');
       setOpen(false);
       setConfirmName('');
+      onDeleted?.();
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
       toast.error('feature flag', 'delete', problemDetails?.detail ?? problemDetails?.title ?? undefined);

@@ -3,6 +3,7 @@ import { Button } from '@/shared/ui/button';
 import { EditScopeDialog } from './EditScopeDialog';
 import { DeleteScopeDialog } from './DeleteScopeDialog';
 import type { Scope } from '@/shared/types';
+import { formatDateTime } from '@/shared/lib/format-date';
 import { Pencil, Trash2 } from 'lucide-react';
 
 interface ScopeDetailsProps {
@@ -49,7 +50,7 @@ export function ScopeDetails({ scope, canManage }: ScopeDetailsProps) {
         <div>
           <h4 className="text-sm font-medium mb-1">Created</h4>
           <p className="text-sm text-muted-foreground">
-            {new Date(scope.createdAt).toLocaleString()}
+            {formatDateTime(scope.createdAt)}
           </p>
         </div>
       </CardContent>

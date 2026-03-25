@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
 import { Input } from '@/shared/ui/input';
 import { Button } from '@/shared/ui/button';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { authApi } from '@/shared/api/auth';
 import { useAuthStore } from '@/shared/stores/authStore';
 import type { ProblemDetails } from '@/shared/types/auth';
@@ -19,7 +19,10 @@ const changePasswordSchema = z
     newPassword: z
       .string()
       .min(8, 'Password must be at least 8 characters')
-      .max(100, 'Password must not exceed 100 characters'),
+      .max(100, 'Password must not exceed 100 characters')
+      .regex(/[a-z]/, 'Must contain at least one lowercase letter')
+      .regex(/[A-Z]/, 'Must contain at least one uppercase letter')
+      .regex(/\d/, 'Must contain at least one number'),
     confirmPassword: z.string(),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
@@ -31,16 +34,27 @@ type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
 
 export function ChangePasswordDialog() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const clearMustChangePassword = useAuthStore((state) => state.clearMustChangePassword);
 
   const form = useForm<ChangePasswordFormData>({
     resolver: zodResolver(changePasswordSchema) as Resolver<ChangePasswordFormData>,
+    mode: 'onTouched',
     defaultValues: {
       currentPassword: '',
       newPassword: '',
       confirmPassword: '',
     },
   });
+
+  const newPassword = form.watch('newPassword');
+  useEffect(() => {
+    if (form.formState.touchedFields.confirmPassword) {
+      form.trigger('confirmPassword');
+    }
+  }, [newPassword]);
 
   const onSubmit = async (data: ChangePasswordFormData) => {
     try {
@@ -52,6 +66,13 @@ export function ChangePasswordDialog() {
       clearMustChangePassword();
       toast.success('password', 'changed');
     } catch (error: any) {
+      if (error.response?.status === 400) {
+        const message = error.response.data?.message;
+        if (message) {
+          form.setError('currentPassword', { message });
+          return;
+        }
+      }
       const problemDetails = error.response?.data as ProblemDetails | undefined;
       toast.error('password', 'change', problemDetails?.detail ?? problemDetails?.title ?? undefined);
     } finally {
@@ -63,7 +84,7 @@ export function ChangePasswordDialog() {
     <Dialog open={true} onOpenChange={() => {}}>
       <DialogContent className="sm:max-w-[525px]" hideCloseButton>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-destructive">
+          <DialogTitle className="flex items-center gap-2 text-foreground">
             <AlertCircle className="h-5 w-5" />
             Password Change Required
           </DialogTitle>
@@ -81,7 +102,19 @@ export function ChangePasswordDialog() {
                 <FormItem>
                   <FormLabel>Current Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="Enter your temporary password" {...field} />
+                    <div className="relative">
+                      <Input type={showCurrentPassword ? 'text' : 'password'} placeholder="Enter your temporary password" {...field} />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowCurrentPassword((v) => !v)}
+                        tabIndex={-1}
+                      >
+                        {showCurrentPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                      </Button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -94,7 +127,19 @@ export function ChangePasswordDialog() {
                 <FormItem>
                   <FormLabel>New Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="Enter new password" {...field} />
+                    <div className="relative">
+                      <Input type={showNewPassword ? 'text' : 'password'} placeholder="Enter new password" {...field} />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowNewPassword((v) => !v)}
+                        tabIndex={-1}
+                      >
+                        {showNewPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                      </Button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -107,7 +152,19 @@ export function ChangePasswordDialog() {
                 <FormItem>
                   <FormLabel>Confirm New Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="Confirm new password" {...field} />
+                    <div className="relative">
+                      <Input type={showConfirmPassword ? 'text' : 'password'} placeholder="Confirm new password" {...field} />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowConfirmPassword((v) => !v)}
+                        tabIndex={-1}
+                      >
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
+                      </Button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

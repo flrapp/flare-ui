@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ChevronLeft, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { toast } from '@/shared/lib/toast';
 import { useSegmentById, useUpdateSegment } from '@/entities/segment';
 import { usePermissions } from '@/shared/hooks/usePermissions';
 import { ProjectPermission } from '@/shared/types/entities';
-import { PageLoader } from '@/shared/ui/PageLoader';
+import { Skeleton } from '@/shared/ui/skeleton';
+import { TableSkeleton } from '@/shared/ui/TableSkeleton';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { PageHeader } from '@/shared/ui/page-header';
 import { Button } from '@/shared/ui/button';
 import {
   Form,
@@ -60,7 +62,34 @@ export function SegmentDetailPage() {
   }, [segment, form]);
 
   if (isLoading || permissionsLoading) {
-    return <PageLoader message="Loading segment..." />;
+    return (
+      <div className="p-8">
+        <Skeleton className="h-4 w-36" />
+        <div className="mx-auto max-w-2xl space-y-6 mt-6">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-7 w-40" />
+            <Skeleton className="h-9 w-24" />
+          </div>
+          <div className="border rounded-lg p-5 space-y-4">
+            <Skeleton className="h-5 w-36" />
+            <div className="space-y-1.5">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-9 w-full" />
+            </div>
+            <div className="space-y-1.5">
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="h-9 w-full" />
+            </div>
+            <div className="flex justify-end">
+              <Skeleton className="h-9 w-28" />
+            </div>
+          </div>
+          <div className="border rounded-lg p-5">
+            <TableSkeleton rows={4} columns={3} />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (error || !segment || !segmentId || !projectId) {
@@ -91,31 +120,28 @@ export function SegmentDetailPage() {
   };
 
   return (
-    <div className="p-8 max-w-3xl mx-auto space-y-6">
-      <Link
-        to={`/projects/${projectId}/segments`}
-        className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ChevronLeft className="h-4 w-4 mr-1" />
-        Back to Segments
-      </Link>
-
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{segment.name}</h1>
-        {canManage && (
-          <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete
-          </Button>
-        )}
-      </div>
+    <div className="p-8">
+      <div className="mx-auto max-w-2xl">
+      <PageHeader
+        title={segment.name}
+        backTo={`/projects/${projectId}/segments`}
+        actions={
+          canManage ? (
+            <Button variant="outline" size="sm" onClick={() => setDeleteOpen(true)} className="border-destructive text-destructive hover:bg-destructive/10">
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
+          ) : undefined
+        }
+      />
+      <div className="space-y-6">
 
       {/* Edit form */}
       <Card>
-        <CardHeader>
+        <CardHeader className="p-5 pb-0">
           <CardTitle>Segment Settings</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-5">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
@@ -163,7 +189,7 @@ export function SegmentDetailPage() {
 
       {/* Members */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="p-5">
           <SegmentMembersSection segmentId={segmentId} canManage={canManage} />
         </CardContent>
       </Card>
@@ -174,6 +200,8 @@ export function SegmentDetailPage() {
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
       />
+      </div>
+      </div>
     </div>
   );
 }

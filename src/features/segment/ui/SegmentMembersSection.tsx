@@ -49,7 +49,7 @@ function RemoveMemberButton({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="sm" disabled={remove.isPending}>
+        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" disabled={remove.isPending}>
           <Trash2 className="h-4 w-4" />
         </Button>
       </AlertDialogTrigger>
@@ -134,7 +134,7 @@ export function SegmentMembersSection({ segmentId, canManage }: SegmentMembersSe
           }
           action={
             !search && canManage ? (
-              <Button size="sm" onClick={() => setAddOpen(true)}>
+              <Button variant="outline" size="sm" onClick={() => setAddOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Members
               </Button>
