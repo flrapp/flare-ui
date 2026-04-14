@@ -39,3 +39,7 @@ export async function activateUser(userId: string): Promise<void> {
 export async function deactivateUser(userId: string): Promise<void> {
   await apiClient.post(`${BASE_PATH}/${userId}/deactivate`);
 }
+
+export async function unlockUser(userId: string): Promise<void> {
+  await apiClient.post(`${BASE_PATH}/${userId}/unlock`);
+}

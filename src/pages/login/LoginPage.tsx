@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Lock, Clock } from 'lucide-react';
 import { FlareIcon } from '@/shared/ui/FlareIcon';
 import { useAuthStore } from '@/shared/stores/authStore';
 import { Button } from '@/shared/ui/button';
@@ -20,7 +20,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const { login, isLoading, error, isAuthenticated } = useAuthStore();
+  const { login, isLoading, error, lockDetails, clearLoginError, isAuthenticated } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<LoginFormValues>({
@@ -73,6 +73,7 @@ export function LoginPage() {
                         className="font-mono"
                         {...field}
                         disabled={isLoading}
+                        onChange={(e) => { field.onChange(e); clearLoginError(); }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -109,12 +110,24 @@ export function LoginPage() {
                   </FormItem>
                 )}
               />
-              {error && (
+              {lockDetails?.isPermanent && (
+                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive flex gap-2">
+                  <Lock className="h-4 w-4 mt-0.5 shrink-0" />
+                  <span>Your account has been locked due to too many failed attempts. Please contact your administrator.</span>
+                </div>
+              )}
+              {lockDetails && !lockDetails.isPermanent && (
+                <div className="rounded-md bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800 flex gap-2 dark:bg-amber-950/20 dark:border-amber-800 dark:text-amber-400">
+                  <Clock className="h-4 w-4 mt-0.5 shrink-0" />
+                  <span>Your account is temporarily locked. Try again in {lockDetails.remainingMinutes} minute{lockDetails.remainingMinutes !== 1 ? 's' : ''}.</span>
+                </div>
+              )}
+              {error && !lockDetails && (
                 <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
                   {error}
                 </div>
               )}
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full" disabled={isLoading || lockDetails?.isPermanent === true}>
                 {isLoading ? 'Signing in...' : 'Sign in'}
               </Button>
             </form>

@@ -106,3 +106,14 @@ export function useDeactivateUser() {
     },
   });
 }
+
+export function useUnlockUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (userId: string) => userApi.unlockUser(userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: userKeys.lists() });
+    },
+  });
+}
