@@ -11,7 +11,8 @@ import {
 } from '@/shared/ui/dropdown-menu';
 import { GlobalRole } from '@/shared/types/entities';
 import { cn } from '@/shared/lib/utils';
-import { Flame, ChevronDown, LogOut } from 'lucide-react';
+import { ChevronDown, LogOut } from 'lucide-react';
+import { FlareIcon } from '@/shared/ui/FlareIcon';
 
 export function AppHeader() {
   const navigate = useNavigate();
@@ -35,7 +36,7 @@ export function AppHeader() {
       <div className="flex items-center h-14 px-6 gap-6">
         {/* Logo */}
         <Link to="/projects" className="flex items-center gap-1.5 shrink-0">
-          <Flame className="h-5 w-5 text-primary" />
+          <FlareIcon className="h-5 w-5" />
           <span className="font-semibold text-lg leading-none">Flare</span>
         </Link>
 
