@@ -68,6 +68,9 @@ export interface UserResponseDto {
   fullName: string;
   globalRole: number;
   isActive: boolean;
+  isBruteForceLocked: boolean;
+  failedLoginAttempts: number;
+  lockedUntil: string | null;
   createdAt: string;
   lastLoginAt: string | null;
 }

@@ -126,8 +126,8 @@ body {
     --accent-foreground: 210 40% 98%;
 
     /* --- Destructive --- */
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 0 86% 97%;
+    --destructive: 0 84% 60.2%;
+    --destructive-foreground: 0 0% 100%;
 
     /* --- Borders & inputs --- */
     --border: 215 25% 30%;

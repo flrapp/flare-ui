@@ -5,8 +5,8 @@ import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip';
-import { Pencil, Trash2, Search, KeyRound, UserX, UserCheck } from 'lucide-react';
-import { EditUserDialog, DeleteUserDialog, ResetPasswordDialog, ActivateUserDialog, DeactivateUserDialog } from '@/features/user';
+import { Pencil, Trash2, Search, KeyRound, UserX, UserCheck, ShieldOff } from 'lucide-react';
+import { EditUserDialog, DeleteUserDialog, ResetPasswordDialog, ActivateUserDialog, DeactivateUserDialog, UnlockUserDialog } from '@/features/user';
 import { GlobalRole } from '@/shared/types/entities';
 import { useAuthStore } from '@/shared/stores/authStore';
 import { formatDate } from '@/shared/lib/format-date';
@@ -88,9 +88,14 @@ export function GlobalUsersTable({ users, emptyNode }: GlobalUsersTableProps) {
                     <Badge variant="outline">{getRoleLabel(user.globalRole)}</Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={user.isActive ? 'success' : 'secondary'}>
-                      {user.isActive ? 'Active' : 'Inactive'}
-                    </Badge>
+                    <div className="flex flex-wrap gap-1">
+                      <Badge variant={user.isActive ? 'success' : 'secondary'}>
+                        {user.isActive ? 'Active' : 'Inactive'}
+                      </Badge>
+                      {user.isBruteForceLocked && (
+                        <Badge variant="destructive">Locked (brute force)</Badge>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <span className="text-sm text-muted-foreground">{formatDate(user.createdAt)}</span>
@@ -162,6 +167,18 @@ export function GlobalUsersTable({ users, emptyNode }: GlobalUsersTableProps) {
                             <TooltipContent>Delete user</TooltipContent>
                           </Tooltip>
                         </>
+                      )}
+                      {isAdmin && user.isBruteForceLocked && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <UnlockUserDialog user={user}>
+                              <Button variant="ghost" size="sm" className="text-amber-600 hover:text-amber-700">
+                                <ShieldOff className="h-4 w-4" />
+                              </Button>
+                            </UnlockUserDialog>
+                          </TooltipTrigger>
+                          <TooltipContent>Unlock user (brute force)</TooltipContent>
+                        </Tooltip>
                       )}
                     </div>
                   </TableCell>
