@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Eye, EyeOff, Flame, Lock, Clock } from 'lucide-react';
+import { Eye, EyeOff, Lock, Clock } from 'lucide-react';
+import { FlareIcon } from '@/shared/ui/FlareIcon';
 import { useAuthStore } from '@/shared/stores/authStore';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
@@ -50,7 +51,7 @@ export function LoginPage() {
       <Card className="w-full max-w-md border border-border rounded-lg shadow-sm">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center flex items-center justify-center gap-2">
-            <Flame className="h-6 w-6 text-primary" />
+            <FlareIcon className="h-6 w-6" />
             Flare
           </CardTitle>
           <CardDescription className="text-center">
