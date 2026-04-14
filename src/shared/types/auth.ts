@@ -27,4 +27,11 @@ export interface ProblemDetails {
   status?: number | null;
   detail?: string | null;
   instance?: string | null;
+  isPermanent?: boolean;
+  remainingMinutes?: number;
+}
+
+export interface LockDetails {
+  isPermanent: boolean;
+  remainingMinutes?: number;
 }

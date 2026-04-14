@@ -4,3 +4,4 @@ export * from './ui/DeleteUserDialog';
 export * from './ui/ResetPasswordDialog';
 export * from './ui/ActivateUserDialog';
 export * from './ui/DeactivateUserDialog';
+export * from './ui/UnlockUserDialog';

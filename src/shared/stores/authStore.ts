@@ -1,6 +1,5 @@
 import { create } from 'zustand';
-import type { User } from '@/shared/types/auth';
-import type { LoginDto } from '@/shared/types/auth';
+import type { User, LoginDto, LockDetails } from '@/shared/types/auth';
 import { authApi } from '@/shared/api/auth';
 import { setAuthClearCallback } from '@/shared/api/client';
 
@@ -9,6 +8,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  lockDetails: LockDetails | null;
   setUser: (user: User | null) => void;
   clearUser: () => void;
   setLoading: (loading: boolean) => void;
@@ -29,8 +29,9 @@ export const useAuthStore = create<AuthState>((set) => {
     isAuthenticated: false,
     isLoading: false,
     error: null,
+    lockDetails: null,
 
-    setUser: (user) => set({ user, isAuthenticated: !!user, error: null }),
+    setUser: (user) => set({ user, isAuthenticated: !!user, error: null, lockDetails: null }),
 
     clearUser,
 
@@ -56,8 +57,13 @@ export const useAuthStore = create<AuthState>((set) => {
         };
         set({ user, isAuthenticated: true, isLoading: false, error: null });
       } catch (error: any) {
-        const errorMessage = error.response?.data?.detail || error.response?.data?.title || 'Login failed';
-        set({ error: errorMessage, isLoading: false, user: null, isAuthenticated: false });
+        const data = error.response?.data;
+        const isAccountLocked = data?.title === 'Account Locked';
+        const lockDetails: LockDetails | null = isAccountLocked
+          ? { isPermanent: data.isPermanent === true, remainingMinutes: data.remainingMinutes }
+          : null;
+        const errorMessage = data?.detail || data?.title || 'Login failed';
+        set({ error: errorMessage, lockDetails, isLoading: false, user: null, isAuthenticated: false });
         throw error;
       }
     },
