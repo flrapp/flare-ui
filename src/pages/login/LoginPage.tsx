@@ -19,7 +19,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const { login, isLoading, error, lockDetails, isAuthenticated } = useAuthStore();
+  const { login, isLoading, error, lockDetails, clearLoginError, isAuthenticated } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<LoginFormValues>({
@@ -72,6 +72,7 @@ export function LoginPage() {
                         className="font-mono"
                         {...field}
                         disabled={isLoading}
+                        onChange={(e) => { field.onChange(e); clearLoginError(); }}
                       />
                     </FormControl>
                     <FormMessage />

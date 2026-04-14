@@ -13,6 +13,7 @@ interface AuthState {
   clearUser: () => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  clearLoginError: () => void;
   clearMustChangePassword: () => void;
   login: (credentials: LoginDto) => Promise<void>;
   logout: () => Promise<void>;
@@ -38,6 +39,8 @@ export const useAuthStore = create<AuthState>((set) => {
     setLoading: (loading) => set({ isLoading: loading }),
 
     setError: (error) => set({ error }),
+
+    clearLoginError: () => set({ error: null, lockDetails: null }),
 
     clearMustChangePassword: () =>
       set((state) => ({
