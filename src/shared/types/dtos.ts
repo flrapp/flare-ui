@@ -37,6 +37,7 @@ export interface CreateFeatureFlagDto {
   name: string; // 2-255 chars
   description?: string | null; // max 1000 chars
   key: string;
+  type: import('./entities').FeatureFlagType;
 }
 
 export interface UpdateFeatureFlagDto {
@@ -47,7 +48,11 @@ export interface UpdateFeatureFlagDto {
 
 export interface UpdateFeatureFlagValueDto {
   scopeId: string;
-  isEnabled: boolean;
+  type: import('./entities').FeatureFlagType;
+  booleanValue?: boolean | null;
+  numberValue?: number | null;
+  stringValue?: string | null;
+  jsonValue?: string | null; // frontend string; flagApi serializes to JsonElement before sending
 }
 
 // User Management DTOs

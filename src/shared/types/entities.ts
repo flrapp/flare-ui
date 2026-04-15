@@ -1,4 +1,13 @@
 // Enums (using const objects for TypeScript compatibility)
+export const FeatureFlagType = {
+  Boolean: 0,
+  String: 1,
+  Number: 2,
+  Json: 3,
+} as const;
+
+export type FeatureFlagType = typeof FeatureFlagType[keyof typeof FeatureFlagType];
+
 export const ProjectPermission = {
   ManageUsers: 0,
   ManageFeatureFlags: 1,
@@ -59,8 +68,11 @@ export interface FeatureFlagValue {
   scopeId: string;
   scopeName: string;
   scopeAlias: string;
-  isEnabled: boolean;
   updatedAt: string;
+  booleanValue?: boolean | null;
+  numberValue?: number | null;
+  stringValue?: string | null;
+  jsonValue?: string | null; // stored as string in frontend; API returns/accepts JsonElement
 }
 
 export interface FeatureFlag {
@@ -69,6 +81,7 @@ export interface FeatureFlag {
   key: string;
   name: string;
   description: string | null;
+  type: FeatureFlagType;
   createdAt: string;
   updatedAt: string;
   values: FeatureFlagValue[];

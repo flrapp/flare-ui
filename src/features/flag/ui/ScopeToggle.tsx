@@ -4,6 +4,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shar
 import { useUpdateFeatureFlagValue } from '@/entities/flag';
 import { LoadingSpinner } from '@/shared/ui/LoadingSpinner';
 import { formatDateTime } from '@/shared/lib/format-date';
+import type { FeatureFlagType } from '@/shared/types/entities';
 import type { ProblemDetails } from '@/shared/types/auth';
 
 interface ScopeToggleProps {
@@ -11,6 +12,7 @@ interface ScopeToggleProps {
   scopeId: string;
   scopeName: string;
   currentValue: boolean;
+  flagType: FeatureFlagType;
   isEnabled: boolean;
   lastUpdated?: string;
   onToggle: () => void;
@@ -21,6 +23,7 @@ export function ScopeToggle({
   scopeId,
   scopeName,
   currentValue,
+  flagType,
   isEnabled,
   lastUpdated,
   onToggle,
@@ -35,7 +38,8 @@ export function ScopeToggle({
         flagId: featureFlagId,
         data: {
           scopeId,
-          isEnabled: checked,
+          type: flagType,
+          booleanValue: checked,
         },
       });
       toast.info(`Feature flag ${checked ? 'enabled' : 'disabled'} for ${scopeName}`);

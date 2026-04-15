@@ -140,7 +140,14 @@ export function useUpdateFeatureFlagValue() {
           ...previousFlag,
           values: previousFlag.values.map((v) =>
             v.scopeId === data.scopeId
-              ? { ...v, isEnabled: data.isEnabled, updatedAt: new Date().toISOString() }
+              ? {
+                  ...v,
+                  updatedAt: new Date().toISOString(),
+                  ...(data.booleanValue !== undefined && { booleanValue: data.booleanValue }),
+                  ...(data.stringValue !== undefined && { stringValue: data.stringValue }),
+                  ...(data.numberValue !== undefined && { numberValue: data.numberValue }),
+                  ...(data.jsonValue !== undefined && { jsonValue: data.jsonValue }),
+                }
               : v
           ),
         };

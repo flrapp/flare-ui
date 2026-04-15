@@ -8,6 +8,7 @@ import { useSegments } from '@/entities/segment';
 import { TargetingRuleCard } from './TargetingRuleCard';
 import { RuleModal } from './RuleModal';
 import { toast } from '@/shared/lib/toast';
+import type { FeatureFlagType } from '@/shared/types/entities';
 import type { TargetingRule } from '@/entities/targeting-rule/model/types';
 import type { ProblemDetails } from '@/shared/types/auth';
 
@@ -15,12 +16,14 @@ interface TargetingRulesSectionProps {
   flagValueId: string;
   projectId: string;
   canManage: boolean;
+  flagType: FeatureFlagType;
 }
 
 export function TargetingRulesSection({
   flagValueId,
   projectId,
   canManage,
+  flagType,
 }: TargetingRulesSectionProps) {
   const [addOpen, setAddOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<TargetingRule | null>(null);
@@ -105,6 +108,7 @@ export function TargetingRulesSection({
               index={index}
               totalRules={sortedRules.length}
               flagValueId={flagValueId}
+              flagType={flagType}
               segments={segments}
               canManage={canManage}
               onMoveUp={() => handleMoveUp(index)}
@@ -121,6 +125,7 @@ export function TargetingRulesSection({
         onOpenChange={setAddOpen}
         flagValueId={flagValueId}
         projectId={projectId}
+        flagType={flagType}
       />
 
       {/* Edit Rule Modal */}
@@ -130,6 +135,7 @@ export function TargetingRulesSection({
           onOpenChange={(open) => !open && setEditingRule(null)}
           flagValueId={flagValueId}
           projectId={projectId}
+          flagType={flagType}
           rule={editingRule}
         />
       )}

@@ -17,7 +17,8 @@ import { FeatureErrorBoundary } from '@/shared/ui/FeatureErrorBoundary';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/ui/tooltip';
 import { Plus, Flag, Pencil, Trash2 } from 'lucide-react';
 import { canPerformScopeAction } from '@/shared/lib/permissions';
-import type { MyPermissions, FeatureFlag } from '@/shared/types';
+import { FeatureFlagType } from '@/shared/types/entities';
+import type { MyPermissions, FeatureFlag, FeatureFlagValue } from '@/shared/types';
 import { ScopePermission } from '@/shared/types/entities';
 
 interface FeatureFlagsTableProps {
@@ -27,6 +28,54 @@ interface FeatureFlagsTableProps {
   onCreateFlag?: () => void;
   onEditFlag?: (flag: FeatureFlag) => void;
   onDeleteFlag?: (flag: FeatureFlag) => void;
+}
+
+function truncate(str: string, max: number): string {
+  return str.length <= max ? str : str.slice(0, max) + '…';
+}
+
+interface TypedValueDisplayProps {
+  flagType: FeatureFlagType;
+  value: FeatureFlagValue;
+}
+
+function TypedValueDisplay({ flagType, value }: TypedValueDisplayProps) {
+  if (flagType === FeatureFlagType.String) {
+    const display = value.stringValue != null ? truncate(value.stringValue, 16) : '—';
+    const full = value.stringValue ?? '';
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="inline-block font-mono text-xs bg-muted rounded px-1.5 py-0.5 cursor-default max-w-[120px] truncate">
+              {display}
+            </span>
+          </TooltipTrigger>
+          {full.length > 16 && (
+            <TooltipContent>
+              <p className="font-mono">{full}</p>
+            </TooltipContent>
+          )}
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
+  if (flagType === FeatureFlagType.Number) {
+    return (
+      <span className="text-xs text-muted-foreground">
+        {value.numberValue ?? '—'}
+      </span>
+    );
+  }
+
+  if (flagType === FeatureFlagType.Json) {
+    return (
+      <span className="text-xs text-muted-foreground font-mono">{'{ … }'}</span>
+    );
+  }
+
+  return null;
 }
 
 export function FeatureFlagsTable({
@@ -189,19 +238,23 @@ export function FeatureFlagsTable({
                     return (
                       <TableCell key={scope.id} className="text-center px-3 py-3">
                         {value ? (
-                          <ScopeToggle
-                            featureFlagId={flag.id}
-                            scopeId={scope.id}
-                            scopeName={scope.name}
-                            currentValue={value.isEnabled}
-                            isEnabled={canUpdate}
-                            lastUpdated={value.updatedAt}
-                            onToggle={ () =>{
-                              refetchFlags();
-                              refetchScopes();
-                              }
-                            }
-                          />
+                          flag.type === FeatureFlagType.Boolean ? (
+                            <ScopeToggle
+                              featureFlagId={flag.id}
+                              scopeId={scope.id}
+                              scopeName={scope.name}
+                              currentValue={value.booleanValue ?? false}
+                              flagType={FeatureFlagType.Boolean}
+                              isEnabled={canUpdate}
+                              lastUpdated={value.updatedAt}
+                              onToggle={() => {
+                                refetchFlags();
+                                refetchScopes();
+                              }}
+                            />
+                          ) : (
+                            <TypedValueDisplay flagType={flag.type} value={value} />
+                          )
                         ) : (
                           <div></div>
                         )}
