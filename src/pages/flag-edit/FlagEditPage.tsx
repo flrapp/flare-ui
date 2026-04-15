@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { PageHeader } from '@/shared/ui/page-header';
 import { toast } from '@/shared/lib/toast';
 import { useFeatureFlagById, useUpdateFeatureFlag, useUpdateFeatureFlagValue } from '@/entities/flag';
+import { useScopes } from '@/entities/scope';
 import { usePermissions } from '@/shared/hooks/usePermissions';
 import { ScopePermission, ProjectPermission, FeatureFlagType } from '@/shared/types/entities';
 import { canPerformScopeAction } from '@/shared/lib/permissions';
@@ -284,6 +285,7 @@ export function FlagEditPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   const { data: flag, isLoading: flagLoading, error: flagError } = useFeatureFlagById(projectId, flagId);
+  const { data: scopes = [] } = useScopes(projectId);
   const { permissions, canPerformProjectAction, isLoading: permissionsLoading } = usePermissions(projectId);
   const updateFlag = useUpdateFeatureFlag();
 
@@ -372,7 +374,9 @@ export function FlagEditPage() {
     }
   };
 
-  const sortedValues = flag.values;
+  const sortedValues = scopes
+    .map((scope) => flag.values.find((v) => v.scopeId === scope.id))
+    .filter((v): v is FeatureFlagValue => v !== undefined);
 
   return (
     <div className="p-8 max-w-2xl mx-auto">

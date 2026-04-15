@@ -116,73 +116,76 @@ export function useUpdateFeatureFlagValue() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ flagId, data }: { flagId: string; data: UpdateFeatureFlagValueDto }) =>
+    mutationFn: ({ flagId, data }: { flagId: string; projectId?: string; data: UpdateFeatureFlagValueDto }) =>
       flagApi.updateFeatureFlagValue(flagId, data),
-    onMutate: async ({ flagId, data }) => {
+    onMutate: async ({ flagId, projectId, data }) => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: flagKeys.detail(flagId) });
 
-      // Snapshot the previous value
+      // Snapshot the previous value from detail cache (flag edit page)
       const previousFlag = queryClient.getQueryData<FeatureFlag>(flagKeys.detail(flagId));
 
-      // Also get from project flags list
+      // Resolve projectId from detail cache or caller-supplied value
+      const resolvedProjectId = previousFlag?.projectId ?? projectId;
+
+      // Snapshot and cancel project list cache (flags table page)
       let previousProjectFlags: FeatureFlag[] | undefined;
-      if (previousFlag) {
-        await queryClient.cancelQueries({ queryKey: flagKeys.byProject(previousFlag.projectId) });
+      if (resolvedProjectId) {
+        await queryClient.cancelQueries({ queryKey: flagKeys.byProject(resolvedProjectId) });
         previousProjectFlags = queryClient.getQueryData<FeatureFlag[]>(
-          flagKeys.byProject(previousFlag.projectId)
+          flagKeys.byProject(resolvedProjectId)
         );
       }
 
-      // Optimistically update to the new value
+      const applyUpdate = (v: FeatureFlagValue): FeatureFlagValue =>
+        v.scopeId === data.scopeId
+          ? {
+              ...v,
+              updatedAt: new Date().toISOString(),
+              ...(data.booleanValue !== undefined && { booleanValue: data.booleanValue }),
+              ...(data.stringValue !== undefined && { stringValue: data.stringValue }),
+              ...(data.numberValue !== undefined && { numberValue: data.numberValue }),
+              ...(data.jsonValue !== undefined && { jsonValue: data.jsonValue }),
+            }
+          : v;
+
+      // Optimistically update detail cache if present
       if (previousFlag) {
         const updatedFlag: FeatureFlag = {
           ...previousFlag,
-          values: previousFlag.values.map((v) =>
-            v.scopeId === data.scopeId
-              ? {
-                  ...v,
-                  updatedAt: new Date().toISOString(),
-                  ...(data.booleanValue !== undefined && { booleanValue: data.booleanValue }),
-                  ...(data.stringValue !== undefined && { stringValue: data.stringValue }),
-                  ...(data.numberValue !== undefined && { numberValue: data.numberValue }),
-                  ...(data.jsonValue !== undefined && { jsonValue: data.jsonValue }),
-                }
-              : v
-          ),
+          values: previousFlag.values.map(applyUpdate),
         };
-
         queryClient.setQueryData<FeatureFlag>(flagKeys.detail(flagId), updatedFlag);
-
-        // Also update in project flags list
-        if (previousProjectFlags) {
-          queryClient.setQueryData<FeatureFlag[]>(
-            flagKeys.byProject(previousFlag.projectId),
-            previousProjectFlags.map((f) => (f.id === flagId ? updatedFlag : f))
-          );
-        }
       }
 
-      return { previousFlag, previousProjectFlags };
+      // Optimistically update project list cache if present
+      if (previousProjectFlags && resolvedProjectId) {
+        queryClient.setQueryData<FeatureFlag[]>(
+          flagKeys.byProject(resolvedProjectId),
+          previousProjectFlags.map((f) =>
+            f.id === flagId ? { ...f, values: f.values.map(applyUpdate) } : f
+          )
+        );
+      }
+
+      return { previousFlag, previousProjectFlags, resolvedProjectId };
     },
     onError: (_err, { flagId }, context) => {
-      // If the mutation fails, use the context returned from onMutate to roll back
       if (context?.previousFlag) {
         queryClient.setQueryData(flagKeys.detail(flagId), context.previousFlag);
-
-        if (context.previousProjectFlags) {
-          queryClient.setQueryData(
-            flagKeys.byProject(context.previousFlag.projectId),
-            context.previousProjectFlags
-          );
-        }
+      }
+      if (context?.previousProjectFlags && context.resolvedProjectId) {
+        queryClient.setQueryData(
+          flagKeys.byProject(context.resolvedProjectId),
+          context.previousProjectFlags
+        );
       }
     },
-    onSettled: (_data, _error, { flagId }) => {
-      // Always refetch after error or success to ensure we're in sync
+    onSettled: (_data, _error, { flagId, projectId }) => {
       const flag = queryClient.getQueryData<FeatureFlag>(flagKeys.detail(flagId));
-      if (flag) {
-        queryClient.invalidateQueries({ queryKey: flagKeys.byProject(flag.projectId) });
+      const pid = flag?.projectId ?? projectId;
+      if (pid) {
+        queryClient.invalidateQueries({ queryKey: flagKeys.byProject(pid) });
       }
       queryClient.invalidateQueries({ queryKey: flagKeys.detail(flagId) });
     },

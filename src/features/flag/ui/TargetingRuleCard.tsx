@@ -27,6 +27,7 @@ interface TargetingRuleCardProps {
   index: number;
   totalRules: number;
   flagValueId: string;
+  projectId: string;
   flagType: FeatureFlagType;
   segments: Segment[];
   canManage: boolean;
@@ -80,6 +81,7 @@ export function TargetingRuleCard({
   index,
   totalRules,
   flagValueId,
+  projectId,
   flagType,
   segments,
   canManage,
@@ -92,7 +94,7 @@ export function TargetingRuleCard({
 
   const handleDelete = async () => {
     try {
-      await deleteRule.mutateAsync({ ruleId: rule.id, flagValueId });
+      await deleteRule.mutateAsync({ ruleId: rule.id, flagValueId, projectId });
       toast.success('targeting rule', 'deleted');
     } catch (error: any) {
       const pd = error.response?.data as ProblemDetails | undefined;

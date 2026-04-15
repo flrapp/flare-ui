@@ -51,7 +51,7 @@ const conditionSchema = z.object({
   value: z.string().min(1, 'Required'),
 });
 
-const ruleSchema = z.object({
+const baseRuleSchema = z.object({
   serveValue: z.boolean(),
   stringValue: z.string().optional(),
   numberValue: z.number().optional(),
@@ -59,7 +59,24 @@ const ruleSchema = z.object({
   conditions: z.array(conditionSchema).min(1, 'At least one condition is required'),
 });
 
-type RuleFormData = z.infer<typeof ruleSchema>;
+type RuleFormData = z.infer<typeof baseRuleSchema>;
+
+function createRuleSchema(flagType: FeatureFlagType) {
+  return baseRuleSchema.superRefine((data, ctx) => {
+    if (flagType === FeatureFlagType.Number) {
+      if (data.numberValue === undefined || data.numberValue === null) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Required', path: ['numberValue'] });
+      }
+    }
+    if (flagType === FeatureFlagType.Json) {
+      if (!data.jsonValue?.trim()) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Required', path: ['jsonValue'] });
+      } else if (!isValidJson(data.jsonValue)) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Must be valid JSON', path: ['jsonValue'] });
+      }
+    }
+  });
+}
 
 interface RuleModalProps {
   open: boolean;
@@ -89,7 +106,7 @@ export function RuleModal({ open, onOpenChange, flagValueId, projectId, flagType
     deleteCondition.isPending;
 
   const form = useForm<RuleFormData>({
-    resolver: zodResolver(ruleSchema),
+    resolver: zodResolver(createRuleSchema(flagType)),
     defaultValues: buildDefaultValues(rule),
   });
 
@@ -122,6 +139,7 @@ export function RuleModal({ open, onOpenChange, flagValueId, projectId, flagType
       if (!isEdit) {
         await createRule.mutateAsync({
           flagValueId,
+          projectId,
           data: {
             serveValue: buildServeValuePayload(data),
             conditions: data.conditions.map((c) => ({
@@ -144,6 +162,7 @@ export function RuleModal({ open, onOpenChange, flagValueId, projectId, flagType
           await updateRule.mutateAsync({
             ruleId: rule.id,
             flagValueId,
+            projectId,
             data: {
               serveValue: buildServeValuePayload(data),
               priority: rule.priority,
@@ -154,7 +173,7 @@ export function RuleModal({ open, onOpenChange, flagValueId, projectId, flagType
         const existingIds = data.conditions.filter((c) => c._id).map((c) => c._id!);
         const deletedConditions = rule.conditions.filter((c) => !existingIds.includes(c.id));
         for (const cond of deletedConditions) {
-          await deleteCondition.mutateAsync({ conditionId: cond.id, flagValueId });
+          await deleteCondition.mutateAsync({ conditionId: cond.id, flagValueId, projectId });
         }
 
         for (const fc of data.conditions.filter((c) => c._id)) {
@@ -168,6 +187,7 @@ export function RuleModal({ open, onOpenChange, flagValueId, projectId, flagType
             await updateCondition.mutateAsync({
               conditionId: fc._id!,
               flagValueId,
+              projectId,
               data: { attributeKey: fc.attributeKey, operator: fc.operator as ComparisonOperator, value: fc.value },
             });
           }
@@ -177,6 +197,7 @@ export function RuleModal({ open, onOpenChange, flagValueId, projectId, flagType
           await createCondition.mutateAsync({
             ruleId: rule.id,
             flagValueId,
+            projectId,
             data: { attributeKey: fc.attributeKey, operator: fc.operator as ComparisonOperator, value: fc.value },
           });
         }

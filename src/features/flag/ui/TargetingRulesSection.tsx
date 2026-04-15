@@ -45,7 +45,7 @@ export function TargetingRulesSection({
     const newOrder = sortedRules.map((r) => r.id);
     [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
     try {
-      await reorder.mutateAsync({ flagValueId, data: { ruleIds: newOrder } });
+      await reorder.mutateAsync({ flagValueId, projectId, data: { ruleIds: newOrder } });
     } catch (error: any) {
       const pd = error.response?.data as ProblemDetails | undefined;
       toast.error('rules', 'reorder', pd?.detail ?? pd?.title ?? undefined);
@@ -57,7 +57,7 @@ export function TargetingRulesSection({
     const newOrder = sortedRules.map((r) => r.id);
     [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
     try {
-      await reorder.mutateAsync({ flagValueId, data: { ruleIds: newOrder } });
+      await reorder.mutateAsync({ flagValueId, projectId, data: { ruleIds: newOrder } });
     } catch (error: any) {
       const pd = error.response?.data as ProblemDetails | undefined;
       toast.error('rules', 'reorder', pd?.detail ?? pd?.title ?? undefined);
@@ -108,6 +108,7 @@ export function TargetingRulesSection({
               index={index}
               totalRules={sortedRules.length}
               flagValueId={flagValueId}
+              projectId={projectId}
               flagType={flagType}
               segments={segments}
               canManage={canManage}

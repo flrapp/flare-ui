@@ -1,6 +1,9 @@
 import { useFeatureFlags } from '@/entities/flag';
 import { useScopes } from '@/entities/scope';
 import { ScopeToggle } from '@/features/flag/ui/ScopeToggle';
+import { StringValuePopover } from '@/features/flag/ui/StringValuePopover';
+import { NumberValuePopover } from '@/features/flag/ui/NumberValuePopover';
+import { JsonValuePopover } from '@/features/flag/ui/JsonValuePopover';
 import { Button } from '@/shared/ui/button';
 import {
   Table,
@@ -252,6 +255,33 @@ export function FeatureFlagsTable({
                                 refetchScopes();
                               }}
                             />
+                          ) : canUpdate ? (
+                            <>
+                              {flag.type === FeatureFlagType.String && (
+                                <StringValuePopover
+                                  flagId={flag.id}
+                                  projectId={flag.projectId}
+                                  scopeId={scope.id}
+                                  currentValue={value.stringValue}
+                                />
+                              )}
+                              {flag.type === FeatureFlagType.Number && (
+                                <NumberValuePopover
+                                  flagId={flag.id}
+                                  projectId={flag.projectId}
+                                  scopeId={scope.id}
+                                  currentValue={value.numberValue}
+                                />
+                              )}
+                              {flag.type === FeatureFlagType.Json && (
+                                <JsonValuePopover
+                                  flagId={flag.id}
+                                  projectId={flag.projectId}
+                                  scopeId={scope.id}
+                                  currentValue={value.jsonValue}
+                                />
+                              )}
+                            </>
                           ) : (
                             <TypedValueDisplay flagType={flag.type} value={value} />
                           )
