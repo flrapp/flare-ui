@@ -14,5 +14,5 @@ jobs:
     uses: flrapp/.github/.github/workflows/docker-build-push.yml@main
     with:
       image-name: ghcr.io/flrapp/flare-ui
-      dockerfile-path: .
+      dockerfile-path: ./Dockerfile
     secrets: inherit
