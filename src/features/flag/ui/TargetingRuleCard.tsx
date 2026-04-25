@@ -15,6 +15,7 @@ import {
   AlertDialogTrigger,
 } from '@/shared/ui/alert-dialog';
 import { useDeleteTargetingRule } from '@/entities/targeting-rule';
+import { FeatureFlagType } from '@/shared/types/entities';
 import { OPERATOR_LABELS, SEGMENT_OPERATORS } from './operatorConfig';
 import type { TargetingRule } from '@/entities/targeting-rule/model/types';
 import type { Segment } from '@/entities/segment/model/types';
@@ -26,6 +27,8 @@ interface TargetingRuleCardProps {
   index: number;
   totalRules: number;
   flagValueId: string;
+  projectId: string;
+  flagType: FeatureFlagType;
   segments: Segment[];
   canManage: boolean;
   onMoveUp: () => void;
@@ -33,11 +36,53 @@ interface TargetingRuleCardProps {
   onEdit: () => void;
 }
 
+function truncate(str: string, max: number): string {
+  return str.length <= max ? str : str.slice(0, max) + '…';
+}
+
+function ServeValueBadge({ rule, flagType }: { rule: TargetingRule; flagType: FeatureFlagType }) {
+  if (flagType === FeatureFlagType.Boolean) {
+    return rule.serveValue.bool ? (
+      <Badge className="bg-[hsl(var(--success)/0.1)] text-[hsl(var(--success))] hover:bg-[hsl(var(--success)/0.1)]">
+        ON
+      </Badge>
+    ) : (
+      <Badge variant="secondary">OFF</Badge>
+    );
+  }
+
+  if (flagType === FeatureFlagType.String) {
+    const display = rule.serveValue.string != null ? truncate(rule.serveValue.string, 16) : '—';
+    return (
+      <Badge variant="outline" className="font-mono text-xs">
+        {display}
+      </Badge>
+    );
+  }
+
+  if (flagType === FeatureFlagType.Number) {
+    return (
+      <Badge variant="outline">
+        {rule.serveValue.number ?? '—'}
+      </Badge>
+    );
+  }
+
+  // Json
+  return (
+    <Badge variant="outline" className="font-mono text-xs">
+      {'{ … }'}
+    </Badge>
+  );
+}
+
 export function TargetingRuleCard({
   rule,
   index,
   totalRules,
   flagValueId,
+  projectId,
+  flagType,
   segments,
   canManage,
   onMoveUp,
@@ -49,7 +94,7 @@ export function TargetingRuleCard({
 
   const handleDelete = async () => {
     try {
-      await deleteRule.mutateAsync({ ruleId: rule.id, flagValueId });
+      await deleteRule.mutateAsync({ ruleId: rule.id, flagValueId, projectId });
       toast.success('targeting rule', 'deleted');
     } catch (error: any) {
       const pd = error.response?.data as ProblemDetails | undefined;
@@ -63,13 +108,7 @@ export function TargetingRuleCard({
         <div className="flex-1 min-w-0 space-y-2">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-muted-foreground">Rule {index + 1}</span>
-            {rule.serveValue ? (
-              <Badge className="bg-[hsl(var(--success)/0.1)] text-[hsl(var(--success))] hover:bg-[hsl(var(--success)/0.1)]">
-                ON
-              </Badge>
-            ) : (
-              <Badge variant="secondary">OFF</Badge>
-            )}
+            <ServeValueBadge rule={rule} flagType={flagType} />
           </div>
           <ConditionsSummary rule={rule} segments={segments} />
         </div>

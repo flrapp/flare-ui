@@ -8,6 +8,7 @@ import { useSegments } from '@/entities/segment';
 import { TargetingRuleCard } from './TargetingRuleCard';
 import { RuleModal } from './RuleModal';
 import { toast } from '@/shared/lib/toast';
+import type { FeatureFlagType } from '@/shared/types/entities';
 import type { TargetingRule } from '@/entities/targeting-rule/model/types';
 import type { ProblemDetails } from '@/shared/types/auth';
 
@@ -15,12 +16,14 @@ interface TargetingRulesSectionProps {
   flagValueId: string;
   projectId: string;
   canManage: boolean;
+  flagType: FeatureFlagType;
 }
 
 export function TargetingRulesSection({
   flagValueId,
   projectId,
   canManage,
+  flagType,
 }: TargetingRulesSectionProps) {
   const [addOpen, setAddOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<TargetingRule | null>(null);
@@ -42,7 +45,7 @@ export function TargetingRulesSection({
     const newOrder = sortedRules.map((r) => r.id);
     [newOrder[index - 1], newOrder[index]] = [newOrder[index], newOrder[index - 1]];
     try {
-      await reorder.mutateAsync({ flagValueId, data: { ruleIds: newOrder } });
+      await reorder.mutateAsync({ flagValueId, projectId, data: { ruleIds: newOrder } });
     } catch (error: any) {
       const pd = error.response?.data as ProblemDetails | undefined;
       toast.error('rules', 'reorder', pd?.detail ?? pd?.title ?? undefined);
@@ -54,7 +57,7 @@ export function TargetingRulesSection({
     const newOrder = sortedRules.map((r) => r.id);
     [newOrder[index], newOrder[index + 1]] = [newOrder[index + 1], newOrder[index]];
     try {
-      await reorder.mutateAsync({ flagValueId, data: { ruleIds: newOrder } });
+      await reorder.mutateAsync({ flagValueId, projectId, data: { ruleIds: newOrder } });
     } catch (error: any) {
       const pd = error.response?.data as ProblemDetails | undefined;
       toast.error('rules', 'reorder', pd?.detail ?? pd?.title ?? undefined);
@@ -105,6 +108,8 @@ export function TargetingRulesSection({
               index={index}
               totalRules={sortedRules.length}
               flagValueId={flagValueId}
+              projectId={projectId}
+              flagType={flagType}
               segments={segments}
               canManage={canManage}
               onMoveUp={() => handleMoveUp(index)}
@@ -121,6 +126,7 @@ export function TargetingRulesSection({
         onOpenChange={setAddOpen}
         flagValueId={flagValueId}
         projectId={projectId}
+        flagType={flagType}
       />
 
       {/* Edit Rule Modal */}
@@ -130,6 +136,7 @@ export function TargetingRulesSection({
           onOpenChange={(open) => !open && setEditingRule(null)}
           flagValueId={flagValueId}
           projectId={projectId}
+          flagType={flagType}
           rule={editingRule}
         />
       )}

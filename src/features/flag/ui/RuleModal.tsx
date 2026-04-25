@@ -17,6 +17,7 @@ import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { Switch } from '@/shared/ui/switch';
+import { Textarea } from '@/shared/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -26,6 +27,7 @@ import {
   SelectValue,
 } from '@/shared/ui/select';
 import { useCreateTargetingRule, useUpdateTargetingRule } from '@/entities/targeting-rule';
+import type { TypedValue } from '@/entities/targeting-rule/model/types';
 import {
   useCreateTargetingCondition,
   useUpdateTargetingCondition,
@@ -33,10 +35,14 @@ import {
 } from '@/entities/targeting-condition';
 import { useSegments } from '@/entities/segment';
 import { ComparisonOperator } from '@/entities/targeting-condition/model/types';
+import { FeatureFlagType } from '@/shared/types/entities';
 import { OPERATOR_OPTIONS, SEGMENT_OPERATORS } from './operatorConfig';
 import type { TargetingRule } from '@/entities/targeting-rule/model/types';
 import type { ProblemDetails } from '@/shared/types/auth';
 
+function isValidJson(v: string): boolean {
+  try { JSON.parse(v); return true; } catch { return false; }
+}
 
 const conditionSchema = z.object({
   _id: z.string().optional(),
@@ -45,22 +51,43 @@ const conditionSchema = z.object({
   value: z.string().min(1, 'Required'),
 });
 
-const ruleSchema = z.object({
+const baseRuleSchema = z.object({
   serveValue: z.boolean(),
+  stringValue: z.string().optional(),
+  numberValue: z.number().optional(),
+  jsonValue: z.string().optional(),
   conditions: z.array(conditionSchema).min(1, 'At least one condition is required'),
 });
 
-type RuleFormData = z.infer<typeof ruleSchema>;
+type RuleFormData = z.infer<typeof baseRuleSchema>;
+
+function createRuleSchema(flagType: FeatureFlagType) {
+  return baseRuleSchema.superRefine((data, ctx) => {
+    if (flagType === FeatureFlagType.Number) {
+      if (data.numberValue === undefined || data.numberValue === null) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Required', path: ['numberValue'] });
+      }
+    }
+    if (flagType === FeatureFlagType.Json) {
+      if (!data.jsonValue?.trim()) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Required', path: ['jsonValue'] });
+      } else if (!isValidJson(data.jsonValue)) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Must be valid JSON', path: ['jsonValue'] });
+      }
+    }
+  });
+}
 
 interface RuleModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   flagValueId: string;
   projectId: string;
+  flagType: FeatureFlagType;
   rule?: TargetingRule;
 }
 
-export function RuleModal({ open, onOpenChange, flagValueId, projectId, rule }: RuleModalProps) {
+export function RuleModal({ open, onOpenChange, flagValueId, projectId, flagType, rule }: RuleModalProps) {
   const isEdit = !!rule;
 
   const createRule = useCreateTargetingRule();
@@ -79,7 +106,7 @@ export function RuleModal({ open, onOpenChange, flagValueId, projectId, rule }: 
     deleteCondition.isPending;
 
   const form = useForm<RuleFormData>({
-    resolver: zodResolver(ruleSchema),
+    resolver: zodResolver(createRuleSchema(flagType)),
     defaultValues: buildDefaultValues(rule),
   });
 
@@ -94,13 +121,27 @@ export function RuleModal({ open, onOpenChange, flagValueId, projectId, rule }: 
     }
   }, [open, rule, form]);
 
+  const buildServeValuePayload = (data: RuleFormData): TypedValue => {
+    if (flagType === FeatureFlagType.Boolean) {
+      return { type: FeatureFlagType.Boolean, bool: data.serveValue };
+    }
+    if (flagType === FeatureFlagType.String) {
+      return { type: FeatureFlagType.String, string: data.stringValue };
+    }
+    if (flagType === FeatureFlagType.Number) {
+      return { type: FeatureFlagType.Number, number: data.numberValue };
+    }
+    return { type: FeatureFlagType.Json, json: data.jsonValue };
+  };
+
   const onSubmit = async (data: RuleFormData) => {
     try {
       if (!isEdit) {
         await createRule.mutateAsync({
           flagValueId,
+          projectId,
           data: {
-            serveValue: data.serveValue,
+            serveValue: buildServeValuePayload(data),
             conditions: data.conditions.map((c) => ({
               attributeKey: c.attributeKey,
               operator: c.operator as ComparisonOperator,
@@ -110,18 +151,29 @@ export function RuleModal({ open, onOpenChange, flagValueId, projectId, rule }: 
         });
         toast.success('targeting rule', 'created');
       } else {
-        if (data.serveValue !== rule.serveValue) {
+        const serveChanged =
+          flagType === FeatureFlagType.Boolean
+            ? data.serveValue !== rule.serveValue.bool
+            : data.stringValue !== rule.serveValue.string ||
+              data.numberValue !== rule.serveValue.number ||
+              data.jsonValue !== rule.serveValue.json;
+
+        if (serveChanged) {
           await updateRule.mutateAsync({
             ruleId: rule.id,
             flagValueId,
-            data: { serveValue: data.serveValue, priority: rule.priority },
+            projectId,
+            data: {
+              serveValue: buildServeValuePayload(data),
+              priority: rule.priority,
+            },
           });
         }
 
         const existingIds = data.conditions.filter((c) => c._id).map((c) => c._id!);
         const deletedConditions = rule.conditions.filter((c) => !existingIds.includes(c.id));
         for (const cond of deletedConditions) {
-          await deleteCondition.mutateAsync({ conditionId: cond.id, flagValueId });
+          await deleteCondition.mutateAsync({ conditionId: cond.id, flagValueId, projectId });
         }
 
         for (const fc of data.conditions.filter((c) => c._id)) {
@@ -135,6 +187,7 @@ export function RuleModal({ open, onOpenChange, flagValueId, projectId, rule }: 
             await updateCondition.mutateAsync({
               conditionId: fc._id!,
               flagValueId,
+              projectId,
               data: { attributeKey: fc.attributeKey, operator: fc.operator as ComparisonOperator, value: fc.value },
             });
           }
@@ -144,6 +197,7 @@ export function RuleModal({ open, onOpenChange, flagValueId, projectId, rule }: 
           await createCondition.mutateAsync({
             ruleId: rule.id,
             flagValueId,
+            projectId,
             data: { attributeKey: fc.attributeKey, operator: fc.operator as ComparisonOperator, value: fc.value },
           });
         }
@@ -168,27 +222,100 @@ export function RuleModal({ open, onOpenChange, flagValueId, projectId, rule }: 
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-          {/* Serve Value */}
-          <div className="flex items-center gap-3">
+          {/* Serve Value — type-aware */}
+          {flagType === FeatureFlagType.Boolean && (
+            <div className="flex items-center gap-3">
+              <Controller
+                control={form.control}
+                name="serveValue"
+                render={({ field }) => (
+                  <Switch
+                    id="serveValue"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={isPending}
+                  />
+                )}
+              />
+              <Label htmlFor="serveValue" className="cursor-pointer">
+                Serve value:{' '}
+                <span className={`font-semibold ${form.watch('serveValue') ? 'text-[hsl(var(--success))]' : 'text-muted-foreground'}`}>
+                  {form.watch('serveValue') ? 'ON' : 'OFF'}
+                </span>
+              </Label>
+            </div>
+          )}
+
+          {flagType === FeatureFlagType.String && (
             <Controller
               control={form.control}
-              name="serveValue"
-              render={({ field }) => (
-                <Switch
-                  id="serveValue"
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  disabled={isPending}
-                />
+              name="stringValue"
+              render={({ field, fieldState }) => (
+                <div className="space-y-1.5">
+                  <Label>Serve value</Label>
+                  <Input
+                    placeholder="Enter string value"
+                    {...field}
+                    value={field.value ?? ''}
+                    disabled={isPending}
+                  />
+                  {fieldState.error && (
+                    <p className="text-xs text-destructive">{fieldState.error.message}</p>
+                  )}
+                </div>
               )}
             />
-            <Label htmlFor="serveValue" className="cursor-pointer">
-              Serve value:{' '}
-              <span className={`font-semibold ${form.watch('serveValue') ? 'text-[hsl(var(--success))]' : 'text-muted-foreground'}`}>
-                {form.watch('serveValue') ? 'ON' : 'OFF'}
-              </span>
-            </Label>
-          </div>
+          )}
+
+          {flagType === FeatureFlagType.Number && (
+            <Controller
+              control={form.control}
+              name="numberValue"
+              render={({ field, fieldState }) => (
+                <div className="space-y-1.5">
+                  <Label>Serve value</Label>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    {...field}
+                    value={field.value ?? ''}
+                    onChange={(e) => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+                    disabled={isPending}
+                  />
+                  {fieldState.error && (
+                    <p className="text-xs text-destructive">{fieldState.error.message}</p>
+                  )}
+                </div>
+              )}
+            />
+          )}
+
+          {flagType === FeatureFlagType.Json && (
+            <Controller
+              control={form.control}
+              name="jsonValue"
+              render={({ field, fieldState }) => (
+                <div className="space-y-1.5">
+                  <Label>Serve value</Label>
+                  <Textarea
+                    placeholder='{"key": "value"}'
+                    className="font-mono text-sm"
+                    rows={3}
+                    {...field}
+                    value={field.value ?? ''}
+                    onBlur={() => {
+                      field.onBlur();
+                      form.trigger('jsonValue');
+                    }}
+                    disabled={isPending}
+                  />
+                  {fieldState.error && (
+                    <p className="text-xs text-destructive">{fieldState.error.message}</p>
+                  )}
+                </div>
+              )}
+            />
+          )}
 
           {/* Conditions */}
           <div className="space-y-3">
@@ -242,7 +369,10 @@ export function RuleModal({ open, onOpenChange, flagValueId, projectId, rule }: 
 
 function buildDefaultValues(rule?: TargetingRule): RuleFormData {
   return {
-    serveValue: rule?.serveValue ?? false,
+    serveValue: rule?.serveValue.bool ?? false,
+    stringValue: rule?.serveValue.string ?? '',
+    numberValue: rule?.serveValue.number,
+    jsonValue: rule?.serveValue.json ?? '',
     conditions: rule
       ? rule.conditions.map((c) => ({
           _id: c.id,
