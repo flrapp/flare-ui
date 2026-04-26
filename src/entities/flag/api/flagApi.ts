@@ -10,7 +10,7 @@ import type {
 // The API returns jsonValue as a JsonElement (parsed object); convert to string for the frontend
 function deserializeFlagValue(v: Record<string, unknown>): FeatureFlagValue {
   return {
-    ...(v as FeatureFlagValue),
+    ...(v as unknown as FeatureFlagValue),
     jsonValue: v.jsonValue != null ? JSON.stringify(v.jsonValue) : null,
   };
 }
@@ -18,7 +18,7 @@ function deserializeFlagValue(v: Record<string, unknown>): FeatureFlagValue {
 function deserializeFlag(flag: Record<string, unknown>): FeatureFlag {
   const values = flag.values as Record<string, unknown>[];
   return {
-    ...(flag as FeatureFlag),
+    ...(flag as unknown as FeatureFlag),
     values: Array.isArray(values) ? values.map(deserializeFlagValue) : [],
   };
 }

@@ -70,7 +70,7 @@ const defaultValueSchemas = {
   }),
   number: z.object({
     type: z.literal(FeatureFlagType.Number),
-    numberValue: z.number({ invalid_type_error: 'Must be a number' }),
+    numberValue: z.number({ error: 'Must be a number' }),
   }),
   json: z.object({
     type: z.literal(FeatureFlagType.Json),

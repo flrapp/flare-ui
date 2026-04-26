@@ -371,7 +371,7 @@ function buildDefaultValues(rule?: TargetingRule): RuleFormData {
   return {
     serveValue: rule?.serveValue.bool ?? false,
     stringValue: rule?.serveValue.string ?? '',
-    numberValue: rule?.serveValue.number,
+    numberValue: rule?.serveValue.number ?? undefined,
     jsonValue: rule?.serveValue.json ?? '',
     conditions: rule
       ? rule.conditions.map((c) => ({

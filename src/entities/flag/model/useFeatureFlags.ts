@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   FeatureFlag,
+  FeatureFlagValue,
   CreateFeatureFlagDto,
   UpdateFeatureFlagDto,
   UpdateFeatureFlagValueDto,
