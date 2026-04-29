@@ -18,7 +18,7 @@ export function SegmentsPage() {
 
   if (isLoading || permissionsLoading) {
     return (
-      <div className="p-8">
+      <div className="mx-auto max-w-6xl p-6">
         <div className="mb-6">
           <Skeleton className="h-4 w-36 mb-4" />
           <div className="space-y-1.5">
@@ -33,7 +33,7 @@ export function SegmentsPage() {
 
   if (error || !project || !projectId) {
     return (
-      <div className="p-8">
+      <div className="mx-auto max-w-6xl p-6">
         <ErrorMessage
           title="Failed to load project"
           message="There was an error loading the project. Please try again."
@@ -47,7 +47,7 @@ export function SegmentsPage() {
   const [createOpen, setCreateOpen] = useState(false);
 
   return (
-    <div className="p-8">
+    <div className="mx-auto max-w-6xl p-6">
       <PageHeader
         title="Segments"
         subtitle={`Manage segments for ${project.name}`}

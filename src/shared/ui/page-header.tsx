@@ -13,19 +13,19 @@ export function PageHeader({ title, subtitle, backTo, actions }: PageHeaderProps
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            {backTo && (
-              <Link
-                to={backTo}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Link>
-            )}
+        <div className="flex items-start gap-2">
+          {backTo && (
+            <Link
+              to={backTo}
+              className="text-muted-foreground hover:text-foreground transition-colors mt-0.5"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
+          )}
+          <div className="space-y-1">
             <h1 className="text-xl font-semibold">{title}</h1>
+            {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
           </div>
-          {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
         </div>
         {actions && (
           <div className="flex items-center gap-2">

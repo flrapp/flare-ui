@@ -18,7 +18,7 @@ export function ScopesPage() {
 
   if (isLoading || permissionsLoading) {
     return (
-      <div className="p-8">
+      <div className="mx-auto max-w-6xl p-6">
         <div className="mb-6">
           <Skeleton className="h-4 w-36 mb-4" />
           <div className="space-y-1.5">
@@ -33,7 +33,7 @@ export function ScopesPage() {
 
   if (error || !project || !projectId) {
     return (
-      <div className="p-8">
+      <div className="mx-auto max-w-6xl p-6">
         <ErrorMessage
           title="Failed to load project"
           message="There was an error loading the project. Please try again."
@@ -46,7 +46,7 @@ export function ScopesPage() {
   const canManageScopes = canPerformProjectAction(ProjectPermission.ManageScopes);
 
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="mx-auto max-w-6xl p-6">
       <PageHeader
         title="Scopes"
         subtitle={`Manage scopes for ${project.name}`}
