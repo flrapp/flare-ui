@@ -15,6 +15,8 @@ export function useTargetingRules(flagValueId: string) {
     queryKey: targetingRuleKeys.byFlagValue(flagValueId),
     queryFn: () => targetingRuleApi.getTargetingRules(flagValueId),
     enabled: !!flagValueId,
+    retry: (failureCount, error: any) =>
+      error?.response?.status !== 403 && failureCount < 3,
   });
 }
 

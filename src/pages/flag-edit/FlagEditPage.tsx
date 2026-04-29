@@ -96,9 +96,10 @@ interface DefaultValueSectionProps {
   flagType: FeatureFlagType;
   canManage: boolean;
   flagId: string;
+  projectId: string;
 }
 
-function DefaultValueSection({ flagValue, flagType, canManage, flagId }: DefaultValueSectionProps) {
+function DefaultValueSection({ flagValue, flagType, canManage, flagId, projectId }: DefaultValueSectionProps) {
   const updateFlagValue = useUpdateFeatureFlagValue();
 
   const buildDefaultValues = (): DefaultValueFormData => {
@@ -128,6 +129,7 @@ function DefaultValueSection({ flagValue, flagType, canManage, flagId }: Default
     try {
       await updateFlagValue.mutateAsync({
         flagId,
+        projectId,
         data: { scopeId: flagValue.scopeId, type: FeatureFlagType.Boolean, booleanValue: checked },
       });
       toast.info(`Default value ${checked ? 'enabled' : 'disabled'} for ${flagValue.scopeName}`);
@@ -142,16 +144,19 @@ function DefaultValueSection({ flagValue, flagType, canManage, flagId }: Default
       if (data.type === FeatureFlagType.String) {
         await updateFlagValue.mutateAsync({
           flagId,
+          projectId,
           data: { scopeId: flagValue.scopeId, type: flagType, stringValue: data.stringValue },
         });
       } else if (data.type === FeatureFlagType.Number) {
         await updateFlagValue.mutateAsync({
           flagId,
+          projectId,
           data: { scopeId: flagValue.scopeId, type: flagType, numberValue: data.numberValue },
         });
       } else if (data.type === FeatureFlagType.Json) {
         await updateFlagValue.mutateAsync({
           flagId,
+          projectId,
           data: { scopeId: flagValue.scopeId, type: flagType, jsonValue: data.jsonValue },
         });
       }
@@ -474,7 +479,9 @@ export function FlagEditPage() {
           </TabsList>
 
           {sortedValues.map((flagValue) => {
-            const canManage =
+            const canEditValue =
+              canPerformScopeAction(permissions, flagValue.scopeId, ScopePermission.UpdateFeatureFlags);
+            const canManageRules =
               canPerformProjectAction(ProjectPermission.ManageTargetingRules) &&
               canPerformScopeAction(permissions, flagValue.scopeId, ScopePermission.UpdateFeatureFlags);
 
@@ -486,15 +493,16 @@ export function FlagEditPage() {
                     <DefaultValueSection
                       flagValue={flagValue}
                       flagType={flag.type}
-                      canManage={canManage}
+                      canManage={canEditValue}
                       flagId={flagId}
+                      projectId={projectId}
                     />
 
                     {/* Targeting rules */}
                     <TargetingRulesSection
                       flagValueId={flagValue.id}
                       projectId={projectId}
-                      canManage={canManage}
+                      canManage={canManageRules}
                       flagType={flag.type}
                     />
                   </CardContent>

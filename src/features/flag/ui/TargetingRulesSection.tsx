@@ -74,6 +74,8 @@ export function TargetingRulesSection({
   }
 
   if (error) {
+    const status = (error as any)?.response?.status;
+    if (status === 403) return null;
     return (
       <ErrorMessage
         title="Failed to load targeting rules"
