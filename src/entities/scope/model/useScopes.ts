@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Scope, CreateScopeDto, UpdateScopeDto } from '@/shared/types';
 import * as scopeApi from '../api/scopeApi';
 import { projectKeys } from '@/entities/project/model/useProjects';
+import { flagKeys } from '@/entities/flag/model/useFeatureFlags';
 
 // Query keys
 export const scopeKeys = {
@@ -31,6 +32,7 @@ export function useCreateScope() {
     onSuccess: (_data, { projectId }) => {
       queryClient.invalidateQueries({ queryKey: scopeKeys.list(projectId) });
       queryClient.invalidateQueries({ queryKey: projectKeys.detail(projectId) });
+      queryClient.invalidateQueries({ queryKey: flagKeys.byProject(projectId) });
     },
   });
 }
@@ -73,13 +75,13 @@ export function useDeleteScope() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (scopeId: string) => scopeApi.deleteScope(scopeId),
-    onSuccess: (_data, scopeId) => {
-      const scope = queryClient.getQueryData<Scope>(scopeKeys.detail(scopeId));
-      if (scope) {
-        queryClient.invalidateQueries({ queryKey: scopeKeys.list(scope.projectId) });
-        queryClient.invalidateQueries({ queryKey: projectKeys.detail(scope.projectId) });
-      }
+    mutationFn: ({ scopeId }: { scopeId: string; projectId: string }) =>
+      scopeApi.deleteScope(scopeId),
+    onSuccess: (_data, { scopeId, projectId }) => {
+      queryClient.invalidateQueries({ queryKey: scopeKeys.list(projectId) });
+      queryClient.invalidateQueries({ queryKey: projectKeys.detail(projectId) });
+      queryClient.invalidateQueries({ queryKey: flagKeys.byProject(projectId) });
+      queryClient.removeQueries({ queryKey: scopeKeys.detail(scopeId) });
     },
   });
 }

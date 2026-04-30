@@ -87,13 +87,11 @@ export function useDeleteFeatureFlag() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (flagId: string) => flagApi.deleteFeatureFlag(flagId),
-    onSuccess: (_data, flagId) => {
-      const flag = queryClient.getQueryData<FeatureFlag>(flagKeys.detail(flagId));
-      if (flag) {
-        queryClient.invalidateQueries({ queryKey: flagKeys.byProject(flag.projectId) });
-        queryClient.invalidateQueries({ queryKey: projectKeys.detail(flag.projectId) });
-      }
+    mutationFn: ({ flagId }: { flagId: string; projectId: string }) =>
+      flagApi.deleteFeatureFlag(flagId),
+    onSuccess: (_data, { flagId, projectId }) => {
+      queryClient.invalidateQueries({ queryKey: flagKeys.byProject(projectId) });
+      queryClient.invalidateQueries({ queryKey: projectKeys.detail(projectId) });
       queryClient.removeQueries({ queryKey: flagKeys.detail(flagId) });
     },
   });

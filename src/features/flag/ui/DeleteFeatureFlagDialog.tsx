@@ -43,7 +43,7 @@ export function DeleteFeatureFlagDialog({
     if (!isConfirmValid) return;
 
     try {
-      await deleteFlag.mutateAsync(flag.id);
+      await deleteFlag.mutateAsync({ flagId: flag.id, projectId: flag.projectId });
       toast.success('feature flag', 'deleted');
       setOpen(false);
       setConfirmName('');

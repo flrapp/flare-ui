@@ -31,7 +31,7 @@ export function DeleteScopeDialog({ scope, children }: DeleteScopeDialogProps) {
     if (!isConfirmValid) return;
 
     try {
-      await deleteScope.mutateAsync(scope.id);
+      await deleteScope.mutateAsync({ scopeId: scope.id, projectId: scope.projectId });
       toast.success('scope', 'deleted');
       setOpen(false);
     } catch (error: any) {
