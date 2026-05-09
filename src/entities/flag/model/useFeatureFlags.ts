@@ -1,5 +1,4 @@
-import { useMutation, useQuery, useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import type { InfiniteData } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   FeatureFlag,
   FeatureFlagValue,
@@ -15,23 +14,22 @@ import { projectKeys } from '@/entities/project';
 export const flagKeys = {
   all: ['feature-flags'] as const,
   byProject: (projectId: string) => [...flagKeys.all, 'project', projectId] as const,
-  byProjectSearch: (projectId: string, search: string) =>
-    [...flagKeys.byProject(projectId), { search }] as const,
+  byProjectSearch: (projectId: string, search: string, page: number, pageSize: number) =>
+    [...flagKeys.byProject(projectId), { search, page, pageSize }] as const,
   detail: (flagId: string) => [...flagKeys.all, 'detail', flagId] as const,
 };
 
 // Query hooks
-export function useFeatureFlags(projectId: string | undefined, search: string = '') {
-  return useInfiniteQuery({
-    queryKey: flagKeys.byProjectSearch(projectId!, search),
-    queryFn: ({ pageParam }) =>
+export function useFeatureFlags(projectId: string | undefined, search: string = '', page: number = 1, pageSize: number = 20) {
+  return useQuery({
+    queryKey: flagKeys.byProjectSearch(projectId!, search, page, pageSize),
+    queryFn: () =>
       flagApi.getFeatureFlags(projectId!, {
-        pageSize: 10,
-        cursor: pageParam as string | undefined,
+        page,
+        pageSize,
         search: search || undefined,
       }),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    placeholderData: (prev) => prev,
     enabled: !!projectId,
   });
 }
@@ -144,23 +142,20 @@ export function useUpdateFeatureFlagValue() {
       }
 
       // Optimistically update all paginated list caches for this project
-      let previousListData: Array<[readonly unknown[], InfiniteData<PaginatedResponse<FeatureFlag>> | undefined]> = [];
+      let previousListData: Array<[readonly unknown[], PaginatedResponse<FeatureFlag> | undefined]> = [];
       if (resolvedProjectId) {
-        const entries = queryClient.getQueriesData<InfiniteData<PaginatedResponse<FeatureFlag>>>({
+        const entries = queryClient.getQueriesData<PaginatedResponse<FeatureFlag>>({
           queryKey: flagKeys.byProject(resolvedProjectId),
         });
         previousListData = entries;
 
         for (const [key, data_] of entries) {
           if (!data_) continue;
-          queryClient.setQueryData<InfiniteData<PaginatedResponse<FeatureFlag>>>(key as readonly unknown[], {
+          queryClient.setQueryData<PaginatedResponse<FeatureFlag>>(key as readonly unknown[], {
             ...data_,
-            pages: data_.pages.map((page) => ({
-              ...page,
-              items: page.items.map((f) =>
-                f.id === flagId ? { ...f, values: f.values.map(applyUpdate) } : f
-              ),
-            })),
+            items: data_.items.map((f: FeatureFlag) =>
+              f.id === flagId ? { ...f, values: f.values.map(applyUpdate) } : f
+            ),
           });
         }
       }

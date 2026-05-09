@@ -31,13 +31,17 @@ export async function getFeatureFlags(
 ): Promise<PaginatedResponse<FeatureFlag>> {
   const response = await apiClient.get<{
     items: Record<string, unknown>[];
-    hasMore: boolean;
-    nextCursor: string | null;
+    totalCount: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
   }>(`/v1/projects/${projectId}/feature-flags`, { params });
   return {
     items: response.data.items.map(deserializeFlag),
-    hasMore: response.data.hasMore,
-    nextCursor: response.data.nextCursor,
+    totalCount: response.data.totalCount,
+    page: response.data.page,
+    pageSize: response.data.pageSize,
+    totalPages: response.data.totalPages,
   };
 }
 

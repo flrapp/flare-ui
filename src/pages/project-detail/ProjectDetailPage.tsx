@@ -15,7 +15,6 @@ import { Skeleton } from '@/shared/ui/skeleton';
 import { TableSkeleton } from '@/shared/ui/TableSkeleton';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { useDebounce } from '@/shared/lib/useDebounce';
-import { useFeatureFlags } from '@/entities/flag';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,8 +55,8 @@ export function ProjectDetailPage() {
   const [showDeleteProjectDialog, setShowDeleteProjectDialog] = useState(false);
   const [deletingFlag, setDeletingFlag] = useState<FeatureFlag | null>(null);
   const [searchInput, setSearchInput] = useState('');
+  const [flagsFetching, setFlagsFetching] = useState(false);
   const search = useDebounce(searchInput, 300);
-  const { isFetching: flagsFetching } = useFeatureFlags(projectId, search);
 
   if (isLoading || permissionsLoading) {
     return (
@@ -214,6 +213,7 @@ export function ProjectDetailPage() {
             search={search}
             permissions={permissions}
             canManageFlags={canManageFlags}
+            onFetchingChange={setFlagsFetching}
             onEditFlag={(flag) => navigate(`/projects/${project.id}/flags/${flag.id}/edit`)}
             onDeleteFlag={(flag) => setDeletingFlag(flag)}
           />

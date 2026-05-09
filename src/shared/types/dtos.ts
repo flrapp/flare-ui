@@ -35,13 +35,15 @@ export interface UpdateScopeDto {
 // Pagination
 export interface PaginatedResponse<T> {
   items: T[];
-  hasMore: boolean;
-  nextCursor: string | null;
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }
 
 export interface FlagListParams {
+  page?: number;
   pageSize?: number;
-  cursor?: string;
   search?: string;
 }
 

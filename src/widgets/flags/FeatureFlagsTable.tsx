@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useFeatureFlags } from '@/entities/flag';
 import { useScopes } from '@/entities/scope';
 import { ScopeToggle } from '@/features/flag/ui/ScopeToggle';
@@ -18,6 +18,14 @@ import { TableSkeleton } from '@/shared/ui/TableSkeleton';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { FeatureErrorBoundary } from '@/shared/ui/FeatureErrorBoundary';
+import { Pagination } from '@/shared/ui/Pagination';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/ui/tooltip';
 import { Plus, Flag, Pencil, Trash2, Search } from 'lucide-react';
 import { canPerformScopeAction } from '@/shared/lib/permissions';
@@ -30,6 +38,7 @@ interface FeatureFlagsTableProps {
   search?: string;
   permissions: MyPermissions | null;
   canManageFlags: boolean;
+  onFetchingChange?: (isFetching: boolean) => void;
   onCreateFlag?: () => void;
   onEditFlag?: (flag: FeatureFlag) => void;
   onDeleteFlag?: (flag: FeatureFlag) => void;
@@ -88,22 +97,29 @@ export function FeatureFlagsTable({
   search = '',
   permissions,
   canManageFlags,
+  onFetchingChange,
   onCreateFlag,
   onEditFlag,
   onDeleteFlag,
 }: FeatureFlagsTableProps) {
-  const sentinelRef = useRef<HTMLDivElement>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, pageSize]);
 
   const {
-    data: flagPages,
+    data: flagPage,
     isLoading: flagsLoading,
     isFetching: flagsFetching,
     error: flagsError,
     refetch: refetchFlags,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useFeatureFlags(projectId, search);
+  } = useFeatureFlags(projectId, search, page, pageSize);
+
+  useEffect(() => {
+    onFetchingChange?.(flagsFetching);
+  }, [flagsFetching, onFetchingChange]);
 
   const {
     data: scopes,
@@ -112,24 +128,9 @@ export function FeatureFlagsTable({
     refetch: refetchScopes,
   } = useScopes(projectId);
 
-  const flags = flagPages?.pages.flatMap((p) => p.items) ?? [];
+  const flags = flagPage?.items ?? [];
+  const totalPages = flagPage?.totalPages ?? 1;
 
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      },
-      { rootMargin: '200px' }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-  // Initial load — no scopes yet, show full-page skeleton
   if (scopesLoading) {
     return <TableSkeleton rows={5} columns={4} />;
   }
@@ -156,7 +157,6 @@ export function FeatureFlagsTable({
     );
   }
 
-  // No flags at all and no search active — show empty state
   if (!flagsLoading && flags.length === 0 && !search) {
     return (
       <EmptyState
@@ -176,7 +176,7 @@ export function FeatureFlagsTable({
     );
   }
 
-  const isSearching = flagsFetching && flagPages === undefined;
+  const isSearching = flagsFetching && flagPage === undefined;
 
   return (
     <div className="space-y-4">
@@ -356,7 +356,32 @@ export function FeatureFlagsTable({
               </div>
             </div>
 
-            <div ref={sentinelRef} className="h-1" />
+            <div className="flex items-center justify-between py-2 px-1">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span>Rows per page</span>
+                <Select
+                  value={String(pageSize)}
+                  onValueChange={(v) => setPageSize(Number(v))}
+                  disabled={flagsFetching}
+                >
+                  <SelectTrigger className="h-8 w-18">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                    <SelectItem value="25">25</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Pagination
+                page={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+                disabled={flagsFetching}
+              />
+            </div>
           </>
         )}
       </FeatureErrorBoundary>
