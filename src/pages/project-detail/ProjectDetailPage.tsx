@@ -9,10 +9,13 @@ import { DeleteFeatureFlagDialog } from '@/features/flag/ui/DeleteFeatureFlagDia
 import { DeleteProjectDialog } from '@/features/project/ui/DeleteProjectDialog';
 import { FeatureFlagsTable } from '@/widgets/flags/FeatureFlagsTable';
 import { Button } from '@/shared/ui/button';
+import { SearchInput } from '@/shared/ui/SearchInput';
 import { PageHeader } from '@/shared/ui/page-header';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { TableSkeleton } from '@/shared/ui/TableSkeleton';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
+import { useDebounce } from '@/shared/lib/useDebounce';
+import { useFeatureFlags } from '@/entities/flag';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -52,6 +55,9 @@ export function ProjectDetailPage() {
   const [showCreateFlagDialog, setShowCreateFlagDialog] = useState(false);
   const [showDeleteProjectDialog, setShowDeleteProjectDialog] = useState(false);
   const [deletingFlag, setDeletingFlag] = useState<FeatureFlag | null>(null);
+  const [searchInput, setSearchInput] = useState('');
+  const search = useDebounce(searchInput, 300);
+  const { isFetching: flagsFetching } = useFeatureFlags(projectId, search);
 
   if (isLoading || permissionsLoading) {
     return (
@@ -193,10 +199,19 @@ export function ProjectDetailPage() {
           }
         />
 
+        <SearchInput
+          value={searchInput}
+          onChange={setSearchInput}
+          placeholder="Search flags…"
+          isLoading={flagsFetching}
+          className="max-w-xs"
+        />
+
         {/* Feature Toggles Table */}
-        <div className="border border-border rounded-lg overflow-hidden">
+        <div className="mt-4 border border-border rounded-lg overflow-hidden">
           <FeatureFlagsTable
             projectId={project.id}
+            search={search}
             permissions={permissions}
             canManageFlags={canManageFlags}
             onEditFlag={(flag) => navigate(`/projects/${project.id}/flags/${flag.id}/edit`)}

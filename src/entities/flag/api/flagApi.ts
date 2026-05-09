@@ -5,6 +5,8 @@ import type {
   CreateFeatureFlagDto,
   UpdateFeatureFlagDto,
   UpdateFeatureFlagValueDto,
+  PaginatedResponse,
+  FlagListParams,
 } from '@/shared/types';
 
 // The API returns jsonValue as a JsonElement (parsed object); convert to string for the frontend
@@ -23,11 +25,27 @@ function deserializeFlag(flag: Record<string, unknown>): FeatureFlag {
   };
 }
 
-export async function getFeatureFlags(projectId: string): Promise<FeatureFlag[]> {
-  const response = await apiClient.get<Record<string, unknown>[]>(
-    `/v1/projects/${projectId}/feature-flags`
+export async function getFeatureFlags(
+  projectId: string,
+  params?: FlagListParams
+): Promise<PaginatedResponse<FeatureFlag>> {
+  const response = await apiClient.get<{
+    items: Record<string, unknown>[];
+    hasMore: boolean;
+    nextCursor: string | null;
+  }>(`/v1/projects/${projectId}/feature-flags`, { params });
+  return {
+    items: response.data.items.map(deserializeFlag),
+    hasMore: response.data.hasMore,
+    nextCursor: response.data.nextCursor,
+  };
+}
+
+export async function getFeatureFlagById(flagId: string): Promise<FeatureFlag> {
+  const response = await apiClient.get<Record<string, unknown>>(
+    `/v1/feature-flags/${flagId}`
   );
-  return response.data.map(deserializeFlag);
+  return deserializeFlag(response.data);
 }
 
 export async function createFeatureFlag(

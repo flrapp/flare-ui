@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useFeatureFlags } from '@/entities/flag';
 import { useScopes } from '@/entities/scope';
 import { ScopeToggle } from '@/features/flag/ui/ScopeToggle';
@@ -18,7 +19,7 @@ import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { FeatureErrorBoundary } from '@/shared/ui/FeatureErrorBoundary';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/ui/tooltip';
-import { Plus, Flag, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Flag, Pencil, Trash2, Search } from 'lucide-react';
 import { canPerformScopeAction } from '@/shared/lib/permissions';
 import { FeatureFlagType } from '@/shared/types/entities';
 import type { MyPermissions, FeatureFlag, FeatureFlagValue } from '@/shared/types';
@@ -26,6 +27,7 @@ import { ScopePermission } from '@/shared/types/entities';
 
 interface FeatureFlagsTableProps {
   projectId: string;
+  search?: string;
   permissions: MyPermissions | null;
   canManageFlags: boolean;
   onCreateFlag?: () => void;
@@ -83,18 +85,25 @@ function TypedValueDisplay({ flagType, value }: TypedValueDisplayProps) {
 
 export function FeatureFlagsTable({
   projectId,
+  search = '',
   permissions,
   canManageFlags,
   onCreateFlag,
   onEditFlag,
   onDeleteFlag,
 }: FeatureFlagsTableProps) {
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
   const {
-    data: flags,
+    data: flagPages,
     isLoading: flagsLoading,
+    isFetching: flagsFetching,
     error: flagsError,
     refetch: refetchFlags,
-  } = useFeatureFlags(projectId);
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useFeatureFlags(projectId, search);
 
   const {
     data: scopes,
@@ -103,14 +112,29 @@ export function FeatureFlagsTable({
     refetch: refetchScopes,
   } = useScopes(projectId);
 
-  const isLoading = flagsLoading || scopesLoading;
-  const error = flagsError || scopesError;
+  const flags = flagPages?.pages.flatMap((p) => p.items) ?? [];
 
-  if (isLoading) {
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // Initial load — no scopes yet, show full-page skeleton
+  if (scopesLoading) {
     return <TableSkeleton rows={5} columns={4} />;
   }
 
-  if (error) {
+  if (scopesError || flagsError) {
     return (
       <ErrorMessage
         title="Failed to load feature flags"
@@ -123,7 +147,17 @@ export function FeatureFlagsTable({
     );
   }
 
-  if (!flags || flags.length === 0) {
+  if (!scopes || scopes.length === 0) {
+    return (
+      <ErrorMessage
+        title="No scopes available"
+        message="You need to create at least one scope before managing feature flags."
+      />
+    );
+  }
+
+  // No flags at all and no search active — show empty state
+  if (!flagsLoading && flags.length === 0 && !search) {
     return (
       <EmptyState
         icon={<Flag className="h-16 w-16" />}
@@ -142,26 +176,10 @@ export function FeatureFlagsTable({
     );
   }
 
-  if (!scopes || scopes.length === 0) {
-    return (
-      <ErrorMessage
-        title="No scopes available"
-        message="You need to create at least one scope before managing feature flags."
-      />
-    );
-  }
+  const isSearching = flagsFetching && flagPages === undefined;
 
   return (
     <div className="space-y-4">
-      {canManageFlags && onCreateFlag && (
-        <div className="flex justify-end">
-          <Button onClick={onCreateFlag}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Feature Flag
-          </Button>
-        </div>
-      )}
-
       <FeatureErrorBoundary
         fallback={
           <ErrorMessage
@@ -174,159 +192,173 @@ export function FeatureFlagsTable({
           />
         }
       >
-        <div className="overflow-hidden [&_tr]:border-0">
-          <div className="overflow-x-auto">
-            <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="sticky left-0 bg-card z-10 min-w-62.5">
-                  Feature Flag
-                </TableHead>
-                {scopes.map((scope) => (
-                  <TableHead key={scope.id} className="text-center min-w-30">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="cursor-help">{scope.name}</div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>
-                            Alias: <span className="font-mono">{scope.alias}</span>
-                          </p>
-                          {scope.description && <p className="mt-1">{scope.description}</p>}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </TableHead>
-                ))}
-                {canManageFlags && (
-                  <TableHead className="text-right sticky right-0 bg-card z-10 min-w-25">
-                    Actions
-                  </TableHead>
-                )}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {flags.map((flag) => (
-                <TableRow key={flag.id}>
-                  <TableCell className="sticky left-0 bg-card z-10 px-3 py-3">
-                    <div>
-                      <div className="text-sm font-medium">
-                        {flag.description ? (
+        {isSearching ? (
+          <TableSkeleton rows={3} columns={scopes.length + 2} />
+        ) : flags.length === 0 ? (
+          <EmptyState
+            icon={<Search className="h-16 w-16" />}
+            title="No flags found"
+            description={`No flags match "${search}".`}
+          />
+        ) : (
+          <>
+            <div className="overflow-hidden [&_tr]:border-0">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="sticky left-0 bg-card z-10 min-w-62.5">
+                        Feature Flag
+                      </TableHead>
+                      {scopes.map((scope) => (
+                        <TableHead key={scope.id} className="text-center min-w-30">
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <span className="cursor-help">{flag.name}</span>
+                                <div className="cursor-help">{scope.name}</div>
                               </TooltipTrigger>
                               <TooltipContent>
-                                <p>{flag.description}</p>
+                                <p>
+                                  Alias: <span className="font-mono">{scope.alias}</span>
+                                </p>
+                                {scope.description && <p className="mt-1">{scope.description}</p>}
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
-                        ) : (
-                          <span>{flag.name}</span>
-                        )}
-                      </div>
-                      <span className="block text-xs font-mono text-muted-foreground mt-0.5">{flag.key}</span>
-                    </div>
-                  </TableCell>
-                  {scopes.map((scope) => {
-                    const value = flag.values.find((v) => v.scopeId === scope.id);
-                    const canUpdate = canPerformScopeAction(
-                      permissions,
-                      scope.id,
-                      ScopePermission.UpdateFeatureFlags
-                    );
+                        </TableHead>
+                      ))}
+                      {canManageFlags && (
+                        <TableHead className="text-right sticky right-0 bg-card z-10 min-w-25">
+                          Actions
+                        </TableHead>
+                      )}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {flags.map((flag) => (
+                      <TableRow key={flag.id}>
+                        <TableCell className="sticky left-0 bg-card z-10 px-3 py-3">
+                          <div>
+                            <div className="text-sm font-medium">
+                              {flag.description ? (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <span className="cursor-help">{flag.name}</span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>{flag.description}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              ) : (
+                                <span>{flag.name}</span>
+                              )}
+                            </div>
+                            <span className="block text-xs font-mono text-muted-foreground mt-0.5">{flag.key}</span>
+                          </div>
+                        </TableCell>
+                        {scopes.map((scope) => {
+                          const value = flag.values.find((v) => v.scopeId === scope.id);
+                          const canUpdate = canPerformScopeAction(
+                            permissions,
+                            scope.id,
+                            ScopePermission.UpdateFeatureFlags
+                          );
 
-                    return (
-                      <TableCell key={scope.id} className="text-center px-3 py-3">
-                        {value ? (
-                          flag.type === FeatureFlagType.Boolean ? (
-                            <ScopeToggle
-                              featureFlagId={flag.id}
-                              scopeId={scope.id}
-                              scopeName={scope.name}
-                              currentValue={value.booleanValue ?? false}
-                              flagType={FeatureFlagType.Boolean}
-                              isEnabled={canUpdate}
-                              lastUpdated={value.updatedAt}
-                              onToggle={() => {
-                                refetchFlags();
-                                refetchScopes();
-                              }}
-                            />
-                          ) : canUpdate ? (
-                            <>
-                              {flag.type === FeatureFlagType.String && (
-                                <StringValuePopover
-                                  flagId={flag.id}
-                                  projectId={flag.projectId}
-                                  scopeId={scope.id}
-                                  currentValue={value.stringValue}
-                                />
+                          return (
+                            <TableCell key={scope.id} className="text-center px-3 py-3">
+                              {value ? (
+                                flag.type === FeatureFlagType.Boolean ? (
+                                  <ScopeToggle
+                                    featureFlagId={flag.id}
+                                    scopeId={scope.id}
+                                    scopeName={scope.name}
+                                    currentValue={value.booleanValue ?? false}
+                                    flagType={FeatureFlagType.Boolean}
+                                    isEnabled={canUpdate}
+                                    lastUpdated={value.updatedAt}
+                                    onToggle={() => {
+                                      refetchFlags();
+                                      refetchScopes();
+                                    }}
+                                  />
+                                ) : canUpdate ? (
+                                  <>
+                                    {flag.type === FeatureFlagType.String && (
+                                      <StringValuePopover
+                                        flagId={flag.id}
+                                        projectId={flag.projectId}
+                                        scopeId={scope.id}
+                                        currentValue={value.stringValue}
+                                      />
+                                    )}
+                                    {flag.type === FeatureFlagType.Number && (
+                                      <NumberValuePopover
+                                        flagId={flag.id}
+                                        projectId={flag.projectId}
+                                        scopeId={scope.id}
+                                        currentValue={value.numberValue}
+                                      />
+                                    )}
+                                    {flag.type === FeatureFlagType.Json && (
+                                      <JsonValuePopover
+                                        flagId={flag.id}
+                                        projectId={flag.projectId}
+                                        scopeId={scope.id}
+                                        currentValue={value.jsonValue}
+                                      />
+                                    )}
+                                  </>
+                                ) : (
+                                  <TypedValueDisplay flagType={flag.type} value={value} />
+                                )
+                              ) : (
+                                <div></div>
                               )}
-                              {flag.type === FeatureFlagType.Number && (
-                                <NumberValuePopover
-                                  flagId={flag.id}
-                                  projectId={flag.projectId}
-                                  scopeId={scope.id}
-                                  currentValue={value.numberValue}
-                                />
+                            </TableCell>
+                          );
+                        })}
+                        {canManageFlags && (
+                          <TableCell className="text-right sticky right-0 bg-card z-10 px-3 py-3">
+                            <div className="flex justify-end gap-2">
+                              {onEditFlag && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => onEditFlag(flag)}>
+                                        <Pencil className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Edit flag</TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
                               )}
-                              {flag.type === FeatureFlagType.Json && (
-                                <JsonValuePopover
-                                  flagId={flag.id}
-                                  projectId={flag.projectId}
-                                  scopeId={scope.id}
-                                  currentValue={value.jsonValue}
-                                />
+                              {onDeleteFlag && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => onDeleteFlag(flag)}>
+                                        <Trash2 className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Delete flag</TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
                               )}
-                            </>
-                          ) : (
-                            <TypedValueDisplay flagType={flag.type} value={value} />
-                          )
-                        ) : (
-                          <div></div>
+                            </div>
+                          </TableCell>
                         )}
-                      </TableCell>
-                    );
-                  })}
-                  {canManageFlags && (
-                    <TableCell className="text-right sticky right-0 bg-card z-10 px-3 py-3">
-                      <div className="flex justify-end gap-2">
-                        {onEditFlag && (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => onEditFlag(flag)}>
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Edit flag</TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        )}
-                        {onDeleteFlag && (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => onDeleteFlag(flag)}>
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Delete flag</TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        )}
-                      </div>
-                    </TableCell>
-                  )}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+
+            <div ref={sentinelRef} className="h-1" />
+          </>
+        )}
       </FeatureErrorBoundary>
     </div>
   );
