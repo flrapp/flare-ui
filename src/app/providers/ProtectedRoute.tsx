@@ -9,15 +9,15 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, user, checkAuth } = useAuthStore();
+  const { isAuthenticated, isLoading, initialized, user, checkAuth } = useAuthStore();
 
   useEffect(() => {
-    if (!isAuthenticated && !isLoading) {
+    if (!initialized && !isLoading) {
       checkAuth();
     }
-  }, [isAuthenticated, isLoading, checkAuth]);
+  }, [initialized, isLoading, checkAuth]);
 
-  if (isLoading) {
+  if (!initialized || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
