@@ -47,6 +47,13 @@ export interface FlagListParams {
   search?: string;
 }
 
+export interface UserListParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  isActive?: boolean;
+}
+
 // Feature Flag DTOs
 export interface CreateFeatureFlagDto {
   name: string; // 2-255 chars

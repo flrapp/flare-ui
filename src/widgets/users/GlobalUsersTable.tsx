@@ -1,52 +1,80 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip';
-import { Pencil, Trash2, Search, KeyRound, UserX, UserCheck, ShieldOff } from 'lucide-react';
+import { Pencil, Trash2, KeyRound, UserX, UserCheck, ShieldOff } from 'lucide-react';
 import { EditUserDialog, DeleteUserDialog, ResetPasswordDialog, ActivateUserDialog, DeactivateUserDialog, UnlockUserDialog } from '@/features/user';
 import { GlobalRole } from '@/shared/types/entities';
 import { useAuthStore } from '@/shared/stores/authStore';
 import { formatDate } from '@/shared/lib/format-date';
-import type { UserResponseDto } from '@/shared/types/dtos';
+import { useUsers } from '@/entities/user';
+import { TableSkeleton } from '@/shared/ui/TableSkeleton';
+import { ErrorMessage } from '@/shared/ui/ErrorMessage';
+import { Pagination } from '@/shared/ui/Pagination';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui/select';
 
 interface GlobalUsersTableProps {
-  users: UserResponseDto[];
+  search: string;
+  isActive?: boolean;
   emptyNode?: ReactNode;
 }
 
-export function GlobalUsersTable({ users, emptyNode }: GlobalUsersTableProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+export function GlobalUsersTable({ search, isActive, emptyNode }: GlobalUsersTableProps) {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, isActive, pageSize]);
+
   const currentUser = useAuthStore((state) => state.user);
   const isAdmin = currentUser?.globalRole === GlobalRole.Admin;
 
-  const filteredUsers = users.filter(
-    (user) =>
-      user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.fullName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const { data: usersPage, isLoading, isFetching, error, refetch } = useUsers({
+    search: search || undefined,
+    isActive,
+    page,
+    pageSize,
+  });
 
   const getRoleLabel = (role: number) => {
     return role === GlobalRole.Admin ? 'Admin' : 'User';
   };
 
+  if (isLoading) {
+    return <TableSkeleton rows={5} columns={7} />;
+  }
+
+  if (error) {
+    return (
+      <ErrorMessage
+        title="Failed to load users"
+        message="There was an error loading the user list. Please try again."
+        retry={() => refetch()}
+      />
+    );
+  }
+
+  const users = usersPage?.items ?? [];
+  const totalPages = usersPage?.totalPages ?? 1;
+  const totalCount = usersPage?.totalCount ?? 0;
+
+  if (users.length === 0 && !search) {
+    return <>{emptyNode}</>;
+  }
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search users..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8"
-          />
-        </div>
-        <div className="text-sm text-muted-foreground">
-          {filteredUsers.length} {filteredUsers.length === 1 ? 'user' : 'users'}
-        </div>
+      <div className="text-sm text-muted-foreground">
+        {totalCount} {totalCount === 1 ? 'user' : 'users'}
       </div>
 
       <div className="rounded-md border">
@@ -63,22 +91,14 @@ export function GlobalUsersTable({ users, emptyNode }: GlobalUsersTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredUsers.length === 0 ? (
+            {users.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className={users.length === 0 && emptyNode ? undefined : 'text-center py-8 text-muted-foreground'}
-                >
-                  {users.length === 0 && emptyNode
-                    ? emptyNode
-                    : searchQuery
-                    ? 'No users found matching your search.'
-                    : 'No users yet.'
-                  }
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  No users found matching your search.
                 </TableCell>
               </TableRow>
             ) : (
-              filteredUsers.map((user) => (
+              users.map((user) => (
                 <TableRow key={user.userId} className={!user.isActive ? 'opacity-60' : undefined}>
                   <TableCell>
                     <span className="font-mono text-sm">{user.username}</span>
@@ -187,6 +207,33 @@ export function GlobalUsersTable({ users, emptyNode }: GlobalUsersTableProps) {
             )}
           </TableBody>
         </Table>
+      </div>
+
+      <div className="flex items-center justify-between py-2 px-1">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>Rows per page</span>
+          <Select
+            value={String(pageSize)}
+            onValueChange={(v) => setPageSize(Number(v))}
+            disabled={isFetching}
+          >
+            <SelectTrigger className="h-8 w-18">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="20">20</SelectItem>
+              <SelectItem value="25">25</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          disabled={isFetching}
+        />
       </div>
     </div>
   );

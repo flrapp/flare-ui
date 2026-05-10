@@ -2,17 +2,15 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/shared/ui/button';
 import { Plus } from 'lucide-react';
-import { Skeleton } from '@/shared/ui/skeleton';
-import { TableSkeleton } from '@/shared/ui/TableSkeleton';
-import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { CreateUserDialog } from '@/features/user';
 import { GlobalUsersTable } from '@/widgets/users';
-import { useUsers } from '@/entities/user';
 import { useAuthStore } from '@/shared/stores/authStore';
 import { GlobalRole } from '@/shared/types/entities';
 import { UserPlus } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs';
+import { SearchInput } from '@/shared/ui/SearchInput';
+import { useDebounce } from '@/shared/lib/useDebounce';
 
 type ActiveFilter = 'all' | 'active' | 'inactive';
 
@@ -26,7 +24,8 @@ export function GlobalUsersPage() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const [activeFilter, setActiveFilter] = useState<ActiveFilter>('all');
-  const { data: users, isLoading, error, refetch } = useUsers(filterToParam(activeFilter));
+  const [searchInput, setSearchInput] = useState('');
+  const search = useDebounce(searchInput, 300);
 
   useEffect(() => {
     if (user && user.globalRole !== GlobalRole.Admin) {
@@ -34,38 +33,7 @@ export function GlobalUsersPage() {
     }
   }, [user, navigate]);
 
-  if (isLoading) {
-    return (
-      <div className="max-w-5xl mx-auto p-8">
-        <div className="flex items-start justify-between mb-6">
-          <div className="space-y-1.5">
-            <Skeleton className="h-6 w-40" />
-            <Skeleton className="h-4 w-64" />
-          </div>
-          <div className="flex items-center gap-3">
-            <Skeleton className="h-9 w-44" />
-            <Skeleton className="h-9 w-32" />
-          </div>
-        </div>
-        <TableSkeleton rows={5} columns={4} />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="max-w-5xl mx-auto p-8">
-        <ErrorMessage
-          title="Failed to load users"
-          message="There was an error loading the user list. Please try again."
-          retry={() => refetch()}
-        />
-      </div>
-    );
-  }
-
   const isFiltered = activeFilter !== 'all';
-  const userList = users ?? [];
 
   const emptyNode = (
     <EmptyState
@@ -112,7 +80,21 @@ export function GlobalUsersPage() {
           </CreateUserDialog>
         </div>
       </div>
-      <GlobalUsersTable users={userList} emptyNode={emptyNode} />
+
+      <div className="mb-4">
+        <SearchInput
+          value={searchInput}
+          onChange={setSearchInput}
+          placeholder="Search users..."
+          className="max-w-sm"
+        />
+      </div>
+
+      <GlobalUsersTable
+        search={search}
+        isActive={filterToParam(activeFilter)}
+        emptyNode={emptyNode}
+      />
     </div>
   );
 }
