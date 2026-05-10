@@ -2,14 +2,22 @@ import { apiClient } from '@/shared/api/client';
 import type {
   AvailableUserDto,
   InviteUserDto,
+  PaginatedResponse,
+  ProjectUserListParams,
   UpdateUserPermissionsDto,
 } from '@/shared/types/dtos';
 import type { ProjectUser } from '@/shared/types/entities';
 
 const BASE_PATH = '/v1/projects';
 
-export async function getAvailableUsers(projectId: string): Promise<AvailableUserDto[]> {
-  const response = await apiClient.get<AvailableUserDto[]>(`${BASE_PATH}/${projectId}/users/available`);
+export async function getAvailableUsers(
+  projectId: string,
+  params?: { search?: string }
+): Promise<AvailableUserDto[]> {
+  const response = await apiClient.get<AvailableUserDto[]>(
+    `${BASE_PATH}/${projectId}/users/available`,
+    { params }
+  );
   return response.data;
 }
 
@@ -18,8 +26,14 @@ export async function inviteUser(projectId: string, data: InviteUserDto): Promis
   return response.data;
 }
 
-export async function getProjectUsers(projectId: string): Promise<ProjectUser[]> {
-  const response = await apiClient.get<ProjectUser[]>(`${BASE_PATH}/${projectId}/users`);
+export async function getProjectUsers(
+  projectId: string,
+  params?: ProjectUserListParams
+): Promise<PaginatedResponse<ProjectUser>> {
+  const response = await apiClient.get<PaginatedResponse<ProjectUser>>(
+    `${BASE_PATH}/${projectId}/users`,
+    { params }
+  );
   return response.data;
 }
 
