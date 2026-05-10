@@ -1,64 +1,34 @@
-import { toast } from '@/shared/lib/toast';
 import { Switch } from '@/shared/ui/switch';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/ui/tooltip';
-import { useUpdateFeatureFlagValue } from '@/entities/flag';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip';
 import { LoadingSpinner } from '@/shared/ui/LoadingSpinner';
 import { formatDateTime } from '@/shared/lib/format-date';
-import type { FeatureFlagType } from '@/shared/types/entities';
-import type { ProblemDetails } from '@/shared/types/auth';
 
 interface ScopeToggleProps {
-  featureFlagId: string;
-  scopeId: string;
   scopeName: string;
   currentValue: boolean;
-  flagType: FeatureFlagType;
   isEnabled: boolean;
   lastUpdated?: string;
-  onToggle: () => void;
+  isPending: boolean;
+  onToggle: (checked: boolean) => void;
 }
 
 export function ScopeToggle({
-  featureFlagId,
-  scopeId,
   scopeName,
   currentValue,
-  flagType,
   isEnabled,
   lastUpdated,
+  isPending,
   onToggle,
 }: ScopeToggleProps) {
-  const updateValue = useUpdateFeatureFlagValue();
-
-  const handleToggle = async (checked: boolean) => {
-    if (!isEnabled) return;
-
-    try {
-      await updateValue.mutateAsync({
-        flagId: featureFlagId,
-        data: {
-          scopeId,
-          type: flagType,
-          booleanValue: checked,
-        },
-      });
-      toast.info(`Feature flag ${checked ? 'enabled' : 'disabled'} for ${scopeName}`);
-      onToggle();
-    } catch (error: any) {
-      const problemDetails = error.response?.data as ProblemDetails | undefined;
-      toast.error('flag value', 'update', problemDetails?.detail ?? problemDetails?.title ?? undefined);
-    }
-  };
-
   const toggleContent = (
     <div className="flex items-center justify-center">
-      {updateValue.isPending ? (
+      {isPending ? (
         <LoadingSpinner size="sm" />
       ) : (
         <Switch
           checked={currentValue}
-          onCheckedChange={handleToggle}
-          disabled={!isEnabled || updateValue.isPending}
+          onCheckedChange={onToggle}
+          disabled={!isEnabled || isPending}
         />
       )}
     </div>
@@ -66,31 +36,27 @@ export function ScopeToggle({
 
   if (!isEnabled) {
     return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="cursor-not-allowed">{toggleContent}</div>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>No permission to update flags in {scopeName}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="cursor-not-allowed">{toggleContent}</div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>No permission to update flags in {scopeName}</p>
+        </TooltipContent>
+      </Tooltip>
     );
   }
 
   if (lastUpdated) {
     return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div>{toggleContent}</div>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Last updated: {formatDateTime(lastUpdated)}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div>{toggleContent}</div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Last updated: {formatDateTime(lastUpdated)}</p>
+        </TooltipContent>
+      </Tooltip>
     );
   }
 

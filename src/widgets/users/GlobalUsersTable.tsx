@@ -20,13 +20,7 @@ import { useUsers } from '@/entities/user';
 import { TableSkeleton } from '@/shared/ui/TableSkeleton';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { Pagination } from '@/shared/ui/Pagination';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/ui/select';
+import { PageSizeSelect } from '@/shared/ui/PageSizeSelect';
 import type { UserResponseDto } from '@/shared/types/dtos';
 
 type DialogType = 'edit' | 'reset-password' | 'activate' | 'deactivate' | 'delete' | 'unlock';
@@ -229,23 +223,11 @@ export function GlobalUsersTable({ search, isActive, emptyNode }: GlobalUsersTab
       </div>
 
       <div className="flex items-center justify-between py-2 px-1">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>Rows per page</span>
-          <Select
-            value={String(pageSize)}
-            onValueChange={(v) => setPageSize(Number(v))}
-            disabled={isFetching}
-          >
-            <SelectTrigger className="h-8 w-18">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="20">20</SelectItem>
-              <SelectItem value="25">25</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <PageSizeSelect
+          value={pageSize}
+          onChange={setPageSize}
+          disabled={isFetching}
+        />
 
         <Pagination
           page={page}

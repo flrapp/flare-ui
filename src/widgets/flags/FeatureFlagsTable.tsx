@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useFeatureFlags } from '@/entities/flag';
+import { useFeatureFlags, useUpdateFeatureFlagValue } from '@/entities/flag';
 import { useScopes } from '@/entities/scope';
+import { toast } from '@/shared/lib/toast';
+import type { ProblemDetails } from '@/shared/types/auth';
 import { ScopeToggle } from '@/features/flag/ui/ScopeToggle';
 import { StringValuePopover } from '@/features/flag/ui/StringValuePopover';
 import { NumberValuePopover } from '@/features/flag/ui/NumberValuePopover';
@@ -19,13 +21,7 @@ import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { FeatureErrorBoundary } from '@/shared/ui/FeatureErrorBoundary';
 import { Pagination } from '@/shared/ui/Pagination';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/ui/select';
+import { PageSizeSelect } from '@/shared/ui/PageSizeSelect';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip';
 import { Plus, Flag, Pencil, Trash2, Search } from 'lucide-react';
 import { canPerformScopeAction } from '@/shared/lib/permissions';
@@ -112,6 +108,9 @@ export function FeatureFlagsTable({
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [popover, setPopover] = useState<PopoverState | null>(null);
+  const [pendingCell, setPendingCell] = useState<{ flagId: string; scopeId: string } | null>(null);
+
+  const updateValue = useUpdateFeatureFlagValue();
 
   useEffect(() => {
     setPage(1);
@@ -135,6 +134,27 @@ export function FeatureFlagsTable({
     error: scopesError,
     refetch: refetchScopes,
   } = useScopes(projectId);
+
+  const handleFlagToggle = async (
+    flagId: string,
+    scopeId: string,
+    scopeName: string,
+    flagType: FeatureFlagType,
+    checked: boolean
+  ) => {
+    setPendingCell({ flagId, scopeId });
+    try {
+      await updateValue.mutateAsync({ flagId, data: { scopeId, type: flagType, booleanValue: checked } });
+      toast.info(`Feature flag ${checked ? 'enabled' : 'disabled'} for ${scopeName}`);
+      refetchFlags();
+      refetchScopes();
+    } catch (error: any) {
+      const problemDetails = error.response?.data as ProblemDetails | undefined;
+      toast.error('flag value', 'update', problemDetails?.detail ?? problemDetails?.title ?? undefined);
+    } finally {
+      setPendingCell(null);
+    }
+  };
 
   const scopePermissions = useMemo(() => {
     const map = new Map<string, boolean>();
@@ -293,17 +313,12 @@ export function FeatureFlagsTable({
                               {value ? (
                                 flag.type === FeatureFlagType.Boolean ? (
                                   <ScopeToggle
-                                    featureFlagId={flag.id}
-                                    scopeId={scope.id}
                                     scopeName={scope.name}
                                     currentValue={value.booleanValue ?? false}
-                                    flagType={FeatureFlagType.Boolean}
                                     isEnabled={canUpdate}
                                     lastUpdated={value.updatedAt}
-                                    onToggle={() => {
-                                      refetchFlags();
-                                      refetchScopes();
-                                    }}
+                                    isPending={pendingCell?.flagId === flag.id && pendingCell?.scopeId === scope.id}
+                                    onToggle={(checked) => handleFlagToggle(flag.id, scope.id, scope.name, FeatureFlagType.Boolean, checked)}
                                   />
                                 ) : canUpdate ? (
                                   <>
@@ -375,23 +390,11 @@ export function FeatureFlagsTable({
             </div>
 
             <div className="flex items-center justify-between py-2 px-1">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span>Rows per page</span>
-                <Select
-                  value={String(pageSize)}
-                  onValueChange={(v) => setPageSize(Number(v))}
-                  disabled={flagsFetching}
-                >
-                  <SelectTrigger className="h-8 w-18">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="10">10</SelectItem>
-                    <SelectItem value="20">20</SelectItem>
-                    <SelectItem value="25">25</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <PageSizeSelect
+                value={pageSize}
+                onChange={setPageSize}
+                disabled={flagsFetching}
+              />
 
               <Pagination
                 page={page}
