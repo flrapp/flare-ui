@@ -1,11 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip';
 import { Pencil, Trash2, KeyRound, UserX, UserCheck, ShieldOff } from 'lucide-react';
-import { EditUserDialog, DeleteUserDialog, ResetPasswordDialog, ActivateUserDialog, DeactivateUserDialog, UnlockUserDialog } from '@/features/user';
+import {
+  EditUserDialog,
+  DeleteUserDialog,
+  ResetPasswordDialog,
+  ActivateUserDialog,
+  DeactivateUserDialog,
+  UnlockUserDialog,
+} from '@/features/user';
 import { GlobalRole } from '@/shared/types/entities';
 import { useAuthStore } from '@/shared/stores/authStore';
 import { formatDate } from '@/shared/lib/format-date';
@@ -20,6 +27,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select';
+import type { UserResponseDto } from '@/shared/types/dtos';
+
+type DialogType = 'edit' | 'reset-password' | 'activate' | 'deactivate' | 'delete' | 'unlock';
+type DialogState = { type: DialogType; user: UserResponseDto };
 
 interface GlobalUsersTableProps {
   search: string;
@@ -30,8 +41,14 @@ interface GlobalUsersTableProps {
 export function GlobalUsersTable({ search, isActive, emptyNode }: GlobalUsersTableProps) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+  const [dialog, setDialog] = useState<DialogState | null>(null);
+  const isMounted = useRef(false);
 
   useEffect(() => {
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
+    }
     setPage(1);
   }, [search, isActive, pageSize]);
 
@@ -45,9 +62,9 @@ export function GlobalUsersTable({ search, isActive, emptyNode }: GlobalUsersTab
     pageSize,
   });
 
-  const getRoleLabel = (role: number) => {
-    return role === GlobalRole.Admin ? 'Admin' : 'User';
-  };
+  const closeDialog = () => setDialog(null);
+
+  const getRoleLabel = (role: number) => (role === GlobalRole.Admin ? 'Admin' : 'User');
 
   if (isLoading) {
     return <TableSkeleton rows={5} columns={7} />;
@@ -98,112 +115,114 @@ export function GlobalUsersTable({ search, isActive, emptyNode }: GlobalUsersTab
                 </TableCell>
               </TableRow>
             ) : (
-              users.map((user) => (
-                <TableRow key={user.userId} className={!user.isActive ? 'opacity-60' : undefined}>
-                  <TableCell>
-                    <span className="font-mono text-sm">{user.username}</span>
-                  </TableCell>
-                  <TableCell>{user.fullName}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{getRoleLabel(user.globalRole)}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      <Badge variant={user.isActive ? 'success' : 'secondary'}>
-                        {user.isActive ? 'Active' : 'Inactive'}
-                      </Badge>
-                      {user.isBruteForceLocked && (
-                        <Badge variant="destructive">Locked (brute force)</Badge>
+              users.map((user) => {
+                const isSelf = currentUser?.userId === user.userId;
+                return (
+                  <TableRow key={user.userId} className={!user.isActive ? 'opacity-60' : undefined}>
+                    <TableCell>
+                      <span className="font-mono text-sm">{user.username}</span>
+                    </TableCell>
+                    <TableCell>{user.fullName}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{getRoleLabel(user.globalRole)}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        <Badge variant={user.isActive ? 'success' : 'secondary'}>
+                          {user.isActive ? 'Active' : 'Inactive'}
+                        </Badge>
+                        {user.isBruteForceLocked && (
+                          <Badge variant="destructive">Locked (brute force)</Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm text-muted-foreground">{formatDate(user.createdAt)}</span>
+                    </TableCell>
+                    <TableCell>
+                      {user.lastLoginAt ? (
+                        <span className="text-sm text-muted-foreground">{formatDate(user.lastLoginAt)}</span>
+                      ) : (
+                        <span className="text-sm text-muted-foreground italic">Never</span>
                       )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-sm text-muted-foreground">{formatDate(user.createdAt)}</span>
-                  </TableCell>
-                  <TableCell>
-                    {user.lastLoginAt ? (
-                      <span className="text-sm text-muted-foreground">{formatDate(user.lastLoginAt)}</span>
-                    ) : (
-                      <span className="text-sm text-muted-foreground italic">Never</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      {user.isActive ? (
-                        <>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <EditUserDialog user={user}>
-                                <Button variant="ghost" size="sm">
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                              </EditUserDialog>
-                            </TooltipTrigger>
-                            <TooltipContent>Edit user</TooltipContent>
-                          </Tooltip>
-                          {isAdmin && (
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        {user.isActive ? (
+                          <>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <ResetPasswordDialog user={user}>
-                                  <Button variant="ghost" size="sm">
+                                <Button variant="ghost" size="sm" onClick={() => setDialog({ type: 'edit', user })}>
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Edit user</TooltipContent>
+                            </Tooltip>
+                            {isAdmin && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="sm" onClick={() => setDialog({ type: 'reset-password', user })}>
                                     <KeyRound className="h-4 w-4" />
                                   </Button>
-                                </ResetPasswordDialog>
-                              </TooltipTrigger>
-                              <TooltipContent>Reset password</TooltipContent>
-                            </Tooltip>
-                          )}
+                                </TooltipTrigger>
+                                <TooltipContent>Reset password</TooltipContent>
+                              </Tooltip>
+                            )}
+                            {!isSelf && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="sm" onClick={() => setDialog({ type: 'deactivate', user })}>
+                                    <UserX className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Deactivate user</TooltipContent>
+                              </Tooltip>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            {!isSelf && (
+                              <>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="sm" onClick={() => setDialog({ type: 'activate', user })}>
+                                      <UserCheck className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Activate user</TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="sm" onClick={() => setDialog({ type: 'delete', user })}>
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Delete user</TooltipContent>
+                                </Tooltip>
+                              </>
+                            )}
+                          </>
+                        )}
+                        {isAdmin && user.isBruteForceLocked && (
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <DeactivateUserDialog user={user}>
-                                <Button variant="ghost" size="sm">
-                                  <UserX className="h-4 w-4" />
-                                </Button>
-                              </DeactivateUserDialog>
-                            </TooltipTrigger>
-                            <TooltipContent>Deactivate user</TooltipContent>
-                          </Tooltip>
-                        </>
-                      ) : (
-                        <>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <ActivateUserDialog user={user}>
-                                <Button variant="ghost" size="sm">
-                                  <UserCheck className="h-4 w-4" />
-                                </Button>
-                              </ActivateUserDialog>
-                            </TooltipTrigger>
-                            <TooltipContent>Activate user</TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <DeleteUserDialog user={user}>
-                                <Button variant="ghost" size="sm">
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </DeleteUserDialog>
-                            </TooltipTrigger>
-                            <TooltipContent>Delete user</TooltipContent>
-                          </Tooltip>
-                        </>
-                      )}
-                      {isAdmin && user.isBruteForceLocked && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <UnlockUserDialog user={user}>
-                              <Button variant="ghost" size="sm" className="text-amber-600 hover:text-amber-700">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-amber-600 hover:text-amber-700"
+                                onClick={() => setDialog({ type: 'unlock', user })}
+                              >
                                 <ShieldOff className="h-4 w-4" />
                               </Button>
-                            </UnlockUserDialog>
-                          </TooltipTrigger>
-                          <TooltipContent>Unlock user (brute force)</TooltipContent>
-                        </Tooltip>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+                            </TooltipTrigger>
+                            <TooltipContent>Unlock user (brute force)</TooltipContent>
+                          </Tooltip>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
@@ -235,6 +254,25 @@ export function GlobalUsersTable({ search, isActive, emptyNode }: GlobalUsersTab
           disabled={isFetching}
         />
       </div>
+
+      {dialog?.type === 'edit' && (
+        <EditUserDialog user={dialog.user} open onClose={closeDialog} />
+      )}
+      {dialog?.type === 'reset-password' && (
+        <ResetPasswordDialog user={dialog.user} open onClose={closeDialog} />
+      )}
+      {dialog?.type === 'activate' && (
+        <ActivateUserDialog user={dialog.user} open onClose={closeDialog} />
+      )}
+      {dialog?.type === 'deactivate' && (
+        <DeactivateUserDialog user={dialog.user} open onClose={closeDialog} />
+      )}
+      {dialog?.type === 'delete' && (
+        <DeleteUserDialog user={dialog.user} open onClose={closeDialog} />
+      )}
+      {dialog?.type === 'unlock' && (
+        <UnlockUserDialog user={dialog.user} open onClose={closeDialog} />
+      )}
     </div>
   );
 }

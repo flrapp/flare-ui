@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useFeatureFlags } from '@/entities/flag';
 import { useScopes } from '@/entities/scope';
 import { ScopeToggle } from '@/features/flag/ui/ScopeToggle';
@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/select';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/shared/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip';
 import { Plus, Flag, Pencil, Trash2, Search } from 'lucide-react';
 import { canPerformScopeAction } from '@/shared/lib/permissions';
 import { FeatureFlagType } from '@/shared/types/entities';
@@ -44,6 +44,15 @@ interface FeatureFlagsTableProps {
   onDeleteFlag?: (flag: FeatureFlag) => void;
 }
 
+type PopoverState = {
+  type: 'string' | 'number' | 'json';
+  flagId: string;
+  projectId: string;
+  scopeId: string;
+  currentValue: unknown;
+  position: { top: number; left: number };
+};
+
 function truncate(str: string, max: number): string {
   return str.length <= max ? str : str.slice(0, max) + '…';
 }
@@ -58,20 +67,18 @@ function TypedValueDisplay({ flagType, value }: TypedValueDisplayProps) {
     const display = value.stringValue != null ? truncate(value.stringValue, 16) : '—';
     const full = value.stringValue ?? '';
     return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span className="inline-block font-mono text-xs bg-muted rounded px-1.5 py-0.5 cursor-default max-w-[120px] truncate">
-              {display}
-            </span>
-          </TooltipTrigger>
-          {full.length > 16 && (
-            <TooltipContent>
-              <p className="font-mono">{full}</p>
-            </TooltipContent>
-          )}
-        </Tooltip>
-      </TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-block font-mono text-xs bg-muted rounded px-1.5 py-0.5 cursor-default max-w-[120px] truncate">
+            {display}
+          </span>
+        </TooltipTrigger>
+        {full.length > 16 && (
+          <TooltipContent>
+            <p className="font-mono">{full}</p>
+          </TooltipContent>
+        )}
+      </Tooltip>
     );
   }
 
@@ -103,7 +110,8 @@ export function FeatureFlagsTable({
   onDeleteFlag,
 }: FeatureFlagsTableProps) {
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(10);
+  const [popover, setPopover] = useState<PopoverState | null>(null);
 
   useEffect(() => {
     setPage(1);
@@ -127,6 +135,14 @@ export function FeatureFlagsTable({
     error: scopesError,
     refetch: refetchScopes,
   } = useScopes(projectId);
+
+  const scopePermissions = useMemo(() => {
+    const map = new Map<string, boolean>();
+    for (const scope of scopes ?? []) {
+      map.set(scope.id, canPerformScopeAction(permissions, scope.id, ScopePermission.UpdateFeatureFlags));
+    }
+    return map;
+  }, [permissions, scopes]);
 
   const flags = flagPage?.items ?? [];
   const totalPages = flagPage?.totalPages ?? 1;
@@ -178,6 +194,20 @@ export function FeatureFlagsTable({
 
   const isSearching = flagsFetching && flagPage === undefined;
 
+  const handlePopoverOpen = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    type: 'string' | 'number' | 'json',
+    flagId: string,
+    flagProjectId: string,
+    scopeId: string,
+    currentValue: unknown
+  ) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setPopover({ type, flagId, projectId: flagProjectId, scopeId, currentValue, position: { top: rect.bottom + 4, left: rect.left + rect.width / 2 } });
+  };
+
+  const closePopover = () => setPopover(null);
+
   return (
     <div className="space-y-4">
       <FeatureErrorBoundary
@@ -212,19 +242,17 @@ export function FeatureFlagsTable({
                       </TableHead>
                       {scopes.map((scope) => (
                         <TableHead key={scope.id} className="text-center min-w-30">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className="cursor-help">{scope.name}</div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>
-                                  Alias: <span className="font-mono">{scope.alias}</span>
-                                </p>
-                                {scope.description && <p className="mt-1">{scope.description}</p>}
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="cursor-help">{scope.name}</div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>
+                                Alias: <span className="font-mono">{scope.alias}</span>
+                              </p>
+                              {scope.description && <p className="mt-1">{scope.description}</p>}
+                            </TooltipContent>
+                          </Tooltip>
                         </TableHead>
                       ))}
                       {canManageFlags && (
@@ -241,16 +269,14 @@ export function FeatureFlagsTable({
                           <div>
                             <div className="text-sm font-medium">
                               {flag.description ? (
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <span className="cursor-help">{flag.name}</span>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>{flag.description}</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className="cursor-help">{flag.name}</span>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>{flag.description}</p>
+                                  </TooltipContent>
+                                </Tooltip>
                               ) : (
                                 <span>{flag.name}</span>
                               )}
@@ -260,11 +286,7 @@ export function FeatureFlagsTable({
                         </TableCell>
                         {scopes.map((scope) => {
                           const value = flag.values.find((v) => v.scopeId === scope.id);
-                          const canUpdate = canPerformScopeAction(
-                            permissions,
-                            scope.id,
-                            ScopePermission.UpdateFeatureFlags
-                          );
+                          const canUpdate = scopePermissions.get(scope.id) ?? false;
 
                           return (
                             <TableCell key={scope.id} className="text-center px-3 py-3">
@@ -286,28 +308,28 @@ export function FeatureFlagsTable({
                                 ) : canUpdate ? (
                                   <>
                                     {flag.type === FeatureFlagType.String && (
-                                      <StringValuePopover
-                                        flagId={flag.id}
-                                        projectId={flag.projectId}
-                                        scopeId={scope.id}
-                                        currentValue={value.stringValue}
-                                      />
+                                      <button
+                                        onClick={(e) => handlePopoverOpen(e, 'string', flag.id, flag.projectId, scope.id, value.stringValue)}
+                                        className="inline-block font-mono text-xs bg-muted rounded px-1.5 py-0.5 cursor-pointer hover:bg-accent max-w-[120px] truncate transition-colors"
+                                      >
+                                        {value.stringValue != null ? truncate(value.stringValue, 16) : '—'}
+                                      </button>
                                     )}
                                     {flag.type === FeatureFlagType.Number && (
-                                      <NumberValuePopover
-                                        flagId={flag.id}
-                                        projectId={flag.projectId}
-                                        scopeId={scope.id}
-                                        currentValue={value.numberValue}
-                                      />
+                                      <button
+                                        onClick={(e) => handlePopoverOpen(e, 'number', flag.id, flag.projectId, scope.id, value.numberValue)}
+                                        className="text-xs text-muted-foreground cursor-pointer hover:text-foreground transition-colors px-1"
+                                      >
+                                        {value.numberValue ?? '—'}
+                                      </button>
                                     )}
                                     {flag.type === FeatureFlagType.Json && (
-                                      <JsonValuePopover
-                                        flagId={flag.id}
-                                        projectId={flag.projectId}
-                                        scopeId={scope.id}
-                                        currentValue={value.jsonValue}
-                                      />
+                                      <button
+                                        onClick={(e) => handlePopoverOpen(e, 'json', flag.id, flag.projectId, scope.id, value.jsonValue)}
+                                        className="font-mono text-xs text-muted-foreground cursor-pointer hover:text-foreground transition-colors px-1"
+                                      >
+                                        {'{ … }'}
+                                      </button>
                                     )}
                                   </>
                                 ) : (
@@ -323,28 +345,24 @@ export function FeatureFlagsTable({
                           <TableCell className="text-right sticky right-0 bg-card z-10 px-3 py-3">
                             <div className="flex justify-end gap-2">
                               {onEditFlag && (
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => onEditFlag(flag)}>
-                                        <Pencil className="h-4 w-4" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Edit flag</TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => onEditFlag(flag)}>
+                                      <Pencil className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Edit flag</TooltipContent>
+                                </Tooltip>
                               )}
                               {onDeleteFlag && (
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => onDeleteFlag(flag)}>
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Delete flag</TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => onDeleteFlag(flag)}>
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Delete flag</TooltipContent>
+                                </Tooltip>
                               )}
                             </div>
                           </TableCell>
@@ -385,6 +403,37 @@ export function FeatureFlagsTable({
           </>
         )}
       </FeatureErrorBoundary>
+
+      {popover?.type === 'string' && (
+        <StringValuePopover
+          position={popover.position}
+          flagId={popover.flagId}
+          projectId={popover.projectId}
+          scopeId={popover.scopeId}
+          currentValue={popover.currentValue as string | null | undefined}
+          onClose={closePopover}
+        />
+      )}
+      {popover?.type === 'number' && (
+        <NumberValuePopover
+          position={popover.position}
+          flagId={popover.flagId}
+          projectId={popover.projectId}
+          scopeId={popover.scopeId}
+          currentValue={popover.currentValue as number | null | undefined}
+          onClose={closePopover}
+        />
+      )}
+      {popover?.type === 'json' && (
+        <JsonValuePopover
+          position={popover.position}
+          flagId={popover.flagId}
+          projectId={popover.projectId}
+          scopeId={popover.scopeId}
+          currentValue={popover.currentValue as string | null | undefined}
+          onClose={closePopover}
+        />
+      )}
     </div>
   );
 }
