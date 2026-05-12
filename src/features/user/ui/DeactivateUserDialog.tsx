@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { toast } from '@/shared/lib/toast';
 import {
   Dialog,
@@ -7,45 +6,35 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/shared/ui/dialog';
 import { Button } from '@/shared/ui/button';
 import { UserX } from 'lucide-react';
 import { useDeactivateUser } from '@/entities/user';
-import { useAuthStore } from '@/shared/stores/authStore';
 import type { UserResponseDto } from '@/shared/types/dtos';
 import type { ProblemDetails } from '@/shared/types/auth';
 
 interface DeactivateUserDialogProps {
   user: UserResponseDto;
-  children?: React.ReactNode;
+  open: boolean;
+  onClose: () => void;
 }
 
-export function DeactivateUserDialog({ user, children }: DeactivateUserDialogProps) {
-  const [open, setOpen] = useState(false);
+export function DeactivateUserDialog({ user, open, onClose }: DeactivateUserDialogProps) {
   const deactivateUser = useDeactivateUser();
-  const currentUser = useAuthStore((state) => state.user);
-
-  const isSelf = currentUser?.userId === user.userId;
 
   const handleDeactivate = async () => {
     try {
       await deactivateUser.mutateAsync(user.userId);
       toast.success('user', 'deactivated');
-      setOpen(false);
+      onClose();
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
       toast.error('user', 'deactivate', problemDetails?.detail ?? problemDetails?.title ?? undefined);
     }
   };
 
-  if (isSelf) {
-    return null;
-  }
-
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children || <Button variant="outline">Deactivate User</Button>}</DialogTrigger>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -58,7 +47,7 @@ export function DeactivateUserDialog({ user, children }: DeactivateUserDialogPro
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)} disabled={deactivateUser.isPending}>
+          <Button variant="outline" onClick={onClose} disabled={deactivateUser.isPending}>
             Cancel
           </Button>
           <Button variant="destructive" onClick={handleDeactivate} disabled={deactivateUser.isPending}>

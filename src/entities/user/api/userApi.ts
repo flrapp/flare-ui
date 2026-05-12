@@ -4,13 +4,14 @@ import type {
   UpdateUserDto,
   UserResponseDto,
   ResetUserPasswordRequest,
+  UserListParams,
+  PaginatedResponse,
 } from '@/shared/types/dtos';
 
 const BASE_PATH = '/v1/users';
 
-export async function getUsers(isActive?: boolean): Promise<UserResponseDto[]> {
-  const params = isActive !== undefined ? { isActive } : undefined;
-  const response = await apiClient.get<UserResponseDto[]>(BASE_PATH, { params });
+export async function getUsers(params?: UserListParams): Promise<PaginatedResponse<UserResponseDto>> {
+  const response = await apiClient.get<PaginatedResponse<UserResponseDto>>(BASE_PATH, { params });
   return response.data;
 }
 

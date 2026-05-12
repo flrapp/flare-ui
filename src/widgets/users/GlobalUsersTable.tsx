@@ -1,52 +1,91 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/shared/ui/tooltip';
-import { Pencil, Trash2, Search, KeyRound, UserX, UserCheck, ShieldOff } from 'lucide-react';
-import { EditUserDialog, DeleteUserDialog, ResetPasswordDialog, ActivateUserDialog, DeactivateUserDialog, UnlockUserDialog } from '@/features/user';
+import { Pencil, Trash2, KeyRound, UserX, UserCheck, ShieldOff } from 'lucide-react';
+import {
+  EditUserDialog,
+  DeleteUserDialog,
+  ResetPasswordDialog,
+  ActivateUserDialog,
+  DeactivateUserDialog,
+  UnlockUserDialog,
+} from '@/features/user';
 import { GlobalRole } from '@/shared/types/entities';
 import { useAuthStore } from '@/shared/stores/authStore';
 import { formatDate } from '@/shared/lib/format-date';
+import { useUsers } from '@/entities/user';
+import { TableSkeleton } from '@/shared/ui/TableSkeleton';
+import { ErrorMessage } from '@/shared/ui/ErrorMessage';
+import { Pagination } from '@/shared/ui/Pagination';
+import { PageSizeSelect } from '@/shared/ui/PageSizeSelect';
 import type { UserResponseDto } from '@/shared/types/dtos';
 
+type DialogType = 'edit' | 'reset-password' | 'activate' | 'deactivate' | 'delete' | 'unlock';
+type DialogState = { type: DialogType; user: UserResponseDto };
+
 interface GlobalUsersTableProps {
-  users: UserResponseDto[];
+  search: string;
+  isActive?: boolean;
   emptyNode?: ReactNode;
 }
 
-export function GlobalUsersTable({ users, emptyNode }: GlobalUsersTableProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+export function GlobalUsersTable({ search, isActive, emptyNode }: GlobalUsersTableProps) {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [dialog, setDialog] = useState<DialogState | null>(null);
+  const isMounted = useRef(false);
+
+  useEffect(() => {
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
+    }
+    setPage(1);
+  }, [search, isActive, pageSize]);
+
   const currentUser = useAuthStore((state) => state.user);
   const isAdmin = currentUser?.globalRole === GlobalRole.Admin;
 
-  const filteredUsers = users.filter(
-    (user) =>
-      user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.fullName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const { data: usersPage, isLoading, isFetching, error, refetch } = useUsers({
+    search: search || undefined,
+    isActive,
+    page,
+    pageSize,
+  });
 
-  const getRoleLabel = (role: number) => {
-    return role === GlobalRole.Admin ? 'Admin' : 'User';
-  };
+  const closeDialog = () => setDialog(null);
+
+  const getRoleLabel = (role: number) => (role === GlobalRole.Admin ? 'Admin' : 'User');
+
+  if (isLoading) {
+    return <TableSkeleton rows={5} columns={7} />;
+  }
+
+  if (error) {
+    return (
+      <ErrorMessage
+        title="Failed to load users"
+        message="There was an error loading the user list. Please try again."
+        retry={() => refetch()}
+      />
+    );
+  }
+
+  const users = usersPage?.items ?? [];
+  const totalPages = usersPage?.totalPages ?? 1;
+  const totalCount = usersPage?.totalCount ?? 0;
+
+  if (users.length === 0 && !search) {
+    return <>{emptyNode}</>;
+  }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search users..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8"
-          />
-        </div>
-        <div className="text-sm text-muted-foreground">
-          {filteredUsers.length} {filteredUsers.length === 1 ? 'user' : 'users'}
-        </div>
+      <div className="text-sm text-muted-foreground">
+        {totalCount} {totalCount === 1 ? 'user' : 'users'}
       </div>
 
       <div className="rounded-md border">
@@ -63,131 +102,159 @@ export function GlobalUsersTable({ users, emptyNode }: GlobalUsersTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredUsers.length === 0 ? (
+            {users.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className={users.length === 0 && emptyNode ? undefined : 'text-center py-8 text-muted-foreground'}
-                >
-                  {users.length === 0 && emptyNode
-                    ? emptyNode
-                    : searchQuery
-                    ? 'No users found matching your search.'
-                    : 'No users yet.'
-                  }
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  No users found matching your search.
                 </TableCell>
               </TableRow>
             ) : (
-              filteredUsers.map((user) => (
-                <TableRow key={user.userId} className={!user.isActive ? 'opacity-60' : undefined}>
-                  <TableCell>
-                    <span className="font-mono text-sm">{user.username}</span>
-                  </TableCell>
-                  <TableCell>{user.fullName}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{getRoleLabel(user.globalRole)}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      <Badge variant={user.isActive ? 'success' : 'secondary'}>
-                        {user.isActive ? 'Active' : 'Inactive'}
-                      </Badge>
-                      {user.isBruteForceLocked && (
-                        <Badge variant="destructive">Locked (brute force)</Badge>
+              users.map((user) => {
+                const isSelf = currentUser?.userId === user.userId;
+                return (
+                  <TableRow key={user.userId} className={!user.isActive ? 'opacity-60' : undefined}>
+                    <TableCell>
+                      <span className="font-mono text-sm">{user.username}</span>
+                    </TableCell>
+                    <TableCell>{user.fullName}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{getRoleLabel(user.globalRole)}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        <Badge variant={user.isActive ? 'success' : 'secondary'}>
+                          {user.isActive ? 'Active' : 'Inactive'}
+                        </Badge>
+                        {user.isBruteForceLocked && (
+                          <Badge variant="destructive">Locked (brute force)</Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm text-muted-foreground">{formatDate(user.createdAt)}</span>
+                    </TableCell>
+                    <TableCell>
+                      {user.lastLoginAt ? (
+                        <span className="text-sm text-muted-foreground">{formatDate(user.lastLoginAt)}</span>
+                      ) : (
+                        <span className="text-sm text-muted-foreground italic">Never</span>
                       )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-sm text-muted-foreground">{formatDate(user.createdAt)}</span>
-                  </TableCell>
-                  <TableCell>
-                    {user.lastLoginAt ? (
-                      <span className="text-sm text-muted-foreground">{formatDate(user.lastLoginAt)}</span>
-                    ) : (
-                      <span className="text-sm text-muted-foreground italic">Never</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      {user.isActive ? (
-                        <>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <EditUserDialog user={user}>
-                                <Button variant="ghost" size="sm">
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                              </EditUserDialog>
-                            </TooltipTrigger>
-                            <TooltipContent>Edit user</TooltipContent>
-                          </Tooltip>
-                          {isAdmin && (
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        {user.isActive ? (
+                          <>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <ResetPasswordDialog user={user}>
-                                  <Button variant="ghost" size="sm">
+                                <Button variant="ghost" size="sm" onClick={() => setDialog({ type: 'edit', user })}>
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Edit user</TooltipContent>
+                            </Tooltip>
+                            {isAdmin && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="sm" onClick={() => setDialog({ type: 'reset-password', user })}>
                                     <KeyRound className="h-4 w-4" />
                                   </Button>
-                                </ResetPasswordDialog>
-                              </TooltipTrigger>
-                              <TooltipContent>Reset password</TooltipContent>
-                            </Tooltip>
-                          )}
+                                </TooltipTrigger>
+                                <TooltipContent>Reset password</TooltipContent>
+                              </Tooltip>
+                            )}
+                            {!isSelf && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="sm" onClick={() => setDialog({ type: 'deactivate', user })}>
+                                    <UserX className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Deactivate user</TooltipContent>
+                              </Tooltip>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            {!isSelf && (
+                              <>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="sm" onClick={() => setDialog({ type: 'activate', user })}>
+                                      <UserCheck className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Activate user</TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="sm" onClick={() => setDialog({ type: 'delete', user })}>
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Delete user</TooltipContent>
+                                </Tooltip>
+                              </>
+                            )}
+                          </>
+                        )}
+                        {isAdmin && user.isBruteForceLocked && (
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <DeactivateUserDialog user={user}>
-                                <Button variant="ghost" size="sm">
-                                  <UserX className="h-4 w-4" />
-                                </Button>
-                              </DeactivateUserDialog>
-                            </TooltipTrigger>
-                            <TooltipContent>Deactivate user</TooltipContent>
-                          </Tooltip>
-                        </>
-                      ) : (
-                        <>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <ActivateUserDialog user={user}>
-                                <Button variant="ghost" size="sm">
-                                  <UserCheck className="h-4 w-4" />
-                                </Button>
-                              </ActivateUserDialog>
-                            </TooltipTrigger>
-                            <TooltipContent>Activate user</TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <DeleteUserDialog user={user}>
-                                <Button variant="ghost" size="sm">
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </DeleteUserDialog>
-                            </TooltipTrigger>
-                            <TooltipContent>Delete user</TooltipContent>
-                          </Tooltip>
-                        </>
-                      )}
-                      {isAdmin && user.isBruteForceLocked && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <UnlockUserDialog user={user}>
-                              <Button variant="ghost" size="sm" className="text-amber-600 hover:text-amber-700">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-amber-600 hover:text-amber-700"
+                                onClick={() => setDialog({ type: 'unlock', user })}
+                              >
                                 <ShieldOff className="h-4 w-4" />
                               </Button>
-                            </UnlockUserDialog>
-                          </TooltipTrigger>
-                          <TooltipContent>Unlock user (brute force)</TooltipContent>
-                        </Tooltip>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+                            </TooltipTrigger>
+                            <TooltipContent>Unlock user (brute force)</TooltipContent>
+                          </Tooltip>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
       </div>
+
+      <div className="flex items-center justify-between py-2 px-1">
+        <PageSizeSelect
+          value={pageSize}
+          onChange={setPageSize}
+          disabled={isFetching}
+        />
+
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          disabled={isFetching}
+        />
+      </div>
+
+      {dialog?.type === 'edit' && (
+        <EditUserDialog user={dialog.user} open onClose={closeDialog} />
+      )}
+      {dialog?.type === 'reset-password' && (
+        <ResetPasswordDialog user={dialog.user} open onClose={closeDialog} />
+      )}
+      {dialog?.type === 'activate' && (
+        <ActivateUserDialog user={dialog.user} open onClose={closeDialog} />
+      )}
+      {dialog?.type === 'deactivate' && (
+        <DeactivateUserDialog user={dialog.user} open onClose={closeDialog} />
+      )}
+      {dialog?.type === 'delete' && (
+        <DeleteUserDialog user={dialog.user} open onClose={closeDialog} />
+      )}
+      {dialog?.type === 'unlock' && (
+        <UnlockUserDialog user={dialog.user} open onClose={closeDialog} />
+      )}
     </div>
   );
 }

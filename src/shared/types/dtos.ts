@@ -32,6 +32,34 @@ export interface UpdateScopeDto {
   description?: string | null; // max 1000 chars
 }
 
+// Pagination
+export interface PaginatedResponse<T> {
+  items: T[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface FlagListParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+}
+
+export interface UserListParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  isActive?: boolean;
+}
+
+export interface ProjectUserListParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+}
+
 // Feature Flag DTOs
 export interface CreateFeatureFlagDto {
   name: string; // 2-255 chars

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from '@/shared/lib/toast';
 import {
   Dialog,
@@ -7,29 +7,31 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/shared/ui/dialog';
 import { Input } from '@/shared/ui/input';
 import { Button } from '@/shared/ui/button';
 import { AlertCircle } from 'lucide-react';
 import { useDeleteUser } from '@/entities/user';
-import { useAuthStore } from '@/shared/stores/authStore';
 import type { UserResponseDto } from '@/shared/types/dtos';
 import type { ProblemDetails } from '@/shared/types/auth';
 
 interface DeleteUserDialogProps {
   user: UserResponseDto;
-  children?: React.ReactNode;
+  open: boolean;
+  onClose: () => void;
 }
 
-export function DeleteUserDialog({ user, children }: DeleteUserDialogProps) {
-  const [open, setOpen] = useState(false);
+export function DeleteUserDialog({ user, open, onClose }: DeleteUserDialogProps) {
   const [confirmUsername, setConfirmUsername] = useState('');
   const deleteUser = useDeleteUser();
-  const currentUser = useAuthStore((state) => state.user);
+
+  useEffect(() => {
+    if (!open) {
+      setConfirmUsername('');
+    }
+  }, [open]);
 
   const isConfirmValid = confirmUsername === user.username;
-  const isSelf = currentUser?.userId === user.userId;
 
   const handleDelete = async () => {
     if (!isConfirmValid) return;
@@ -37,28 +39,15 @@ export function DeleteUserDialog({ user, children }: DeleteUserDialogProps) {
     try {
       await deleteUser.mutateAsync(user.userId);
       toast.success('user', 'deleted');
-      setOpen(false);
-      setConfirmUsername('');
+      onClose();
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
       toast.error('user', 'delete', problemDetails?.detail ?? problemDetails?.title ?? undefined);
     }
   };
 
-  const handleOpenChange = (newOpen: boolean) => {
-    setOpen(newOpen);
-    if (!newOpen) {
-      setConfirmUsername('');
-    }
-  };
-
-  if (isSelf) {
-    return null;
-  }
-
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{children || <Button variant="destructive">Delete User</Button>}</DialogTrigger>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-destructive">
@@ -92,7 +81,7 @@ export function DeleteUserDialog({ user, children }: DeleteUserDialogProps) {
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={deleteUser.isPending}>
+          <Button variant="outline" onClick={onClose} disabled={deleteUser.isPending}>
             Cancel
           </Button>
           <Button variant="destructive" onClick={handleDelete} disabled={!isConfirmValid || deleteUser.isPending}>

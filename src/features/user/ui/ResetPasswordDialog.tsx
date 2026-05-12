@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,7 +11,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/shared/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
 import { Input } from '@/shared/ui/input';
@@ -28,41 +27,37 @@ type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 interface ResetPasswordDialogProps {
   user: UserResponseDto;
-  children?: React.ReactNode;
+  open: boolean;
+  onClose: () => void;
 }
 
-export function ResetPasswordDialog({ user, children }: ResetPasswordDialogProps) {
-  const [open, setOpen] = useState(false);
+export function ResetPasswordDialog({ user, open, onClose }: ResetPasswordDialogProps) {
   const resetPassword = useResetUserPassword();
 
   const form = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema) as Resolver<ResetPasswordFormData>,
-    defaultValues: {
-      temporaryPassword: '',
-    },
+    defaultValues: { temporaryPassword: '' },
   });
+
+  useEffect(() => {
+    if (!open) {
+      form.reset();
+    }
+  }, [open, form]);
 
   const onSubmit = async (data: ResetPasswordFormData) => {
     try {
       await resetPassword.mutateAsync({ userId: user.userId, data: { temporaryPassword: data.temporaryPassword } });
       toast.success('password', 'reset');
-      setOpen(false);
+      onClose();
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
       toast.error('password', 'reset', problemDetails?.detail ?? problemDetails?.title ?? undefined);
     }
   };
 
-  const handleOpenChange = (newOpen: boolean) => {
-    setOpen(newOpen);
-    if (!newOpen) {
-      form.reset();
-    }
-  };
-
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{children || <Button variant="outline">Reset Password</Button>}</DialogTrigger>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Reset Password</DialogTitle>
@@ -86,12 +81,7 @@ export function ResetPasswordDialog({ user, children }: ResetPasswordDialogProps
               )}
             />
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleOpenChange(false)}
-                disabled={resetPassword.isPending}
-              >
+              <Button type="button" variant="outline" onClick={onClose} disabled={resetPassword.isPending}>
                 Cancel
               </Button>
               <Button type="submit" disabled={resetPassword.isPending}>
