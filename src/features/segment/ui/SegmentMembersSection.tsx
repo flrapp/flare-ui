@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Plus, Trash2, Search } from 'lucide-react';
 import { toast } from '@/shared/lib/toast';
 import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
 import { LoadingSpinner } from '@/shared/ui/LoadingSpinner';
 import { ErrorMessage } from '@/shared/ui/ErrorMessage';
 import { EmptyState } from '@/shared/ui/EmptyState';
+import { SearchInput } from '@/shared/ui/SearchInput';
+import { Pagination } from '@/shared/ui/Pagination';
+import { PageSizeSelect } from '@/shared/ui/PageSizeSelect';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,6 +22,7 @@ import {
 import { useSegmentMembers, useRemoveSegmentMember } from '@/entities/segment';
 import type { SegmentMember } from '@/entities/segment';
 import { AddMembersModal } from './AddMembersModal';
+import { useDebounce } from '@/shared/lib/useDebounce';
 import type { ProblemDetails } from '@/shared/types/auth';
 
 interface SegmentMembersSectionProps {
@@ -27,13 +30,7 @@ interface SegmentMembersSectionProps {
   canManage: boolean;
 }
 
-function RemoveMemberButton({
-  member,
-  segmentId,
-}: {
-  member: SegmentMember;
-  segmentId: string;
-}) {
+function RemoveMemberButton({ member, segmentId }: { member: SegmentMember; segmentId: string }) {
   const remove = useRemoveSegmentMember();
 
   const handleRemove = async () => {
@@ -49,7 +46,12 @@ function RemoveMemberButton({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" disabled={remove.isPending}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+          disabled={remove.isPending}
+        >
           <Trash2 className="h-4 w-4" />
         </Button>
       </AlertDialogTrigger>
@@ -77,19 +79,29 @@ function RemoveMemberButton({
 export function SegmentMembersSection({ segmentId, canManage }: SegmentMembersSectionProps) {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [addOpen, setAddOpen] = useState(false);
+  const isMounted = useRef(false);
 
-  const pageSize = 20;
-  const { data: members, isLoading, error, refetch } = useSegmentMembers(segmentId, {
+  const debouncedSearch = useDebounce(search, 300);
+
+  const { data, isLoading, isFetching, error, refetch } = useSegmentMembers(segmentId, {
     page,
     pageSize,
-    search: search || undefined,
+    search: debouncedSearch || undefined,
   });
 
-  const handleSearchChange = (value: string) => {
-    setSearch(value);
+  useEffect(() => {
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
+    }
     setPage(1);
-  };
+  }, [debouncedSearch]);
+
+  const members = data?.items ?? [];
+  const totalPages = data?.totalPages ?? 1;
+  const totalCount = data?.totalCount ?? 0;
 
   return (
     <div className="space-y-4">
@@ -103,15 +115,12 @@ export function SegmentMembersSection({ segmentId, canManage }: SegmentMembersSe
         )}
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          className="pl-9"
-          placeholder="Search by targeting key..."
-          value={search}
-          onChange={(e) => handleSearchChange(e.target.value)}
-        />
-      </div>
+      <SearchInput
+        value={search}
+        onChange={setSearch}
+        placeholder="Search by targeting key..."
+        isLoading={isFetching && !isLoading}
+      />
 
       {isLoading ? (
         <div className="flex items-center justify-center min-h-[120px]">
@@ -123,17 +132,17 @@ export function SegmentMembersSection({ segmentId, canManage }: SegmentMembersSe
           message="There was an error loading segment members."
           retry={() => refetch()}
         />
-      ) : !members || members.length === 0 ? (
+      ) : members.length === 0 ? (
         <EmptyState
           icon={<Search className="h-12 w-12" />}
-          title={search ? 'No members found' : 'No members yet'}
+          title={debouncedSearch ? 'No members found' : 'No members yet'}
           description={
-            search
-              ? `No members match "${search}".`
+            debouncedSearch
+              ? `No members match "${debouncedSearch}".`
               : 'Add targeting keys to this segment to use it in flag rules.'
           }
           action={
-            !search && canManage ? (
+            !debouncedSearch && canManage ? (
               <Button variant="outline" size="sm" onClick={() => setAddOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Members
@@ -142,31 +151,39 @@ export function SegmentMembersSection({ segmentId, canManage }: SegmentMembersSe
           }
         />
       ) : (
-        <div className="border rounded-lg divide-y">
-          {members.map((member) => (
-            <div key={member.id} className="flex items-center justify-between px-4 py-2">
-              <span className="font-mono text-sm">{member.targetingKey}</span>
-              {canManage && <RemoveMemberButton member={member} segmentId={segmentId} />}
-            </div>
-          ))}
-        </div>
-      )}
+        <>
+          <div className={`border rounded-lg divide-y transition-opacity ${isFetching ? 'opacity-60' : ''}`}>
+            {members.map((member) => (
+              <div key={member.id} className="flex items-center justify-between px-4 py-2">
+                <span className="font-mono text-sm">{member.targetingKey}</span>
+                {canManage && <RemoveMemberButton member={member} segmentId={segmentId} />}
+              </div>
+            ))}
+          </div>
 
-      {members && members.length === pageSize && (
-        <div className="flex justify-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
-          >
-            Previous
-          </Button>
-          <span className="flex items-center text-sm text-muted-foreground px-2">Page {page}</span>
-          <Button variant="outline" size="sm" onClick={() => setPage((p) => p + 1)}>
-            Next
-          </Button>
-        </div>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between">
+              <PageSizeSelect
+                value={pageSize}
+                onChange={(size) => {
+                  setPageSize(size);
+                  setPage(1);
+                }}
+                disabled={isFetching}
+              />
+              <Pagination
+                page={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+                disabled={isFetching}
+              />
+            </div>
+          )}
+
+          <p className="text-xs text-muted-foreground">
+            {totalCount} {totalCount === 1 ? 'member' : 'members'} total
+          </p>
+        </>
       )}
 
       <AddMembersModal segmentId={segmentId} open={addOpen} onOpenChange={setAddOpen} />

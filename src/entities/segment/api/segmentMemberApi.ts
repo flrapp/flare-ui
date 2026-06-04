@@ -1,4 +1,5 @@
 import { apiClient } from '@/shared/api/client';
+import type { PaginatedResponse } from '@/shared/types/dtos';
 import type { SegmentMember, AddSegmentMembersDto, SegmentMembersParams } from '../model/types';
 
 const BASE_PATH = '/v1';
@@ -6,8 +7,8 @@ const BASE_PATH = '/v1';
 export async function getSegmentMembers(
   segmentId: string,
   params?: SegmentMembersParams
-): Promise<SegmentMember[]> {
-  const response = await apiClient.get<SegmentMember[]>(
+): Promise<PaginatedResponse<SegmentMember>> {
+  const response = await apiClient.get<PaginatedResponse<SegmentMember>>(
     `${BASE_PATH}/segments/${segmentId}/members`,
     { params }
   );

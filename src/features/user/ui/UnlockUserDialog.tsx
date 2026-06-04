@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { toast } from '@/shared/lib/toast';
 import {
   Dialog,
@@ -7,7 +6,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/shared/ui/dialog';
 import { Button } from '@/shared/ui/button';
 import { ShieldOff } from 'lucide-react';
@@ -17,18 +15,18 @@ import type { ProblemDetails } from '@/shared/types/auth';
 
 interface UnlockUserDialogProps {
   user: UserResponseDto;
-  children?: React.ReactNode;
+  open: boolean;
+  onClose: () => void;
 }
 
-export function UnlockUserDialog({ user, children }: UnlockUserDialogProps) {
-  const [open, setOpen] = useState(false);
+export function UnlockUserDialog({ user, open, onClose }: UnlockUserDialogProps) {
   const unlockUser = useUnlockUser();
 
   const handleUnlock = async () => {
     try {
       await unlockUser.mutateAsync(user.userId);
       toast.success('user', 'unlocked');
-      setOpen(false);
+      onClose();
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
       toast.error('user', 'unlock', problemDetails?.detail ?? problemDetails?.title ?? undefined);
@@ -36,8 +34,7 @@ export function UnlockUserDialog({ user, children }: UnlockUserDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children || <Button variant="outline">Unlock User</Button>}</DialogTrigger>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -49,7 +46,7 @@ export function UnlockUserDialog({ user, children }: UnlockUserDialogProps) {
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)} disabled={unlockUser.isPending}>
+          <Button variant="outline" onClick={onClose} disabled={unlockUser.isPending}>
             Cancel
           </Button>
           <Button onClick={handleUnlock} disabled={unlockUser.isPending}>

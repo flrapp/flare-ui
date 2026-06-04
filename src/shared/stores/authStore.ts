@@ -7,6 +7,7 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  initialized: boolean;
   error: string | null;
   lockDetails: LockDetails | null;
   setUser: (user: User | null) => void;
@@ -29,6 +30,7 @@ export const useAuthStore = create<AuthState>((set) => {
     user: null,
     isAuthenticated: false,
     isLoading: false,
+    initialized: false,
     error: null,
     lockDetails: null,
 
@@ -92,9 +94,9 @@ export const useAuthStore = create<AuthState>((set) => {
           globalRole: result.globalRole,
           mustChangePassword: result.mustChangePassword,
         };
-        set({ user, isAuthenticated: true, isLoading: false, error: null });
+        set({ user, isAuthenticated: true, isLoading: false, initialized: true, error: null });
       } catch (error: any) {
-        set({ user: null, isAuthenticated: false, isLoading: false, error: null });
+        set({ user: null, isAuthenticated: false, isLoading: false, initialized: true, error: null });
       }
     },
   };

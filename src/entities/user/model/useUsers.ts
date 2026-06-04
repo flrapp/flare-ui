@@ -5,22 +5,24 @@ import type {
   UpdateUserDto,
   UserResponseDto,
   ResetUserPasswordRequest,
+  UserListParams,
 } from '@/shared/types/dtos';
 
 // Query keys
 export const userKeys = {
   all: ['users'] as const,
   lists: () => [...userKeys.all, 'list'] as const,
-  list: (filters: { isActive?: boolean }) => [...userKeys.lists(), filters] as const,
+  list: (params: UserListParams) => [...userKeys.lists(), params] as const,
   details: () => [...userKeys.all, 'detail'] as const,
   detail: (userId: string) => [...userKeys.details(), userId] as const,
 };
 
 // Query hooks
-export function useUsers(isActive?: boolean) {
+export function useUsers(params: UserListParams = {}) {
   return useQuery({
-    queryKey: userKeys.list({ isActive }),
-    queryFn: () => userApi.getUsers(isActive),
+    queryKey: userKeys.list(params),
+    queryFn: () => userApi.getUsers(params),
+    placeholderData: (prev) => prev,
   });
 }
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import type { Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,7 +11,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/shared/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
 import { Input } from '@/shared/ui/input';
@@ -32,11 +31,11 @@ type UpdateUserFormData = z.infer<typeof updateUserSchema>;
 
 interface EditUserDialogProps {
   user: UserResponseDto;
-  children?: React.ReactNode;
+  open: boolean;
+  onClose: () => void;
 }
 
-export function EditUserDialog({ user, children }: EditUserDialogProps) {
-  const [open, setOpen] = useState(false);
+export function EditUserDialog({ user, open, onClose }: EditUserDialogProps) {
   const updateUser = useUpdateUser();
 
   const form = useForm<UpdateUserFormData>({
@@ -66,7 +65,7 @@ export function EditUserDialog({ user, children }: EditUserDialogProps) {
         },
       });
       toast.success('user', 'updated');
-      setOpen(false);
+      onClose();
     } catch (error: any) {
       const problemDetails = error.response?.data as ProblemDetails | undefined;
       toast.error('user', 'update', problemDetails?.detail ?? problemDetails?.title ?? undefined);
@@ -76,8 +75,7 @@ export function EditUserDialog({ user, children }: EditUserDialogProps) {
   const isChangingToAdmin = form.watch('globalRole') === GlobalRole.Admin && user.globalRole !== GlobalRole.Admin;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children || <Button variant="outline">Edit User</Button>}</DialogTrigger>
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
           <DialogTitle>Edit User</DialogTitle>
@@ -138,7 +136,7 @@ export function EditUserDialog({ user, children }: EditUserDialogProps) {
               </div>
             )}
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={updateUser.isPending}>
+              <Button type="button" variant="outline" onClick={onClose} disabled={updateUser.isPending}>
                 Cancel
               </Button>
               <Button type="submit" disabled={updateUser.isPending}>

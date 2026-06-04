@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import * as segmentMemberApi from '../api/segmentMemberApi';
 import { segmentKeys } from './useSegments';
 import type { SegmentMembersParams } from './types';
@@ -15,6 +15,7 @@ export function useSegmentMembers(segmentId: string, params?: SegmentMembersPara
     queryKey: segmentMemberKeys.list(segmentId, params),
     queryFn: () => segmentMemberApi.getSegmentMembers(segmentId, params),
     enabled: !!segmentId,
+    placeholderData: keepPreviousData,
   });
 }
 
