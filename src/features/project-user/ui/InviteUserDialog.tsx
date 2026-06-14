@@ -11,7 +11,7 @@ import {
 } from '@/shared/ui/dialog';
 import { Button } from '@/shared/ui/button';
 import { Label } from '@/shared/ui/label';
-import { AlertCircle, Check } from 'lucide-react';
+import { AlertCircle, Check, X } from 'lucide-react';
 import { PermissionEditor } from './PermissionEditor';
 import { useAvailableUsers, useInviteUser } from '@/entities/project-user';
 import { SearchInput } from '@/shared/ui/SearchInput';
@@ -39,7 +39,7 @@ export function InviteUserDialog({ projectId, children }: InviteUserDialogProps)
 
   const debouncedSearch = useDebounce(search, 300);
   const { data: availableUsers, isLoading: isLoadingUsers, isFetching } = useAvailableUsers(
-    open ? projectId : undefined,
+    open && !selectedUser ? projectId : undefined,
     debouncedSearch || undefined
   );
   const inviteUser = useInviteUser();
@@ -51,13 +51,6 @@ export function InviteUserDialog({ projectId, children }: InviteUserDialogProps)
       setPermissions({ projectPermissions: [], scopePermissions: {} });
     }
   }, [open]);
-
-  useEffect(() => {
-    if (selectedUser && availableUsers) {
-      const stillAvailable = availableUsers.find((u) => u.userId === selectedUser.userId);
-      if (!stillAvailable) setSelectedUser(null);
-    }
-  }, [availableUsers, selectedUser]);
 
   const handleInvite = async () => {
     if (!selectedUser) {
@@ -107,57 +100,72 @@ export function InviteUserDialog({ projectId, children }: InviteUserDialogProps)
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* User Selection */}
-          <div className="space-y-2">
-            <Label>Select User</Label>
-            <SearchInput
-              value={search}
-              onChange={setSearch}
-              placeholder="Search users..."
-              isLoading={isFetching}
-            />
-            <div className="border rounded-lg overflow-hidden">
-              {isLoadingUsers ? (
-                <div className="flex items-center justify-center py-6 text-muted-foreground gap-2">
-                  <InlineSpinner />
-                  <span className="text-sm">Loading users...</span>
-                </div>
-              ) : !availableUsers || availableUsers.length === 0 ? (
-                <div className="py-6 text-center text-sm text-muted-foreground">
-                  {debouncedSearch
-                    ? 'No users found matching your search.'
-                    : 'All users are already members of this project.'}
-                </div>
-              ) : (
-                <ul className="max-h-48 overflow-y-auto divide-y divide-border">
-                  {availableUsers.map((user) => {
-                    const isSelected = selectedUser?.userId === user.userId;
-                    return (
+          {!selectedUser ? (
+            /* User Search */
+            <div className="space-y-2">
+              <Label>Select User</Label>
+              <SearchInput
+                value={search}
+                onChange={setSearch}
+                placeholder="Search users..."
+                isLoading={isFetching}
+              />
+              <div className="border rounded-lg overflow-hidden">
+                {isLoadingUsers ? (
+                  <div className="flex items-center justify-center py-6 text-muted-foreground gap-2">
+                    <InlineSpinner />
+                    <span className="text-sm">Loading users...</span>
+                  </div>
+                ) : !availableUsers || availableUsers.length === 0 ? (
+                  <div className="py-6 text-center text-sm text-muted-foreground">
+                    {debouncedSearch
+                      ? 'No users found matching your search.'
+                      : 'All users are already members of this project.'}
+                  </div>
+                ) : (
+                  <ul className="max-h-48 overflow-y-auto divide-y divide-border">
+                    {availableUsers.map((user) => (
                       <li key={user.userId}>
                         <button
                           type="button"
-                          onClick={() => setSelectedUser(isSelected ? null : user)}
-                          className={`w-full flex items-center justify-between px-3 py-2.5 text-sm text-left transition-colors hover:bg-muted/50 ${
-                            isSelected ? 'bg-muted' : ''
-                          }`}
+                          onClick={() => setSelectedUser(user)}
+                          className="w-full flex items-center justify-between px-3 py-2.5 text-sm text-left transition-colors hover:bg-muted/50"
                         >
                           <div className="flex items-center gap-2">
                             <span className="font-mono font-medium">{user.username}</span>
                             <span className="text-muted-foreground">— {user.fullName}</span>
                           </div>
-                          {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
+                          <Check className="h-4 w-4 text-primary shrink-0 opacity-0" />
                         </button>
                       </li>
-                    );
-                  })}
-                </ul>
-              )}
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
-          </div>
-
-          {/* Permission Editor */}
-          {selectedUser && (
+          ) : (
+            /* Selected User + Permissions */
             <>
+              <div className="flex items-center justify-between rounded-lg border bg-muted/40 px-3 py-2.5">
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="h-4 w-4 text-primary shrink-0" />
+                  <span className="font-mono font-medium">{selectedUser.username}</span>
+                  <span className="text-muted-foreground">— {selectedUser.fullName}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedUser(null);
+                    setSearch('');
+                    setPermissions({ projectPermissions: [], scopePermissions: {} });
+                  }}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label="Clear selected user"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
               <div className="border-t pt-4">
                 <PermissionEditor
                   projectId={projectId}
