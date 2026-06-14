@@ -16,7 +16,7 @@ export interface TargetingRule {
   id: string;
   featureFlagValueId: string;
   priority: number;
-  serveValue: TypedValue;
+  serveValue: boolean | string | number | null;
   conditions: TargetingCondition[];
 }
 

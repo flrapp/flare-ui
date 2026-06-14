@@ -41,8 +41,10 @@ function truncate(str: string, max: number): string {
 }
 
 function ServeValueBadge({ rule, flagType }: { rule: TargetingRule; flagType: FeatureFlagType }) {
+  const sv = rule.serveValue;
+
   if (flagType === FeatureFlagType.Boolean) {
-    return rule.serveValue.bool ? (
+    return sv ? (
       <Badge className="bg-[hsl(var(--success)/0.1)] text-[hsl(var(--success))] hover:bg-[hsl(var(--success)/0.1)]">
         ON
       </Badge>
@@ -52,7 +54,7 @@ function ServeValueBadge({ rule, flagType }: { rule: TargetingRule; flagType: Fe
   }
 
   if (flagType === FeatureFlagType.String) {
-    const display = rule.serveValue.string != null ? truncate(rule.serveValue.string, 16) : '—';
+    const display = sv != null ? truncate(String(sv), 16) : '—';
     return (
       <Badge variant="outline" className="font-mono text-xs">
         {display}
@@ -63,7 +65,7 @@ function ServeValueBadge({ rule, flagType }: { rule: TargetingRule; flagType: Fe
   if (flagType === FeatureFlagType.Number) {
     return (
       <Badge variant="outline">
-        {rule.serveValue.number ?? '—'}
+        {sv ?? '—'}
       </Badge>
     );
   }

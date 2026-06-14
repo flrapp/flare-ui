@@ -107,7 +107,7 @@ export function RuleModal({ open, onOpenChange, flagValueId, projectId, flagType
 
   const form = useForm<RuleFormData>({
     resolver: zodResolver(createRuleSchema(flagType)),
-    defaultValues: buildDefaultValues(rule),
+    defaultValues: buildDefaultValues(rule, flagType),
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -117,9 +117,9 @@ export function RuleModal({ open, onOpenChange, flagValueId, projectId, flagType
 
   useEffect(() => {
     if (open) {
-      form.reset(buildDefaultValues(rule));
+      form.reset(buildDefaultValues(rule, flagType));
     }
-  }, [open, rule, form]);
+  }, [open, rule, flagType, form]);
 
   const buildServeValuePayload = (data: RuleFormData): TypedValue => {
     if (flagType === FeatureFlagType.Boolean) {
@@ -153,10 +153,12 @@ export function RuleModal({ open, onOpenChange, flagValueId, projectId, flagType
       } else {
         const serveChanged =
           flagType === FeatureFlagType.Boolean
-            ? data.serveValue !== rule.serveValue.bool
-            : data.stringValue !== rule.serveValue.string ||
-              data.numberValue !== rule.serveValue.number ||
-              data.jsonValue !== rule.serveValue.json;
+            ? data.serveValue !== rule.serveValue
+            : flagType === FeatureFlagType.String
+            ? data.stringValue !== rule.serveValue
+            : flagType === FeatureFlagType.Number
+            ? data.numberValue !== rule.serveValue
+            : data.jsonValue !== JSON.stringify(rule.serveValue);
 
         if (serveChanged) {
           await updateRule.mutateAsync({
@@ -367,12 +369,15 @@ export function RuleModal({ open, onOpenChange, flagValueId, projectId, flagType
   );
 }
 
-function buildDefaultValues(rule?: TargetingRule): RuleFormData {
+function buildDefaultValues(rule?: TargetingRule, flagType?: FeatureFlagType): RuleFormData {
+  const sv = rule?.serveValue;
   return {
-    serveValue: rule?.serveValue.bool ?? false,
-    stringValue: rule?.serveValue.string ?? '',
-    numberValue: rule?.serveValue.number ?? undefined,
-    jsonValue: rule?.serveValue.json ?? '',
+    serveValue: flagType === FeatureFlagType.Boolean ? (sv as boolean) ?? false : false,
+    stringValue: flagType === FeatureFlagType.String ? (sv as string) ?? '' : '',
+    numberValue: flagType === FeatureFlagType.Number ? (sv as number) ?? undefined : undefined,
+    jsonValue: flagType === FeatureFlagType.Json
+      ? (typeof sv === 'string' ? sv : sv != null ? JSON.stringify(sv, null, 2) : '')
+      : '',
     conditions: rule
       ? rule.conditions.map((c) => ({
           _id: c.id,
